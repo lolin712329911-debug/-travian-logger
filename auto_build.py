@@ -56,10 +56,20 @@ def _sheet():
 
 
 def load_config() -> dict:
+    """讀 Sheet 的 Config 分頁；沒有這個分頁就用預設值（不是錯誤）。
+    只有「讀得到 Sheet 但格式有問題」以外的真正異常（憑證、網路等）
+    才會往外拋，讓呼叫端中止本輪。"""
+    from gspread.exceptions import WorksheetNotFound
+
     cfg = {"enabled": True, "target_level": 2, "queue_slots": 2, "max_builds": 2}
     if not _has_sheet():
         return cfg
-    for row in _sheet().worksheet("Config").get_all_values():   # 讀不到就丟例外 -> 本輪不動作
+    try:
+        rows = _sheet().worksheet("Config").get_all_values()
+    except WorksheetNotFound:
+        print("Sheet 裡沒有 Config 分頁，使用預設值")
+        return cfg
+    for row in rows:
         if len(row) < 2:
             continue
         k, v = row[0].strip().lower(), row[1].strip()
