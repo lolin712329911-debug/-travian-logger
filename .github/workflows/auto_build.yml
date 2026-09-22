@@ -1,0 +1,43 @@
+name: Travian 記錄與自動升級
+
+on:
+  schedule:
+    # UTC。每 30 分鐘一次；GitHub 高峰時可能延遲幾分鐘。
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: travian
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      - name: 記錄村莊數據
+        continue-on-error: true
+        env:
+          TRAVIAN_BASE_URL: ${{ secrets.TRAVIAN_BASE_URL }}
+          TRAVIAN_COOKIE: ${{ secrets.TRAVIAN_COOKIE }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+        run: python scrape_and_log.py
+
+      - name: 自動升級資源田
+        env:
+          TRAVIAN_BASE_URL: ${{ secrets.TRAVIAN_BASE_URL }}
+          TRAVIAN_COOKIE: ${{ secrets.TRAVIAN_COOKIE }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          DRY_RUN: "1"          # 確認 log 裡的決定沒問題後，改成 "0" 才會真的送出
+        run: python auto_build.py
