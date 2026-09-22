@@ -47,10 +47,13 @@ def fetch_html_via_cookie(base_url: str, cookie: str, page: str = "dorf2.php") -
     resp = requests.get(url, headers=headers, timeout=20)
     resp.raise_for_status()
 
-    # 简单校验：如果返回的是登录页而不是村庄页，Cookie 可能已过期
-    if "villageName" not in resp.text and "loginBox" in resp.text:
+    # 简单校验：真实村庄页一定有 #stockBar（资源栏），登录页/过期页没有。
+    # （原本用 "loginBox" 字符串判断，但登录页样式未经验证，改用已在真实
+    #  页面确认过的 #stockBar 更可靠。）
+    if 'id="stockBar"' not in resp.text:
         raise RuntimeError(
-            "抓取到的似乎是登录页，Cookie 可能已过期，请重新从浏览器复制。"
+            "抓取到的页面没有 #stockBar，Cookie 可能已过期或页面结构变了，"
+            "请重新从浏览器复制 Cookie。"
         )
     return resp.text
 

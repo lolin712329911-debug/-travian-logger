@@ -144,7 +144,7 @@ def parse_resources(soup: BeautifulSoup) -> dict:
     result = {}
     stockbar = soup.find(id="stockBar")
     if not stockbar:
-        return result
+        return result, None, None
 
     for key, cn_name in _RESOURCE_NAMES.items():
         link = stockbar.find("a", class_=f"stockBarButton resource{key[-1]}")

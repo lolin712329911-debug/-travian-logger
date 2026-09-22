@@ -123,3 +123,47 @@ GitHub Actions 的定时任务在负载高时可能有几分钟延迟，属于�
   发个人 Slack/Discord/Telegram 通知（不涉及操作账号，纯提醒，风险低）
 - 多村庄支持：目前脚本假设 `dorf2.php` 只显示当前选中村庄，
   如果你有多个村庄，需要针对每个村庄 ID 分别构造 URL 再各抓一次
+
+---
+
+## 七、自動升級資源田（新增）
+
+新增了 `auto_build.py`，會在每次排程時：讀取 dorf1 → 用純規則決定該升哪塊田
+→ 抓 `build.php?id=N` 找出綠色「擴建」按鈕的網址 → 送出 → 檢查資源/佇列是否真的變化
+→ 記到 Sheet 的 `Actions` 分頁。不使用瀏覽器，純 HTTP 請求，跟現有的 `scrape_and_log.py`
+共用同一份 Cookie。
+
+### 新增的 Secrets
+沿用原本四個即可，不需要新的。想收到 Telegram 通知的話，額外加：
+
+| Secret 名稱 | 內容 |
+|---|---|
+| `TG_TOKEN` | Telegram bot token（選填） |
+| `TG_CHAT_ID` | Telegram chat id（選填） |
+
+### 在 Sheet 裡加一張「Config」分頁（選填，沒有就用預設值）
+
+| A | B |
+|---|---|
+| enabled | TRUE |
+| target_level | 2 |
+| queue_slots | 2 |
+| max_builds | 2 |
+
+- `enabled` 改成 `FALSE` 是緊急停止開關，不用改 workflow 或 Secret。
+- `queue_slots`：Plus 有效時是 2，到期後（`sample_dorf2.html` 顯示的到期時間附近）記得改成 1。
+- 跑完後 Sheet 會多一張「Actions」分頁，記錄每次嘗試升級的結果。
+
+### ⚠️ 自動點擊的風險比純讀取更高
+
+`README.md` 最上面「使用前必读」那段對唯讀抓取的警告，在這裡加倍適用——這已經是
+自動操作帳號，不只是讀取。務必：
+
+1. **先用 `DRY_RUN=1` 跑幾輪**（`.github/workflows/auto_build.yml` 裡已經預設是 `1`），
+   在 Actions 的執行紀錄和 Sheet 的 Actions 分頁裡確認每次的決定合理，
+   沒有升到不該升的田、沒有誤判來襲。
+2. 確認沒問題後，把 workflow 裡的 `DRY_RUN: "1"` 改成 `"0"`，才會真的送出升級請求。
+3. 前期建議用小號測試，不要直接上主力帳號。
+4. 目前只有農場等三種資源田的解析和決策經過真實頁面驗證；建築（非資源田）尚未支援。
+5. 這支腳本只點擊「擴建」的綠色按鈕，不會用金幣購買加速（紫色按鈕），
+   避免非預期消耗金幣。
