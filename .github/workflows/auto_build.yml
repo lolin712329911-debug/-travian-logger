@@ -1,4 +1,4 @@
-name: Travian 記錄與自動升級
+name: Travian 記錄與自動升級（Playwright + session cache 版）
 
 on:
   schedule:
@@ -13,31 +13,39 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: pip
+
       - run: pip install -r requirements.txt
 
-      - name: 記錄村莊數據
-        continue-on-error: true
-        env:
-          TRAVIAN_BASE_URL: ${{ secrets.TRAVIAN_BASE_URL }}
-          TRAVIAN_COOKIE: ${{ secrets.TRAVIAN_COOKIE }}
-          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
-        run: python scrape_and_log.py
+      - name: 安裝 Playwright + Chromium
+        run: |
+          pip install playwright
+          playwright install --with-deps chromium
 
-      - name: 自動升級資源田
+      # 關鍵：用 run_id 當 key、restore-keys 當前綴模糊比對，
+      # 讓每一輪都會存一份新的（帶著剛剛可能被伺服器續期過的 session），
+      # 同時永遠能還原到「最近一次成功」的那份。
+      - name: 還原上一輪的 session 狀態
+        uses: actions/cache@v4
+        with:
+          path: travian_state.json
+          key: travian-state-${{ github.run_id }}
+          restore-keys: travian-state-
+
+      - name: 記錄村莊數據 + 自動升級資源田
         env:
           TRAVIAN_BASE_URL: ${{ secrets.TRAVIAN_BASE_URL }}
-          TRAVIAN_COOKIE: ${{ secrets.TRAVIAN_COOKIE }}
+          TRAVIAN_SEED_STATE_B64: ${{ secrets.TRAVIAN_SEED_STATE_B64 }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
-          DRY_RUN: "0"          # 確認 log 裡的決定沒問題後，改成 "0" 才會真的送出
-        run: python auto_build.py
+          DRY_RUN: "1"          # 確認 log 裡的決定沒問題後，改成 "0" 才會真的送出
+        run: python travian_ci_run.py
