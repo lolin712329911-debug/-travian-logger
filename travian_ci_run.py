@@ -1,28 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-GitHub Actions 用的「Playwright 版」自動升級資源田。
+GitHub Actions 用的「Playwright 版」自動升級資源田（v2：不需要本機執行）。
 
-取代原本 auto_build.py 的純 requests.Session() + 靜態 TRAVIAN_COOKIE 做法。
-差異只有一個，但很關鍵：這支腳本用真的無頭瀏覽器載入頁面，讓 Travian
-前端任何會跑的 JS（包含可能的 session refresh/keep-alive 邏輯）真的被
-執行到，理論上可以讓登入狀態撐得跟你自己用瀏覽器玩差不多久，而不是
-卡在固定的 JWT exp 時間就死。
+跟 v1 的差異：不再需要你在本機跑 seed_login.py 產生 storage_state.json。
+改成第一次執行時，直接讀 TRAVIAN_SEED_COOKIE 這個 Secret（內容就是你從
+瀏覽器開發者工具複製的那串 "a=b; c=d; JWT=xxx" cookie header，跟你原本
+設定 TRAVIAN_COOKIE 的方式完全一樣），在無頭瀏覽器裡把它還原成 session。
 
-沿用 auto_build.py 既有的 travian_agent.parse_dorf1() / plan() 決策邏輯
-與 sheets_writer 的紀錄邏輯，只把「怎麼發送請求」換成「怎麼操作瀏覽器」。
+之後每一輪執行完，會把當下瀏覽器的完整 cookies/localStorage 狀態存進
+GitHub Actions 的 cache，下一輪優先用 cache 裡的（可能已被伺服器續期過），
+TRAVIAN_SEED_COOKIE 只在 cache 沒中的時候當救援用，正常情況下只有「第一次
+執行」那一輪會真的用到它。
 
 環境變數：
   TRAVIAN_BASE_URL                              必填（伺服器網址）
   TRAVIAN_STATE_PATH                            選填，預設 travian_state.json
-  TRAVIAN_SEED_STATE_B64                        選填，cache miss 時的救援種子
-                                                 （seed_login.py 產出的 base64）
+  TRAVIAN_SEED_COOKIE                           選填，cache miss 時的救援種子
+                                                 （從瀏覽器複製的原始 Cookie 字串）
   GOOGLE_SERVICE_ACCOUNT_JSON, GOOGLE_SHEET_ID  選填（沿用 auto_build.py）
   TG_TOKEN / TG_CHAT_ID                         選填（Telegram 通知）
   DRY_RUN        預設 1：只印出「會怎麼做」，不真的點擊
   QUIET_UTC      不運作的 UTC 小時區間 "起,迄"，預設 "17,23"（台灣 01:00~07:00）
 """
-import base64
 import os
 import random
 import sys
@@ -30,7 +30,6 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-# 直接沿用既有邏輯，不重寫一份
 import travian_agent as T
 import auto_build as AB  # 重用它的 load_config() / log_action() / find_upgrade_url()
 
@@ -38,21 +37,18 @@ BASE = os.getenv("TRAVIAN_BASE_URL", "").rstrip("/")
 STATE_PATH = Path(os.getenv("TRAVIAN_STATE_PATH", "travian_state.json"))
 
 
-def ensure_state_file() -> bool:
-    """cache 沒還原到檔案時，用 Secret 裡的種子救援一次。回傳是否有可用的 state 檔。"""
-    if STATE_PATH.exists():
-        print(f"找到既有 session 狀態：{STATE_PATH}（來自 actions/cache）")
-        return True
-
-    seed_b64 = os.getenv("TRAVIAN_SEED_STATE_B64", "")
-    if not seed_b64:
-        print("找不到 session 狀態檔，也沒有 TRAVIAN_SEED_STATE_B64 可用救援。")
-        print("請先在本機跑 seed_login.py 產生種子，存進這個 Secret。")
-        return False
-
-    STATE_PATH.write_bytes(base64.b64decode(seed_b64))
-    print(f"cache 沒中，已用 TRAVIAN_SEED_STATE_B64 救援寫出 {STATE_PATH}")
-    return True
+def parse_cookie_header(header: str, url: str) -> list:
+    """把 'name1=value1; name2=value2' 這種原始 Cookie header 字串，
+    轉成 Playwright context.add_cookies() 吃的格式。
+    只給 url，Playwright 會自動從 url 推導 domain/path，不需要你額外提供。"""
+    cookies = []
+    for part in header.split(";"):
+        part = part.strip()
+        if not part or "=" not in part:
+            continue
+        name, value = part.split("=", 1)
+        cookies.append({"name": name.strip(), "value": value.strip(), "url": url})
+    return cookies
 
 
 def main() -> int:
@@ -62,8 +58,6 @@ def main() -> int:
         return 0
     if not BASE:
         print("缺少 TRAVIAN_BASE_URL")
-        return 1
-    if not ensure_state_file():
         return 1
 
     try:
@@ -89,7 +83,21 @@ def main() -> int:
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
-        context = browser.new_context(storage_state=str(STATE_PATH))
+
+        if STATE_PATH.exists():
+            print(f"找到既有 session 狀態：{STATE_PATH}（來自 actions/cache）")
+            context = browser.new_context(storage_state=str(STATE_PATH))
+        else:
+            seed_cookie = os.getenv("TRAVIAN_SEED_COOKIE", "")
+            if not seed_cookie:
+                print("找不到 cache，也沒有 TRAVIAN_SEED_COOKIE 可用救援。")
+                print("請從瀏覽器複製登入後的 Cookie header，存進這個 Secret。")
+                browser.close()
+                return 1
+            print("cache 沒中，改用 TRAVIAN_SEED_COOKIE 這個救援種子建立 session")
+            context = browser.new_context()
+            context.add_cookies(parse_cookie_header(seed_cookie, BASE))
+
         page = context.new_page()
 
         def get_html(path: str) -> str:
@@ -98,13 +106,12 @@ def main() -> int:
 
         d1 = get_html("dorf1.php")
         if 'id="stockBar"' not in d1:
-            T.notify("抓到的不是村莊頁：session 可能已失效，請重新跑 seed_login.py")
-            # session 死了就不要把壞掉的 state 存回 cache，直接結束
+            T.notify("抓到的不是村莊頁：session 可能已失效，請重新複製 Cookie 更新 TRAVIAN_SEED_COOKIE")
             browser.close()
             return 1
 
-        for _ in range(cfg["max_builds"]):
-            html = get_html("dorf1.php") if _ else d1
+        for i in range(cfg["max_builds"]):
+            html = get_html("dorf1.php") if i else d1
             st = T.parse_dorf1(html)
             for f in st.fields:
                 if f.aid in touched:
@@ -138,12 +145,10 @@ def main() -> int:
                 continue
 
             time.sleep(random.uniform(2, 6))
-            # 用真的瀏覽器導航（等同「點擊」），讓頁面 JS 正常執行
             page.goto(f"{BASE}/{url.lstrip('/')}" if not url.startswith("http") else url,
                        wait_until="networkidle")
             time.sleep(random.uniform(2, 5))
-            after_html = get_html("dorf1.php")
-            after = T.parse_dorf1(after_html)
+            after = T.parse_dorf1(get_html("dorf1.php"))
             ok = len(after.queue) > len(st.queue) or sum(after.stock) < sum(st.stock) - 0.5 * sum(f.cost)
             AB.log_action([datetime.now(timezone.utc).strftime("%F %T"),
                             "升級", f.aid, f.gid, f.level, cost, mode,
@@ -155,8 +160,8 @@ def main() -> int:
             T.notify(f"已升級 slot {f.aid} (gid {f.gid}) L{f.level}->L{f.level + 1}，成本 {cost}")
             time.sleep(random.uniform(3, 8))
 
-        # 不管這輪做了什麼，只要 session 一開始是活的，就把最新狀態（可能已被
-        # 伺服器續期）存回去，讓下一輪 actions/cache 可以接續使用
+        # 不管這輪做了什麼，只要一開始 session 是活的，就把最新狀態存回去，
+        # 讓下一輪 actions/cache 可以接續使用（之後就不再需要 TRAVIAN_SEED_COOKIE 了）
         context.storage_state(path=str(STATE_PATH))
         browser.close()
 
