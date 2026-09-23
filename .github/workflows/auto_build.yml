@@ -46,5 +46,5 @@ jobs:
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
-          DRY_RUN: "1"          # 確認 log 裡的決定沒問題後，改成 "0" 才會真的送出
+          DRY_RUN: "0"          # 確認 log 裡的決定沒問題後，改成 "0" 才會真的送出
         run: python travian_ci_run.py
