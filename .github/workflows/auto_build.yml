@@ -29,9 +29,8 @@ jobs:
           pip install playwright
           playwright install --with-deps chromium
 
-      # 關鍵：用 run_id 當 key、restore-keys 當前綴模糊比對，
-      # 讓每一輪都會存一份新的（帶著剛剛可能被伺服器續期過的 session），
-      # 同時永遠能還原到「最近一次成功」的那份。
+      # 每一輪都會存一份新的（key 帶 run_id），同時用 restore-keys
+      # 模糊比對回「最近一次成功」的那份，讓 session 狀態能接續下去。
       - name: 還原上一輪的 session 狀態
         uses: actions/cache@v4
         with:
@@ -42,7 +41,7 @@ jobs:
       - name: 記錄村莊數據 + 自動升級資源田
         env:
           TRAVIAN_BASE_URL: ${{ secrets.TRAVIAN_BASE_URL }}
-          TRAVIAN_SEED_STATE_B64: ${{ secrets.TRAVIAN_SEED_STATE_B64 }}
+          TRAVIAN_SEED_COOKIE: ${{ secrets.TRAVIAN_SEED_COOKIE }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
