@@ -1,27 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-GitHub Actions 用的「Playwright 版」自動升級資源田（v2：不需要本機執行）。
+GitHub Actions 用的「Playwright 版」自動升級資源田（v2.1：修正 title 被前端 JS
+清空導致成本解析失敗的問題）。
 
-跟 v1 的差異：不再需要你在本機跑 seed_login.py 產生 storage_state.json。
-改成第一次執行時，直接讀 TRAVIAN_SEED_COOKIE 這個 Secret（內容就是你從
-瀏覽器開發者工具複製的那串 "a=b; c=d; JWT=xxx" cookie header，跟你原本
-設定 TRAVIAN_COOKIE 的方式完全一樣），在無頭瀏覽器裡把它還原成 session。
+跟 v2 的差異只有一處：get_html() 現在會在「這一頁抓到的所有田成本都是空的」
+時，改用 context.request.get() 發一個不經過瀏覽器渲染、不執行任何 JS 的純
+HTTP 請求去拿同一頁的原始 HTML（沿用同一組 session/cookie）。這正是原始
+travian_agent.py 的 run() 函式裡本來就寫好的備案，只是先前整合進這支 CI
+腳本時漏接了——診斷結果證實：Travian 的某個 JS tooltip 套件會在頁面載入
+後把 <a> 標籤的 title 屬性內容讀走、轉成自訂 tooltip，然後把原生 title
+屬性清空，導致 Playwright 等頁面完整渲染完才讀到的 title 永遠是空字串；
+純 HTTP 請求因為不執行任何 JS，能拿到伺服器端原始吐出來、title 還完整
+保留的 HTML。
 
-之後每一輪執行完，會把當下瀏覽器的完整 cookies/localStorage 狀態存進
-GitHub Actions 的 cache，下一輪優先用 cache 裡的（可能已被伺服器續期過），
-TRAVIAN_SEED_COOKIE 只在 cache 沒中的時候當救援用，正常情況下只有「第一次
-執行」那一輪會真的用到它。
-
-環境變數：
-  TRAVIAN_BASE_URL                              必填（伺服器網址）
-  TRAVIAN_STATE_PATH                            選填，預設 travian_state.json
-  TRAVIAN_SEED_COOKIE                           選填，cache miss 時的救援種子
-                                                 （從瀏覽器複製的原始 Cookie 字串）
-  GOOGLE_SERVICE_ACCOUNT_JSON, GOOGLE_SHEET_ID  選填（沿用 auto_build.py）
-  TG_TOKEN / TG_CHAT_ID                         選填（Telegram 通知）
-  DRY_RUN        預設 1：只印出「會怎麼做」，不真的點擊
-  QUIET_UTC      不運作的 UTC 小時區間 "起,迄"，預設 "17,23"（台灣 01:00~07:00）
+環境變數：跟 v2 完全相同，見 SETUP.md
 """
 import os
 import random
@@ -39,8 +32,7 @@ STATE_PATH = Path(os.getenv("TRAVIAN_STATE_PATH", "travian_state.json"))
 
 def parse_cookie_header(header: str, url: str) -> list:
     """把 'name1=value1; name2=value2' 這種原始 Cookie header 字串，
-    轉成 Playwright context.add_cookies() 吃的格式。
-    只給 url，Playwright 會自動從 url 推導 domain/path，不需要你額外提供。"""
+    轉成 Playwright context.add_cookies() 吃的格式。"""
     cookies = []
     for part in header.split(";"):
         part = part.strip()
@@ -100,18 +92,31 @@ def main() -> int:
 
         page = context.new_page()
 
-        def get_html(path: str) -> str:
-            page.goto(f"{BASE}/{path.lstrip('/')}", wait_until="networkidle")
-            return page.content()
+        def get_html(path: str, need_cost: bool = False) -> str:
+            """load 這一頁；need_cost=True 時，若解析出來所有田的成本
+            都是空的（title 被前端 JS 拿掉），改發一次純 HTTP 請求
+            （不執行 JS），沿用同一組 session 取得未被 JS 動過的原始 HTML。"""
+            url = f"{BASE}/{path.lstrip('/')}"
+            page.goto(url, wait_until="networkidle")
+            html = page.content()
 
-        d1 = get_html("dorf1.php")
+            if need_cost and 'id="stockBar"' in html:
+                probe = T.parse_dorf1(html)
+                if probe.fields and not any(f.cost for f in probe.fields):
+                    print(f"  [備援] {path} 的 title 被前端 JS 清空，"
+                          f"改用純 HTTP 請求重抓一次（不執行 JS）")
+                    resp = context.request.get(url)
+                    html = resp.text()
+            return html
+
+        d1 = get_html("dorf1.php", need_cost=True)
         if 'id="stockBar"' not in d1:
             T.notify("抓到的不是村莊頁：session 可能已失效，請重新複製 Cookie 更新 TRAVIAN_SEED_COOKIE")
             browser.close()
             return 1
 
         for i in range(cfg["max_builds"]):
-            html = get_html("dorf1.php") if i else d1
+            html = get_html("dorf1.php", need_cost=True) if i else d1
             st = T.parse_dorf1(html)
             for f in st.fields:
                 if f.aid in touched:
@@ -161,7 +166,7 @@ def main() -> int:
             time.sleep(random.uniform(3, 8))
 
         # 不管這輪做了什麼，只要一開始 session 是活的，就把最新狀態存回去，
-        # 讓下一輪 actions/cache 可以接續使用（之後就不再需要 TRAVIAN_SEED_COOKIE 了）
+        # 讓下一輪 actions/cache 可以接續使用
         context.storage_state(path=str(STATE_PATH))
         browser.close()
 
