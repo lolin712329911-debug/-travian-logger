@@ -58,3 +58,12 @@ jobs:
           DRY_RUN: "0"          # 目前為正式模式，會真的送出升級請求
         #run: python travian_ci_run.py
         run: python debug_village_buildings.py
+
+      - name: 上傳診斷用的原始 HTML（debug_html/）
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-html
+          path: debug_html/
+          if-no-files-found: ignore
+          retention-days: 3
