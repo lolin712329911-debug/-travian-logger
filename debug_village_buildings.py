@@ -28,6 +28,7 @@ import auto_build as AB  # 重用 find_upgrade_url()
 
 BASE = os.getenv("TRAVIAN_BASE_URL", "").rstrip("/")
 STATE_PATH = Path(os.getenv("TRAVIAN_STATE_PATH", "travian_state.json"))
+HTML_DUMP_DIR = Path("debug_html")  # 存原始 HTML 供人工檢查，會由 workflow 上傳成 artifact
 
 # 跟 travian_agent.py 裡資源田用的是同一套 regex，這裡直接複用同樣的邏輯，
 # 用來測試村莊中心建築的 tooltip 是不是也遵循同樣的格式
@@ -56,6 +57,8 @@ def main() -> int:
     if not STATE_PATH.exists():
         print(f"找不到 {STATE_PATH}，代表 cache 沒還原到，無法用既有 session")
         return 1
+
+    HTML_DUMP_DIR.mkdir(exist_ok=True)
 
     from playwright.sync_api import sync_playwright
 
@@ -117,6 +120,10 @@ def main() -> int:
 
             url = AB.find_upgrade_url(build_html)
             print(f"  find_upgrade_url() 找到的升級網址：{url or '（找不到，可能已達最高等級或前置條件未滿足）'}")
+
+            out_path = HTML_DUMP_DIR / f"aid{aid}_gid{gid}_{label}.html"
+            out_path.write_text(build_html, encoding="utf-8")
+            print(f"  已存檔：{out_path}")
             print()
 
     return 0
