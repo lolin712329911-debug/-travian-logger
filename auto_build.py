@@ -61,7 +61,8 @@ def load_config() -> dict:
     才會往外拋，讓呼叫端中止本輪。"""
     from gspread.exceptions import WorksheetNotFound
 
-    cfg = {"enabled": True, "target_level": 2, "queue_slots": 2, "max_builds": 2}
+    cfg = {"enabled": True, "target_level": 2, "queue_slots": 2, "max_builds": 2,
+           "target_building_level": T.TARGET_BUILDING_LEVEL}
     if not _has_sheet():
         return cfg
     try:
@@ -75,7 +76,7 @@ def load_config() -> dict:
         k, v = row[0].strip().lower(), row[1].strip()
         if k == "enabled":
             cfg[k] = v.lower() not in ("false", "0", "no", "off", "否", "停")
-        elif k in ("target_level", "queue_slots", "max_builds") and v.isdigit():
+        elif k in ("target_level", "queue_slots", "max_builds", "target_building_level") and v.isdigit():
             cfg[k] = int(v)
     return cfg
 
@@ -104,6 +105,27 @@ def find_upgrade_url(build_page_html: str):
         if m and "action=build" in m.group(1):
             return _html.unescape(m.group(1))
     return None
+
+
+# ---------------- 村莊中心建築（倉庫/糧倉） ----------------
+def get_building_candidates(target_level: int, touched: set) -> list:
+    """回傳倉庫/糧倉裡等級 < target_level 的候選 Field（成本已填好）。
+    target_level <= 0 時視為停用，直接回傳空清單，不多打任何請求。
+    每個候選都要多抓一次 build.php（跟資源田不同，成本沒辦法從 dorf2 一次拿到），
+    所以只在真的啟用時才呼叫，避免每輪平白多打好幾個請求。"""
+    if target_level <= 0:
+        return []
+    slots = T.parse_dorf2(get("dorf2.php"))
+    out = []
+    for gid, (aid, level) in slots.items():
+        if level >= target_level or aid in touched:
+            continue
+        cost, secs = T.parse_building_cost(get(f"build.php?id={aid}"))
+        if not cost:
+            print(f"警告：{T.BUILDING_GIDS.get(gid, gid)} (aid={aid}) 的 build.php 解析不到成本，跳過")
+            continue
+        out.append(T.Field(aid=aid, gid=gid, level=level, cost=cost, secs=secs, building=False))
+    return out
 
 
 # ---------------- 主流程 ----------------
@@ -139,6 +161,8 @@ def main() -> int:
         for f in st.fields:                     # 本輪已送出的田，不要重複選
             if f.aid in touched:
                 f.building = True
+
+        st.fields += get_building_candidates(cfg["target_building_level"], touched)
 
         action = T.plan(st)
         print(f"[{mode}] 決策: {action[0]}  佇列={st.queue}  存量={st.stock}  來襲={st.attacks}")
