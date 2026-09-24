@@ -149,9 +149,15 @@ GitHub Actions 的定时任务在负载高时可能有几分钟延迟，属于�
 | target_level | 2 |
 | queue_slots | 2 |
 | max_builds | 2 |
+| target_building_level | 0 |
 
 - `enabled` 改成 `FALSE` 是緊急停止開關，不用改 workflow 或 Secret。
 - `queue_slots`：Plus 有效時是 2，到期後（`sample_dorf2.html` 顯示的到期時間附近）記得改成 1。
+- `target_building_level`：倉庫/糧倉自動升級到的目標等級。`debug_village_buildings.py`
+  已驗證這兩者的 build.php 頁面解析方式（跟資源田不同，見程式內註解），但**預設是 0（停用）**，
+  因為目前只驗證過解析邏輯、還沒有實際跑過升級。想啟用的話改成 >0 的數字即可；
+  資源田跟倉庫/糧倉會放在同一個候選池裡，一律挑「最便宜、最快」的先升，沒有另外排優先序，
+  如果想要「資源田優先、倉庫吃剩下的」之類的邏輯，需要再另外調整 `travian_agent.plan()`。
 - 跑完後 Sheet 會多一張「Actions」分頁，記錄每次嘗試升級的結果。
 
 ### ⚠️ 自動點擊的風險比純讀取更高
