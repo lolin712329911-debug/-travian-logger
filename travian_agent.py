@@ -25,6 +25,16 @@ QUIET_HOURS = (2, 7)      # 這段伺服器時間不運作
 UPGRADE_BUTTON = "button.textButtonV1.green.build"   # ← 未驗證，需用 build.php 頁面確認
 PROFILE_DIR = "./travian_profile"
 
+# 村莊中心建築（非資源田）。目前只驗證過倉庫/糧倉：debug_village_buildings.py
+# 已確認這兩者的 build.php 頁面結構跟資源田不同（成本/時間寫在正文而非 title），
+# 見 parse_dorf2() / parse_building_cost()。之後要加其他建築（例如主建築）
+# 可以直接擴充這個 dict，但要先用 debug_village_buildings.py 驗證格式一致。
+BUILDING_GIDS = {10: "倉庫", 11: "糧倉"}
+# 0 = 停用村莊中心建築自動升級（預設，因為只是剛驗證過解析，還沒實際跑過）。
+# 要啟用時設一個 >0 的目標等級即可；Sheet 的 Config 分頁可用
+# target_building_level 這個 key 覆蓋（見 auto_build.py 的 load_config()）。
+TARGET_BUILDING_LEVEL = 0
+
 BIDI = re.compile(r"[\u202a-\u202e\u2066-\u2069]")   # 頁面數字外面包的方向控制字元
 
 
@@ -113,13 +123,54 @@ def parse_dorf1(html: str) -> State:
     return st
 
 
+def parse_dorf2(html: str) -> dict:
+    """解析 dorf2.php（村莊中心），回傳 {gid: (aid, level)}，
+    只保留 BUILDING_GIDS 裡關心的建築（目前是倉庫/糧倉）。
+    尚未建造的位置沒有 a.level，level 視為 0（跳過，不會被當成候選，
+    因為蓋新建築跟升級既有建築的按鈕/流程不一樣，尚未驗證）。"""
+    soup = BeautifulSoup(html, "html.parser")
+    out = {}
+    for slot in soup.select("#villageContent .buildingSlot"):
+        try:
+            aid, gid = int(slot["data-aid"]), int(slot["data-gid"])
+        except (KeyError, ValueError):
+            continue
+        if gid not in BUILDING_GIDS:
+            continue
+        a = slot.select_one("a.level")
+        if not a or not a.get("data-level", "").isdigit():
+            continue
+        out[gid] = (aid, int(a["data-level"]))
+    return out
+
+
+def parse_building_cost(html: str) -> tuple:
+    """解析 build.php?id=<aid> 的村莊中心建築頁面（倉庫/糧倉），回傳 (cost, secs)。
+    跟資源田的 tooltip 格式不同（debug_village_buildings.py 已驗證）：
+      - 成本/時間直接寫在頁面正文，不是 <a> 的 title 屬性
+      - 成本的 class 是 "value value"（資源田是單一個 "value "）
+      - 數字外層包了雙向文字控制字元 \\u202d...\\u202c，跟 BIDI 常數要清的是同一種，
+        用同一個 BIDI.sub 清掉即可（不影響 \\d+，只是保險起見先清乾淨）
+      - 時間前面多一個 </div>："clock_medium"></i></div><span..."
+    """
+    clean = BIDI.sub("", html)
+    cost = [int(v) for _, v in sorted(
+        re.findall(r'class="r(\d)Big"></i><span class="value value">(\d+)<', clean))]
+    dur = re.search(r'clock_medium"></i></div><span class="value value">(\d+:\d+:\d+)<', clean)
+    return cost, (_hms(dur.group(1)) if dur else 0)
+
+
 # ---------------- 決策 ----------------
 def plan(st: State):
     """回傳 (動作, 參數...)。動作: build / wait_res / wait_queue / need_storage / done"""
     if len(st.queue) >= QUEUE_SLOTS:
         return ("wait_queue", min(st.queue) + 5)
 
-    cands = [f for f in st.fields if f.level < TARGET_LEVEL and f.cost and not f.building]
+    # 村莊中心建築（gid 在 BUILDING_GIDS 裡）由呼叫端先用它們自己的
+    # target_building_level 篩過等級，這裡不再套用資源田的 TARGET_LEVEL，
+    # 只需要成本非空、沒有正在施工即可。
+    cands = [f for f in st.fields if f.cost and not f.building
+             and (f.gid in BUILDING_GIDS or f.level < TARGET_LEVEL)]
     if not cands:
         return ("done",)
 
