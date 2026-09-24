@@ -119,7 +119,6 @@ def main() -> int:
             print(f"  find_upgrade_url() 找到的升級網址：{url or '（找不到，可能已達最高等級或前置條件未滿足）'}")
             print()
 
-    browser.close()
     return 0
 
 
