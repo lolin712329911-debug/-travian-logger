@@ -156,7 +156,9 @@ def parse_building_cost(html: str) -> tuple:
     clean = BIDI.sub("", html)
     cost = [int(v) for _, v in sorted(
         re.findall(r'class="r(\d)Big"></i><span class="value value">(\d+)<', clean))]
-    dur = re.search(r'clock_medium"></i></div><span class="value value">(\d+:\d+:\d+)<', clean)
+    # 工期欄位跟成本欄位的 class 不一樣：這裡其實是 "value "（單一個，跟資源田同格式），
+    # 不是成本用的 "value value"（兩個）。原本兩個都用 "value value" 找，導致 secs 永遠是 0。
+    dur = re.search(r'clock_medium"></i></div><span class="value ">(\d+:\d+:\d+)<', clean)
     return cost, (_hms(dur.group(1)) if dur else 0)
 
 
