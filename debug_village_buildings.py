@@ -19,21 +19,17 @@
   TRAVIAN_STATE_PATH    選填，預設 travian_state.json（沿用 cache 裡的）
 """
 import os
-import re
 import sys
 from pathlib import Path
 
 from bs4 import BeautifulSoup
 import auto_build as AB  # 重用 find_upgrade_url()
+import travian_agent as T  # 重用 parse_building_cost()：跟正式流程用同一份解析邏輯，
+                             # 避免這支 debug 腳本自己另外維護一份 regex 兜不起來
 
 BASE = os.getenv("TRAVIAN_BASE_URL", "").rstrip("/")
 STATE_PATH = Path(os.getenv("TRAVIAN_STATE_PATH", "travian_state.json"))
 HTML_DUMP_DIR = Path("debug_html")  # 存原始 HTML 供人工檢查，會由 workflow 上傳成 artifact
-
-# 跟 travian_agent.py 裡資源田用的是同一套 regex，這裡直接複用同樣的邏輯，
-# 用來測試村莊中心建築的 tooltip 是不是也遵循同樣的格式
-COST_RE = re.compile(r'class="r(\d)Big"></i><span class="value ">(\d+)<')
-DUR_RE = re.compile(r'clock_medium"></i><span class="value ">(\d+:\d+:\d+)<')
 
 # 常見會想自動化的村莊中心建築（目標 gid，官方 Travian 固定編號）：
 # 10 = 倉庫 Warehouse, 11 = 糧倉 Granary
@@ -107,16 +103,16 @@ def main() -> int:
             print(f"=== 測試 {label}（aid={aid}, gid={gid}）的 build.php 頁面 ===")
 
             build_html = fetch(context, page, f"build.php?id={aid}")
-            costs = COST_RE.findall(build_html)
-            print(f"  用瀏覽器直接載入 → 解析到的成本欄位數：{len(costs)}"
-                  f"{'（正常，非空）' if costs else '（空的，懷疑 title 被 JS 清空）'}")
+            cost, secs = T.parse_building_cost(build_html)
+            print(f"  用瀏覽器直接載入 → 解析到的成本：{cost or '（空）'}  工期：{secs}秒"
+                  f"{'（正常，非空）' if cost else '（懷疑 title 被 JS 清空）'}")
 
-            if not costs:
+            if not cost:
                 build_html_http = fetch(context, page, f"build.php?id={aid}", force_http=True)
-                costs_http = COST_RE.findall(build_html_http)
-                print(f"  改用純 HTTP 請求重抓 → 解析到的成本欄位數：{len(costs_http)}"
-                      f"{'（純 HTTP 有效！）' if costs_http else '（純 HTTP 也是空的，需要人工看原始 HTML）'}")
-                build_html = build_html_http if costs_http else build_html
+                cost_http, secs_http = T.parse_building_cost(build_html_http)
+                print(f"  改用純 HTTP 請求重抓 → 解析到的成本：{cost_http or '（空）'}  工期：{secs_http}秒"
+                      f"{'（純 HTTP 有效！）' if cost_http else '（純 HTTP 也是空的，需要人工看原始 HTML）'}")
+                build_html = build_html_http if cost_http else build_html
 
             url = AB.find_upgrade_url(build_html)
             print(f"  find_upgrade_url() 找到的升級網址：{url or '（找不到，可能已達最高等級或前置條件未滿足）'}")
@@ -130,4 +126,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main())ㄋ
