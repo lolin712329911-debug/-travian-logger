@@ -109,6 +109,24 @@ def main() -> int:
                     html = resp.text()
             return html
 
+        def get_building_candidates(target_level: int) -> list:
+            """跟 auto_build.py 的同名函式邏輯一致，只是改用這支腳本的
+            get_html()（走瀏覽器/session）而不是 requests。target_level<=0
+            時停用，不多打任何請求。"""
+            if target_level <= 0:
+                return []
+            slots = T.parse_dorf2(get_html("dorf2.php"))
+            out = []
+            for gid, (aid, level) in slots.items():
+                if level >= target_level or aid in touched:
+                    continue
+                cost, secs = T.parse_building_cost(get_html(f"build.php?id={aid}"))
+                if not cost:
+                    print(f"警告：{T.BUILDING_GIDS.get(gid, gid)} (aid={aid}) 的 build.php 解析不到成本，跳過")
+                    continue
+                out.append(T.Field(aid=aid, gid=gid, level=level, cost=cost, secs=secs, building=False))
+            return out
+
         d1 = get_html("dorf1.php", need_cost=True)
         if 'id="stockBar"' not in d1:
             T.notify("抓到的不是村莊頁：session 可能已失效，請重新複製 Cookie 更新 TRAVIAN_SEED_COOKIE")
@@ -121,6 +139,8 @@ def main() -> int:
             for f in st.fields:
                 if f.aid in touched:
                     f.building = True
+
+            st.fields += get_building_candidates(cfg["target_building_level"])
 
             action = T.plan(st)
             print(f"[{mode}] 決策: {action[0]}  佇列={st.queue}  存量={st.stock}  來襲={st.attacks}")
