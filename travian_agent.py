@@ -212,9 +212,24 @@ def _to_int(s: str) -> int:
 _BUILD_URL_RE = re.compile(r"/dorf[12]\.php\?id=\d+&gid=\d+&action=build&checksum=[0-9a-fA-F]+")
 
 
+_rejected_seen = set()   # 同一個被拒絕的網址在同一輪只警告一次，避免洗版
+
+
+def _mask_checksum(u: str) -> str:
+    """log 裡不要留下完整的 checksum，只留長度，方便判斷格式有沒有變。"""
+    return re.sub(r"(checksum=)([^&]+)", lambda m: f"{m.group(1)}<{len(m.group(2))}字元>", u)
+
+
 def _safe_build_url(url: str):
     u = _html.unescape(url or "")
-    return u if _BUILD_URL_RE.fullmatch(u) else None
+    if _BUILD_URL_RE.fullmatch(u):
+        return u
+    # 被拒絕時留一行警告，這樣遊戲哪天多加參數、導致所有升級都變成「找不到按鈕」時，
+    # 看 log 就知道是網址格式變了。金幣（buildmaster）、看廣告（&as=）是預期中要拒絕的，不記。
+    if u and "buildmaster" not in u and not re.search(r"[?&]as=", u) and u not in _rejected_seen:
+        _rejected_seen.add(u)
+        print(f"[警告] 升級按鈕的網址不符合白名單格式，已忽略（遊戲改版了嗎？）：{_mask_checksum(u)}")
+    return None
 
 
 def find_upgrade_url(build_page_html: str):
