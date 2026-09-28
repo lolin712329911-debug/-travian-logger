@@ -39,6 +39,7 @@ HEADER_ROW = [
     "木材_存量", "木材_產量", "磚塊_存量", "磚塊_產量",
     "鋼鐵_存量", "鋼鐵_產量", "穀物_存量", "穀物_產量", "自由穀物",
     "英雄血量%", "英雄經驗%", "英雄可用冒險數",
+    "施工佇列", "Plus剩餘(小時)", "新手保護剩餘(小時)",
 ]
 
 
@@ -97,9 +98,14 @@ def append_row(
         ws = spreadsheet.add_worksheet(title=worksheet_name, rows=1000, cols=len(HEADER_ROW) + 2)
 
     if ensure_header:
-        existing = ws.get_all_values()
-        if not existing:
+        first = ws.row_values(1)
+        if not first:
             ws.append_row(HEADER_ROW, value_input_option="USER_ENTERED")
+        elif first != HEADER_ROW:
+            # 舊版表頭（欄位比較少）：補欄並把第 1 列更新成最新表頭，舊資料列不動
+            if ws.col_count < len(HEADER_ROW):
+                ws.add_cols(len(HEADER_ROW) - ws.col_count)
+            ws.update(range_name="A1", values=[HEADER_ROW])
 
     ws.append_row(row, value_input_option="USER_ENTERED")
     return True
