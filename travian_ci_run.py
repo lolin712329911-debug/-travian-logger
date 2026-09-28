@@ -76,19 +76,25 @@ def main() -> int:
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
 
-        if STATE_PATH.exists():
+        seed_cookie = os.getenv("TRAVIAN_SEED_COOKIE", "")
+
+        def new_context_from_seed():
+            ctx = browser.new_context()
+            ctx.add_cookies(parse_cookie_header(seed_cookie, BASE))
+            return ctx
+
+        used_cache = STATE_PATH.exists()
+        if used_cache:
             print(f"找到既有 session 狀態：{STATE_PATH}（來自 actions/cache）")
             context = browser.new_context(storage_state=str(STATE_PATH))
         else:
-            seed_cookie = os.getenv("TRAVIAN_SEED_COOKIE", "")
             if not seed_cookie:
                 print("找不到 cache，也沒有 TRAVIAN_SEED_COOKIE 可用救援。")
                 print("請從瀏覽器複製登入後的 Cookie header，存進這個 Secret。")
                 browser.close()
                 return 1
             print("cache 沒中，改用 TRAVIAN_SEED_COOKIE 這個救援種子建立 session")
-            context = browser.new_context()
-            context.add_cookies(parse_cookie_header(seed_cookie, BASE))
+            context = new_context_from_seed()
 
         page = context.new_page()
 
@@ -128,8 +134,27 @@ def main() -> int:
             return out
 
         d1 = get_html("dorf1.php", need_cost=True)
+
+        # cache 裡的 session 失效了：丟掉它，改用種子 Cookie 重試一次。
+        # （context/page 在這個函式作用域內重新指定，上面的 get_html() 等
+        #  closure 會自動用到新的物件。）
+        if 'id="stockBar"' not in d1 and used_cache and seed_cookie:
+            print("cache 的 session 已失效，改用 TRAVIAN_SEED_COOKIE 重新建立 session")
+            context.close()
+            try:
+                STATE_PATH.unlink()
+            except OSError:
+                pass
+            context = new_context_from_seed()
+            page = context.new_page()
+            d1 = get_html("dorf1.php", need_cost=True)
+
         if 'id="stockBar"' not in d1:
-            T.notify("抓到的不是村莊頁：session 可能已失效，請重新複製 Cookie 更新 TRAVIAN_SEED_COOKIE")
+            if used_cache and not seed_cookie:
+                msg = "cache 的 session 已失效，且沒有設定 TRAVIAN_SEED_COOKIE 可以救援，請設定後重跑"
+            else:
+                msg = "抓到的不是村莊頁：種子 Cookie 也已失效，請重新登入複製 Cookie 更新 TRAVIAN_SEED_COOKIE"
+            T.notify(msg)
             browser.close()
             return 1
 
