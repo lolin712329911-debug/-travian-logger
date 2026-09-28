@@ -58,7 +58,7 @@ def fetch_html_via_cookie(base_url: str, cookie: str, page: str = "dorf2.php") -
     return resp.text
 
 
-def build_row(overview) -> list:
+def build_row(overview, queue_text: str = "", plus_hours=None, protection_hours=None) -> list:
     """把 VillageOverview 对象拍平成一行，顺序需对应 sheets_writer.HEADER_ROW。"""
     res = overview.resources
     l1 = res.get("l1")
@@ -88,6 +88,9 @@ def build_row(overview) -> list:
         overview.hero.health_percent,
         overview.hero.experience_percent,
         overview.hero.adventures_available,
+        queue_text,
+        plus_hours if plus_hours is not None else "",
+        protection_hours if protection_hours is not None else "",
     ]
     assert len(row) == len(HEADER_ROW), "row 长度需和表头一致，检查是否漏填/多填字段"
     return row
