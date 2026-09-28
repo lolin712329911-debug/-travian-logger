@@ -37,6 +37,17 @@ TARGET_BUILDING_LEVEL = 0
 
 BIDI = re.compile(r"[\u202a-\u202e\u2066-\u2069]")   # 頁面數字外面包的方向控制字元
 
+# 給 Sheet / log 顯示用的中文名稱。沒列到的 gid 會顯示成「建築(gid N)」。
+RES_NAMES = ["木材", "磚塊", "鋼鐵", "穀物"]
+GID_NAMES = {1: "伐木場", 2: "泥坑", 3: "鐵礦場", 4: "農場",
+             10: "倉庫", 11: "糧倉", 15: "村莊大樓", 16: "集結點", 17: "市場", 18: "大使館",
+             20: "馬廄", 22: "研究院", 23: "山洞", 24: "城鎮廳", 25: "行宮", 26: "皇宮",
+             27: "寶物庫", 28: "交易所", 34: "石匠鋪", 37: "英雄宅", 45: "供水系統"}
+
+
+def gid_name(gid) -> str:
+    return GID_NAMES.get(gid, f"建築(gid {gid})")
+
 
 # ---------------- 資料結構 ----------------
 @dataclass
@@ -58,6 +69,7 @@ class State:
     free_crop: int
     fields: list = field(default_factory=list)
     queue: list = field(default_factory=list)   # 剩餘秒數列表（選擇器未驗證）
+    queue_info: list = field(default_factory=list)   # 跟 queue 一一對應，例如「農場 等級 1 剩0:01:46」
     attacks: int = 0
     protection_s: int = None
     plus_s: int = None
@@ -82,6 +94,20 @@ def _js_dict(block: str, key: str) -> dict:
 def _hms(s: str) -> int:
     h, m, sec = (int(x) for x in s.split(":"))
     return h * 3600 + m * 60 + sec
+
+
+def _queue_label(li, secs: int) -> str:
+    """施工佇列一項的文字：'農場 等級 1 剩0:01:46'。抓不到名稱時顯示 '（未知建築）'。"""
+    n = li.select_one("div.name")
+    name, lvl = "", ""
+    if n is not None:
+        lv = n.select_one("span.lvl")
+        if lv is not None:
+            lvl = BIDI.sub("", lv.get_text(" ", strip=True))
+            lv.extract()
+        name = BIDI.sub("", n.get_text(" ", strip=True))
+    left = f"剩{secs // 3600}:{secs % 3600 // 60:02d}:{secs % 60:02d}"
+    return " ".join(x for x in (name or "（未知建築）", lvl, left) if x)
 
 
 def parse_dorf1(html: str) -> State:
@@ -117,6 +143,7 @@ def parse_dorf1(html: str) -> State:
         t = li.select_one("span.timer")
         if t and t.get("value", "").isdigit():
             st.queue.append(int(t["value"]))
+            st.queue_info.append(_queue_label(li, int(t["value"])))
 
     # 4) 來襲：注意 .incomingTroops 圖示在沒有來襲時也存在，不能用「元素存在」判斷
     st.attacks = sum(int(x) for x in re.findall(r'incomingAttacksAmount":(\d+)', html))
