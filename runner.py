@@ -178,7 +178,8 @@ def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
         cost = "/".join(map(str, f.cost))
         url = f.url or T.find_upgrade_url(get(f"build.php?id={f.aid}"))
         if not url:
-            print(f"slot {f.aid}: 找不到綠色擴建按鈕（資源不足、佇列滿或前置條件未達）")
+            print(f"slot {f.aid}: 找不到綠色擴建按鈕（資源不足、佇列滿、前置條件未達，"
+                  f"或網址被白名單擋下：往上找有沒有 [警告] 那行）")
             log_action([_now(), "升級", f.aid, f.gid, f.level, cost, mode, "找不到按鈕"])
             break
         touched.add(f.aid)
