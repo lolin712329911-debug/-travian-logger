@@ -5,7 +5,8 @@ on:
     # UTC。每 30 分鐘一次；GitHub 高峰時可能延遲幾分鐘。
     # 只在 UTC 0~16 點、23 點觸發，跳過 UTC 17~23 點（= 台灣 01:00~07:00 安靜時段），
     # 省下這 6 小時每 30 分鐘白跑一次「裝完環境才發現不動作」的浪費。
-    - cron: "*/30 0-16,23 * * *"
+    #- cron: "*/30 0-16,23 * * *"
+    - cron: "*/30 * * * *"
   workflow_dispatch: {}
 
 concurrency:
@@ -56,6 +57,7 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
           DRY_RUN: "0"          # 0為目前為正式模式，會真的送出升級請求
+          QUIET_UTC: "0,0"
         run: python travian_ci_run.py
         #run: python debug_login_flow.py
         #run: python debug_village_buildings.py
