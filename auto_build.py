@@ -1,74 +1,51 @@
-name: Travian 記錄與自動升級（Playwright + session cache 版）
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+GitHub Actions 用的「純 HTTP 版」自動升級（不需要瀏覽器）。
 
-on:
-  schedule:
-    # UTC。GitHub 高峰時可能延遲幾分鐘。
-    # 白天與晚上（UTC 0~16、23）：每 30 分鐘一次，正常建造。
-    - cron: "*/30 0-16,23 * * *"
-    # 安靜時段（UTC 17~22 = 台灣 01:00~06:59）：每小時一次，只做 keep-alive。
-    # 完全不跑會讓 session 因閒置過久失效（實測過：cache 與種子 Cookie 都會壞），
-    # 所以改成降頻而不是停跑。腳本內由 QUIET_UTC 判斷這段時間只登入、不建造。
-    - cron: "0 17-22 * * *"
-  workflow_dispatch: {}
+這支只負責「怎麼抓頁面、怎麼送出網址」（requests + Cookie）；
+決策、build_order、送出與驗證、Config / Actions 分頁都在 runner.py。
 
-concurrency:
-  group: travian
-  cancel-in-progress: false
+環境變數：
+  TRAVIAN_BASE_URL, TRAVIAN_COOKIE              必填
+  GOOGLE_SERVICE_ACCOUNT_JSON, GOOGLE_SHEET_ID   選填（有的話讀 Config、寫 Actions）
+  DRY_RUN     預設 1：只印出「會送出什麼」，不真的送出
+  QUIET_UTC   不運作的 UTC 小時區間 "起,迄"，預設 "17,23"（台灣 01:00~07:00）
+"""
+import os
+import sys
 
-jobs:
-  run:
-    runs-on: ubuntu-latest
-    timeout-minutes: 8
-    steps:
-      - uses: actions/checkout@v4
+import requests
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: pip
+import runner as R
+from travian_agent import find_upgrade_url  # noqa: F401  舊名稱轉發：debug_village_buildings.py 用 AB.find_upgrade_url
 
-      - run: pip install -r requirements.txt
+BASE = os.getenv("TRAVIAN_BASE_URL", "").rstrip("/")
+COOKIE = os.getenv("TRAVIAN_COOKIE", "")
+UA = os.getenv("TRAVIAN_UA", "Mozilla/5.0 (compatible; PersonalVillageLogger/1.0)")
+_session = requests.Session()
 
-      # 快取 Playwright 下載的瀏覽器核心（Chromium/FFmpeg 等，約 300MB）。
-      # playwright install 本身會自動偵測本機是否已有對應版本，
-      # cache 命中時會直接跳過下載，不需要額外的條件判斷。
-      - name: 還原 Playwright 瀏覽器快取
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-browsers-${{ hashFiles('requirements.txt') }}
 
-      - name: 安裝 Playwright + Chromium
-        run: |
-          pip install playwright
-          playwright install --with-deps chromium
+def get(path: str) -> str:
+    r = _session.get(f"{BASE}/{path.lstrip('/')}",
+                     headers={"User-Agent": UA, "Cookie": COOKIE}, timeout=20)
+    r.raise_for_status()
+    return r.text
 
-      # 每一輪都會存一份新的（key 帶 run_id），同時用 restore-keys
-      # 模糊比對回「最近一次成功」的那份，讓 session 狀態能接續下去。
-      - name: 還原上一輪的 session 狀態
-        uses: actions/cache@v4
-        with:
-          path: travian_state.json
-          key: travian-state-${{ github.run_id }}
-          restore-keys: travian-state-
 
-      - name: 記錄村莊數據 + 自動升級資源田
-        env:
-          TRAVIAN_BASE_URL: ${{ secrets.TRAVIAN_BASE_URL }}
-          TRAVIAN_SEED_COOKIE: ${{ secrets.TRAVIAN_SEED_COOKIE }}
-          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
-          DRY_RUN: "0"          # 0為目前為正式模式，會真的送出升級請求
-          QUIET_UTC: "17,23"    # UTC 17~22 只做 keep-alive；臨時要在這段時間測試建造，改成 "0,0"
-        run: python travian_ci_run.py
-        #run: python debug_login_flow.py
-        #run: python debug_village_buildings.py
+def main() -> int:
+    if R.in_quiet_hours():
+        print("安靜時段，本輪不動作")
+        return 0
+    if not BASE or not COOKIE:
+        print("缺少 TRAVIAN_BASE_URL / TRAVIAN_COOKIE")
+        return 1
+    cfg, code = R.get_cfg()
+    if cfg is None:
+        return code
+    dry = os.getenv("DRY_RUN", "1") != "0"
+    return R.run_build_cycle(cfg, get=get, get_dorf1=lambda: get("dorf1.php"), submit=get, dry=dry)
 
-      - name: 上傳診斷用的原始 HTML（debug_html/）
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: debug-html
-          path: debug_html/
-          if-no-files-found: ignore
-          retention-days: 3
+
+if __name__ == "__main__":
+    sys.exit(main())
