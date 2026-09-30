@@ -24,6 +24,7 @@ Travian Legends 村庄页面 (dorf1.php / dorf2.php) 解析器
 
 from __future__ import annotations
 
+import html as html_lib
 import json
 import re
 from dataclasses import dataclass, field, asdict
@@ -259,21 +260,17 @@ def parse_hero(soup: BeautifulSoup) -> HeroInfo:
     if not hero_box:
         return hero
 
-    # 血量/经验的 <title> 文字里含百分比，例如 "體力: 100%"
-    for svg in hero_box.select("svg.health title, svg.experience title"):
-        text = svg.get_text()
-        pct = re.search(r"(\d+)\s*%", text.replace("&#37;", "%"))
-        if "體力" in text or "health" in svg.parent.get("class", []):
-            pass
+    # 血量/經驗的 title 文字：體力的方向控制字元是真的 unicode，經驗則是 HTML 實體
+    # （'&#x202d;97&#x202c;&#37;'）。先 unescape 再清掉控制字元，才不會把實體裡的 202 當成數字。
+    def _pct(tag):
+        if tag is None:
+            return None
+        text = re.sub(r"[\u202a-\u202e\u2066-\u2069]", "", html_lib.unescape(tag.get_text()))
+        m = re.search(r"(\d+)\s*%", text)
+        return int(m.group(1)) if m else None
 
-    health_title = hero_box.select_one("svg.health path.title")
-    exp_title = hero_box.select_one("svg.experience path.title")
-    if health_title:
-        m = re.search(r"(\d+)", health_title.get_text())
-        hero.health_percent = int(m.group(1)) if m else None
-    if exp_title:
-        m = re.search(r"(\d+)", exp_title.get_text())
-        hero.experience_percent = int(m.group(1)) if m else None
+    hero.health_percent = _pct(hero_box.select_one("svg.health path.title"))
+    hero.experience_percent = _pct(hero_box.select_one("svg.experience path.title"))
 
     status_tag = hero_box.find(class_="heroStatus")
     hero.status_title = status_tag.get("title") if status_tag else None
