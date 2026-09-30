@@ -2,11 +2,13 @@ name: Travian 記錄與自動升級（Playwright + session cache 版）
 
 on:
   schedule:
-    # UTC。每 30 分鐘一次；GitHub 高峰時可能延遲幾分鐘。
-    # 只在 UTC 0~16 點、23 點觸發，跳過 UTC 17~23 點（= 台灣 01:00~07:00 安靜時段），
-    # 省下這 6 小時每 30 分鐘白跑一次「裝完環境才發現不動作」的浪費。
-    #- cron: "*/30 0-16,23 * * *"
-    - cron: "*/30 * * * *"
+    # UTC。GitHub 高峰時可能延遲幾分鐘。
+    # 白天與晚上（UTC 0~16、23）：每 30 分鐘一次，正常建造。
+    - cron: "*/30 0-16,23 * * *"
+    # 安靜時段（UTC 17~22 = 台灣 01:00~06:59）：每小時一次，只做 keep-alive。
+    # 完全不跑會讓 session 因閒置過久失效（實測過：cache 與種子 Cookie 都會壞），
+    # 所以改成降頻而不是停跑。腳本內由 QUIET_UTC 判斷這段時間只登入、不建造。
+    - cron: "0 17-22 * * *"
   workflow_dispatch: {}
 
 concurrency:
@@ -57,7 +59,7 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
           DRY_RUN: "0"          # 0為目前為正式模式，會真的送出升級請求
-          QUIET_UTC: "0,0"
+          QUIET_UTC: "17,23"    # UTC 17~22 只做 keep-alive；臨時要在這段時間測試建造，改成 "0,0"
         run: python travian_ci_run.py
         #run: python debug_login_flow.py
         #run: python debug_village_buildings.py
