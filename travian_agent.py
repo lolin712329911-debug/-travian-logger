@@ -43,7 +43,9 @@ RES_NAMES = ["木材", "磚塊", "鋼鐵", "穀物"]
 GID_NAMES = {1: "伐木場", 2: "泥坑", 3: "鐵礦場", 4: "農場",
              10: "倉庫", 11: "糧倉", 15: "村莊大樓", 16: "集結點", 17: "市場", 18: "大使館",
              20: "馬廄", 22: "研究院", 23: "山洞", 24: "城鎮廳", 25: "行宮", 26: "皇宮",
-             27: "寶物庫", 28: "交易所", 34: "石匠鋪", 37: "英雄宅", 45: "供水系統"}
+             27: "寶物庫", 28: "交易所", 34: "石匠鋪", 37: "英雄宅", 45: "供水系統",
+             5: "鋸木廠", 6: "磚廠", 7: "鋼鐵鑄造廠", 8: "麵粉廠", 9: "麵包店", 13: "盔甲廠",
+             14: "競技場", 19: "兵營", 21: "工場", 38: "大倉庫", 39: "大穀倉", 42: "石墻", 46: "醫院"}
 
 
 def gid_name(gid) -> str:
@@ -106,6 +108,8 @@ class State:
     queue: list = field(default_factory=list)   # 剩餘秒數列表（選擇器未驗證）
     queue_info: list = field(default_factory=list)   # 跟 queue 一一對應，例如「農場 等級 1 剩0:01:46」
     attacks: int = 0
+    movements: list = field(default_factory=list)   # parse_movements() 的結果
+    attack_eta_s: int = None                         # 最快一批來襲剩餘秒數；沒有來襲 = None
     protection_s: int = None
     plus_s: int = None
 
@@ -182,6 +186,9 @@ def parse_dorf1(html: str) -> State:
 
     # 4) 來襲：注意 .incomingTroops 圖示在沒有來襲時也存在，不能用「元素存在」判斷
     st.attacks = sum(int(x) for x in re.findall(r'incomingAttacksAmount":(\d+)', html))
+    st.movements = parse_movements(soup)
+    etas = [m["seconds"] for m in st.movements if m["kind"] == "attack" and m["seconds"] is not None]
+    st.attack_eta_s = min(etas) if etas else None
 
     # 5) 新手保護 / Plus 剩餘秒數（用中文文字比對）
     for li in soup.select("#sidebarBoxInfobox li"):
@@ -194,6 +201,35 @@ def parse_dorf1(html: str) -> State:
         elif "Plus" in txt:
             st.plus_s = int(t["value"])
     return st
+
+
+# ---------------- 來村部隊（dorf1 的 #movements 表格） ----------------
+# 已用真實頁面確認：img.att1 = 即將抵達的敵人軍隊（攻擊）、img.def1 = 即將抵達的援軍。
+# 其他 class（自己出發的部隊、掠奪等）還沒看過樣本，原樣保留在 kind 裡，不猜意思。
+_MOVEMENT_KINDS = {"att1": "attack", "def1": "reinforcement"}
+
+
+def parse_movements(soup) -> list:
+    """回傳 [{"kind": "attack"|"reinforcement"|<原 class>, "count": int|None, "seconds": int|None, "label": str}]。
+    soup 可以是 BeautifulSoup 物件或 HTML 字串。沒有 #movements 表格 = 空 list。"""
+    if isinstance(soup, str):
+        soup = BeautifulSoup(soup, "html.parser")
+    tbl = soup.find(id="movements")
+    out = []
+    if tbl is None:
+        return out
+    for tr in tbl.find_all("tr"):
+        img = tr.select_one("td.typ img")
+        if img is None:
+            continue
+        cls = next((c for c in img.get("class", []) if re.fullmatch(r"(att|def|rai|rei)\d+", c)), "")
+        label = BIDI.sub("", (tr.select_one("div.mov") or tr).get_text(" ", strip=True))
+        n = re.match(r"\s*(\d+)", label)
+        t = tr.select_one("span.timer")
+        secs = int(t["value"]) if t is not None and t.get("value", "").isdigit() else None
+        out.append({"kind": _MOVEMENT_KINDS.get(cls, cls or "unknown"),
+                    "count": int(n.group(1)) if n else None, "seconds": secs, "label": label})
+    return out
 
 
 def parse_dorf2(html: str) -> dict:
@@ -488,6 +524,23 @@ def plan(st: State):
 
 # ---------------- 建城順序 ----------------
 # 村莊中心可以蓋新建築的空地範圍。39 固定是集結點、40 固定是城牆，不拿來蓋別的。
+BUILD_CATEGORIES = {1: "基礎", 2: "軍事", 3: "資源"}   # 空地 build.php 的 &category=1/2/3 三個分頁（樣本 build1~3 已確認）
+
+
+def fetch_build_options(get, aid: int) -> list:
+    """抓空地 aid 的三個分頁並合併成一份完整可蓋清單（每筆多一個 "category" 欄位）。
+    只抓預設分頁會漏掉軍事與資源兩類（英雄宅、研究院、盔甲廠、鋸木廠…），所以一律三頁都抓。"""
+    out, seen = [], set()
+    for cat, label in BUILD_CATEGORIES.items():
+        for o in parse_build_options(get(f"build.php?id={aid}&category={cat}")):
+            if o["gid"] in seen:
+                continue
+            seen.add(o["gid"])
+            o["category"] = label
+            out.append(o)
+    return out
+
+
 FREE_SLOT_RANGE = (19, 38)
 
 
@@ -539,7 +592,7 @@ def plan_with_order(st: State, order: list, get, touched=()):
             empty = sorted(s.aid for s in slots()
                            if s.gid == 0 and lo <= s.aid <= hi and s.aid not in touched)
             cache["empty"] = empty[0] if empty else None
-            cache["opts"] = parse_build_options(get(f"build.php?id={empty[0]}")) if empty else []
+            cache["opts"] = fetch_build_options(get, empty[0]) if empty else []
         return cache["opts"], cache["empty"]
 
     fixing = set()      # 正在補的儲存建築 gid，防止「補倉庫的成本又超過容量」無限遞迴
