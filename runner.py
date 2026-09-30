@@ -22,6 +22,7 @@ Sheet 的「Config」分頁：A 欄名稱、B 欄值，例如
   max_builds    2          <- 每輪最多送出幾個升級
   target_building_level 0  <- 舊流程：倉庫/糧倉升到幾級（0 = 停用）
   build_order   res:2,15:3 <- 建城順序（有填就用這個，舊流程的兩個目標等級不再使用）
+C 欄是說明，程式不讀。分頁不存在會自動建立；缺哪一列就補哪一列（只補缺的，已填的值不動）。
 """
 import os
 import random
@@ -44,20 +45,73 @@ def _sheet():
 _FALSE_WORDS = ("false", "0", "no", "off", "否", "停")
 
 
+# Config 分頁的預設列（順序 = 補上去時的順序）。C 欄是給人看的說明，程式只讀 A、B 欄。
+_CONFIG_ORDER = ("enabled", "target_level", "queue_slots", "is_capital",
+                 "max_builds", "target_building_level", "build_order")
+_CONFIG_NOTES = {
+    "enabled": "FALSE = 緊急停止；session 失效時程式也會改成 FALSE",
+    "target_level": "資源田升到幾級（沒設 build_order 時使用）",
+    "queue_slots": "留空 = 自動偵測；填數字 = 手動指定",
+    "is_capital": "首都才填 TRUE",
+    "max_builds": "每輪最多送出幾個升級",
+    "target_building_level": "倉庫／糧倉升到幾級，0 = 停用",
+    "build_order": "建城順序，例如 res:2,10:3,15:5",
+}
+
+
+def _default_cfg() -> dict:
+    return {"enabled": True, "target_level": 2, "queue_slots": None, "max_builds": 2,
+            "target_building_level": T.TARGET_BUILDING_LEVEL, "build_order": "", "is_capital": False}
+
+
+def _cfg_cell(v) -> str:
+    """預設值轉成要寫進儲存格的純文字。"""
+    if v is None:
+        return ""
+    if isinstance(v, bool):
+        return "TRUE" if v else "FALSE"
+    return str(v)
+
+
+def _ensure_config_rows(ws, existing_rows: list) -> None:
+    """Config 缺哪一列就補哪一列（只補缺的，已有的列不覆蓋）。
+    existing_rows 是 load_config() 本來就讀進來的資料，不多打請求；
+    沒有缺列時完全不寫入。用 raw=True 寫純文字，避免 build_order 之類的值被 Sheets 誤判成時間。"""
+    have = {r[0].strip().lower() for r in existing_rows if r}
+    defaults = _default_cfg()
+    missing = [[k, _cfg_cell(defaults[k]), _CONFIG_NOTES[k]] for k in _CONFIG_ORDER if k not in have]
+    if not missing:
+        return
+    start = len(existing_rows) + 1                 # 寫在既有資料的最後一列之後
+    need_rows = start + len(missing) - 1
+    if ws.row_count < need_rows:
+        ws.add_rows(need_rows - ws.row_count)
+    if ws.col_count < 3:                           # disable() 建的 Config 只有 2 欄，C 欄要先補
+        ws.add_cols(3 - ws.col_count)
+    ws.update(range_name=f"A{start}", values=missing, raw=True)
+    print(f"Config 補上缺少的 {len(missing)} 列：{', '.join(r[0] for r in missing)}")
+
+
 def load_config() -> dict:
-    """讀 Sheet 的 Config 分頁；沒有這個分頁就用預設值（不是錯誤）。
+    """讀 Sheet 的 Config 分頁；沒有這個分頁就用預設值（不是錯誤），並順手建立分頁、補齊預設列。
+    分頁存在但缺列時，只補缺的列，不覆蓋已填的值。補齊失敗（例如權限問題）只印 log，不影響本輪。
     真正的異常（憑證、網路等）會往外拋，讓呼叫端中止本輪。"""
     from gspread.exceptions import WorksheetNotFound
 
-    cfg = {"enabled": True, "target_level": 2, "queue_slots": None, "max_builds": 2,
-           "target_building_level": T.TARGET_BUILDING_LEVEL, "build_order": "", "is_capital": False}
+    cfg = _default_cfg()
     if not _has_sheet():
         return cfg
+    sh = _sheet()
     try:
-        rows = _sheet().worksheet("Config").get_all_values()
+        ws = sh.worksheet("Config")
     except WorksheetNotFound:
-        print("Sheet 裡沒有 Config 分頁，使用預設值")
+        print("Sheet 裡沒有 Config 分頁，使用預設值，並建立分頁")
+        try:
+            _ensure_config_rows(sh.add_worksheet("Config", 20, 3), [])
+        except Exception as e:
+            print(f"建立 Config 分頁失敗（不影響本輪，使用預設值）: {e!r}")
         return cfg
+    rows = ws.get_all_values()
     for row in rows:
         if len(row) < 2:
             continue
@@ -68,6 +122,10 @@ def load_config() -> dict:
             cfg[k] = v
         elif k in ("target_level", "queue_slots", "max_builds", "target_building_level") and v.isdigit():
             cfg[k] = int(v)
+    try:
+        _ensure_config_rows(ws, rows)
+    except Exception as e:
+        print(f"補齊 Config 預設列失敗（不影響本輪）: {e!r}")
     return cfg
 
 
