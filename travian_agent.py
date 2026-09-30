@@ -7,6 +7,7 @@ Travian (ts11.x1.international) 資源田升級排程（純解析 + 決策，不
 安裝: pip install playwright beautifulsoup4 requests && playwright install chromium
 """
 import html as _html
+import json
 import os
 import random
 import re
@@ -47,6 +48,40 @@ GID_NAMES = {1: "伐木場", 2: "泥坑", 3: "鐵礦場", 4: "農場",
 
 def gid_name(gid) -> str:
     return GID_NAMES.get(gid, f"建築(gid {gid})")
+
+
+# ---------------- 資源田產量表（用於 ROI 排序）----------------
+# 標準速度、無任何加成（無綠洲、無工廠、無英雄）下，各等級的每小時總產量。
+# 來源：Travian 官方「Guide: Resources Explained」只說明「等級越高產量越高」但未列出
+# 逐級數字；逐級產量來自社群長年沿用、多個第三方工具互相印證的標準表
+# （travian-strategy-guide.com「The Law of Leveling Up」ROI 概念一致；
+# cs.cmu.edu 的舊版試算頁列出同一組「等級 1→10 累積產量 5/9/15/22/33/50/70/100/145/200」）。
+# 這張表只到 10 級（一般村莊上限，見 MAX_NON_CAPITAL_FIELD_LEVEL），且不含伺服器倍速、
+# 綠洲、工廠（鋸木廠等）加成——這些加成通常對所有田等比例套用，不太會影響「先升哪塊」
+# 的相對排序，但精確數字請以遊戲內畫面為準。11 級以上（僅首都適用）目前沒有可靠來源，
+# 缺表時 ROI 排序會自動退回舊的「花費最低」規則，不會用錯誤數字硬套。
+RESOURCE_FIELD_PRODUCTION = {0: 0, 1: 5, 2: 9, 3: 15, 4: 22, 5: 33,
+                              6: 50, 7: 70, 8: 100, 9: 145, 10: 200}
+
+# 一般（非首都）村莊資源田上限是 10 級，首都可以無限往上；來源：Travian 官方
+# 「Guide: Resources Explained」（support.travian.com/en/articles/214）：
+# 「In regular villages the maximum level of resource fields is 10.」
+# 是否為首都無法從目前解析的頁面可靠判斷，預設一律視為非首都（較保險，見 README）。
+MAX_NON_CAPITAL_FIELD_LEVEL = 10
+IS_CAPITAL = False   # Config 可用 is_capital 覆蓋（見 runner.py）；不確定就留 False
+
+
+def _roi_key(f):
+    """排序鍵：(每花費一單位資源能換到的每小時新增產量的倒數, 工期)，越小越優先。
+    也就是「花費 ÷ 每小時新增產量」，比值越小代表 CP/資源投報率越好，愈早升愈划算。
+    查不到這個等級的產量資料（超出上面那張表的範圍）時，退回舊規則（總花費、工期）,
+    確保排序永遠有結果，不會因為缺資料而卡住或報錯。"""
+    gain = RESOURCE_FIELD_PRODUCTION.get(f.level + 1)
+    base = RESOURCE_FIELD_PRODUCTION.get(f.level)
+    cost = sum(f.cost)
+    if f.gid not in (1, 2, 3, 4) or gain is None or base is None or gain <= base or cost <= 0:
+        return (2, cost, f.secs)        # 排在「有 ROI 資料」的後面，但仍是穩定排序
+    return (1, cost / (gain - base), f.secs)
 
 
 # ---------------- 資料結構 ----------------
@@ -198,6 +233,77 @@ def parse_building_cost(html: str) -> tuple:
     # 不是成本用的 "value value"（兩個）。原本兩個都用 "value value" 找，導致 secs 永遠是 0。
     dur = re.search(r'clock_medium"></i></div><span class="value ">(\d+:\d+:\d+)<', clean)
     return cost, (_hms(dur.group(1)) if dur else 0)
+
+
+# ---------------- 玩家資訊：種族 / Plus / 文化點（頁面內嵌的 viewData JSON） ----------------
+# dorf2 頁面（已用真實頁面確認）的側邊欄有一段 `viewData: {...}`，裡面的 ownPlayer 有
+# tribeId、goldFeatures.travianPlus.isActive、culturalPointsOverview。dorf1 有沒有同一段
+# 還沒確認，所以讀不到時呼叫端要改讀 dorf2，兩邊都沒有就退回保守值，不要猜。
+TRIBE_NAMES = {1: "羅馬", 2: "條頓", 3: "高盧", 6: "埃及", 7: "匈奴"}
+ROMAN_TRIBE_ID = 1
+
+
+def parse_player_info(html: str):
+    """回傳 {"tribe_id": int|None, "plus_active": bool|None, "cp": dict|None}；整段找不到回傳 None。
+    cp = {"have": 已累積, "need": 下一個村莊需要, "per_day": 每日產量, "used": 已用名額, "max": 名額上限}。"""
+    m = re.search(r"viewData:\s*(\{)", html)
+    if not m:
+        return None
+    try:
+        data, _ = json.JSONDecoder().raw_decode(html, m.start(1))
+        p = data["ownPlayer"]
+    except (ValueError, KeyError, TypeError):
+        return None
+    if not isinstance(p, dict):
+        return None
+
+    plus = ((p.get("goldFeatures") or {}).get("travianPlus") or {}).get("isActive")
+    tribe = p.get("tribeId")
+    cp = None
+    c = p.get("culturalPointsOverview")
+    if isinstance(c, dict):
+        try:
+            cp = {"have": int(c["cpProducedForNextSlot"]), "need": int(c["cpNeededForNextSlot"]),
+                  "per_day": int(c["cpProductionTotal"]),
+                  "used": int(c["usedSlots"]), "max": int(c["maxControllableVillages"])}
+        except (KeyError, TypeError, ValueError):
+            cp = None
+    return {"tribe_id": tribe if isinstance(tribe, int) else None,
+            "plus_active": plus if isinstance(plus, bool) else None,
+            "cp": cp}
+
+
+def queue_limit(tribe_id: int, plus_active: bool) -> int:
+    """施工佇列長度的推估規則：羅馬族基本 2 條（資源田、建築各一）、其他種族 1 條；
+    Plus 有效再多 1 格「等待佇列」（排隊等前一項完成，不是並行）。
+    依據：官方說明只把同時施工兩項列為羅馬族的種族加成；Plus 的多排一格對非羅馬族的效果官方頁沒寫清楚，
+    只有你這個帳號 Plus 有效時 dorf2 曾同時列出兩項施工可以佐證。所以這是推估，Config 的 queue_slots
+    填數字就會蓋過它。羅馬族的兩條是「各自一條線」，這裡只算總數，沒有分線（見 README）。"""
+    return (2 if tribe_id == ROMAN_TRIBE_ID else 1) + (1 if plus_active else 0)
+
+
+def resolve_queue_slots(manual, info):
+    """回傳 (佇列長度, 說明文字)。優先順序：Config 手動數字 > 自動偵測 > 保守值 1。"""
+    if manual is not None:
+        return manual, "Config 手動指定"
+    if info and info.get("tribe_id") is not None and info.get("plus_active") is not None:
+        tid, plus = info["tribe_id"], info["plus_active"]
+        return queue_limit(tid, plus), f"自動偵測：{TRIBE_NAMES.get(tid, f'種族 {tid}')}、Plus {'有效' if plus else '未啟用'}"
+    return 1, "偵測不到種族/Plus，保守用 1"
+
+
+def cp_summary(cp: dict) -> str:
+    """把文化點缺口整理成一行 log。"""
+    have, need, per_day = cp["have"], cp["need"], cp["per_day"]
+    slots = f"村莊名額 {cp['used']}/{cp['max']}"
+    gap = need - have
+    if gap <= 0:
+        return f"[文化點] {have}/{need}，已達標；{slots}"
+    if per_day > 0:
+        eta = f"，照目前每日 +{per_day} 約 {-(-gap // per_day)} 天（不含慶典）"
+    else:
+        eta = "，目前每日產量是 0"
+    return f"[文化點] {have}/{need}，缺 {gap}{eta}；{slots}"
 
 
 def parse_dorf2_slots(html: str) -> list:
@@ -355,18 +461,20 @@ def plan(st: State):
     if len(st.queue) >= QUEUE_SLOTS:
         return ("wait_queue", min(st.queue) + 5)
 
+    # 一般村莊資源田上限 10 級（首都無上限，見 MAX_NON_CAPITAL_FIELD_LEVEL 的說明）。
+    eff_target = TARGET_LEVEL if IS_CAPITAL else min(TARGET_LEVEL, MAX_NON_CAPITAL_FIELD_LEVEL)
     # 村莊中心建築（gid 在 BUILDING_GIDS 裡）由呼叫端先用它們自己的
     # target_building_level 篩過等級，這裡不再套用資源田的 TARGET_LEVEL，
     # 只需要成本非空、沒有正在施工即可。
     cands = [f for f in st.fields if f.cost and not f.building
-             and (f.gid in BUILDING_GIDS or f.level < TARGET_LEVEL)]
+             and (f.gid in BUILDING_GIDS or f.level < eff_target)]
     if not cands:
         return ("done",)
 
     # 糧食淨產出太低時優先升農田
     pool = [f for f in cands if f.gid == 4] if st.free_crop < 5 else cands
     pool = pool or cands
-    f = min(pool, key=lambda x: (sum(x.cost), x.secs))     # 最便宜、最快的先
+    f = min(pool, key=_roi_key)     # ROI（花費÷每小時新增產量）最好的先；建築沒有產量表，退回花費排序
 
     if any(c > m for c, m in zip(f.cost, st.cap)):
         return ("need_storage", f)                          # 成本超過倉庫容量，要先升倉庫/糧倉
@@ -463,6 +571,9 @@ def plan_with_order(st: State, order: list, get, touched=()):
         return ("build", f)
 
     def fields_action(gids, level, need_all):
+        # 資源田（gid 1~4）套用一般村莊 10 級上限；村莊中心建築（gid 不在 1~4）不受此限制。
+        if gids == (1, 2, 3, 4) and not IS_CAPITAL:
+            level = min(level, MAX_NON_CAPITAL_FIELD_LEVEL)
         fs = [f for f in st.fields if f.gid in gids]
         if not need_all and any(f.level >= level for f in fs):
             return None                       # 前置條件只要「有一塊」達標就算
@@ -477,7 +588,7 @@ def plan_with_order(st: State, order: list, get, touched=()):
         pool = [f for f in avail if f.gid == 4] if st.free_crop < 5 else avail
         pool = pool or avail
         if need_all:
-            f = min(pool, key=lambda x: (sum(x.cost), x.secs))
+            f = min(pool, key=_roi_key)   # res:N 這種「全部升到位」的目標：ROI 最好的先
         else:
             f = min(pool, key=lambda x: (-x.level, sum(x.cost), x.secs))   # 補條件：挑最接近的
         return decide(f)
