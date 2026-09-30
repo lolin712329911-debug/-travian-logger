@@ -189,12 +189,13 @@ def _hours(sec):
     return round(sec / 3600, 1) if sec is not None else None
 
 
-def log_village_snapshot(d1: str, get, st) -> None:
+def log_village_snapshot(d1: str, get, st):
     """每輪把村莊數據記到 Sheet1（唯讀、失敗不影響升級）。
     數字以 dorf1 的 var resources（st）為準補齊：Playwright 抓到的 stockBar title 可能被前端 JS 清空，
     產量會變 0；只在解析結果是空／0 時才用 st 補，其他維持原本 scrape_and_log 的格式。"""
     if not _has_sheet():
-        return
+        return None
+    d2 = None     # 結尾回傳給 log_village_structure 用（dorf2 只抓一次）
     try:
         from travian_parser import parse_village_page, ResourceInfo
         from scrape_and_log import build_row
@@ -215,11 +216,26 @@ def log_village_snapshot(d1: str, get, st) -> None:
                 ov.resources[key] = r
             if ov.free_crop is None:
                 ov.free_crop = st.free_crop
-        row = build_row(ov, "；".join(st.queue_info), _hours(st.plus_s), _hours(st.protection_s))
+        eta_min = round(st.attack_eta_s / 60, 1) if st.attack_eta_s is not None else None
+        row = build_row(ov, "；".join(st.queue_info), _hours(st.plus_s), _hours(st.protection_s),
+                        attacks=st.attacks, attack_eta_min=eta_min)
         append_row(row, worksheet_name="Sheet1")
         print("已記錄村莊數據到 Sheet1")
     except Exception as e:
         print(f"寫入 Sheet1 失敗（不影響升級）: {e!r}")
+    return d2
+
+
+def log_village_structure(d1: str, d2, get, st) -> None:
+    """每輪把資源田 / 村莊建築 / 空地可蓋清單同步到 Fields / Buildings / Buildable / Changes（見 village_log.py）。
+    唯讀、失敗不影響升級。"""
+    if not _has_sheet():
+        return
+    try:
+        import village_log as V
+        V.log_structure(_sheet(), d2, get, st)
+    except Exception as e:
+        print(f"記錄村莊結構失敗（不影響升級）: {e!r}")
 
 
 # ---------------- 決策 → 人看得懂的說明 ----------------
@@ -360,7 +376,8 @@ def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
             _setup_player(cfg, d1, get)           # 決定佇列長度、印文化點（只讀）
         st = T.parse_dorf1(d1)
         if i == 0:
-            log_village_snapshot(d1, get, st)     # 每輪記一次村莊數據到 Sheet1
+            d2 = log_village_snapshot(d1, get, st)     # 每輪記一次村莊數據到 Sheet1
+            log_village_structure(d1, d2, get, st)     # 資源田/建築/可蓋清單，有變動才寫
         for f in st.fields:                       # 本輪已送出的田，不要重複選
             if f.aid in touched:
                 f.building = True
@@ -376,7 +393,8 @@ def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
 
         print(f"[{mode}] 決策: {action[0]}  佇列={st.queue}  存量={st.stock}  來襲={st.attacks}")
         if st.attacks:
-            T.notify(f"偵測到來襲 {st.attacks} 波！請手動處理")   # 目前只寫 log，見 README
+            eta = f"，最快 {_mins(st.attack_eta_s)} 後抵達" if st.attack_eta_s is not None else ""
+            T.notify(f"偵測到來襲 {st.attacks} 波{eta}！請手動處理")   # 目前只寫 log，見 README
         if action[0] == "need_storage":
             T.notify(f"slot {action[1].aid} 的成本超過倉庫容量 {st.cap}，請先升倉庫/糧倉")
         elif action[0] == "blocked":
