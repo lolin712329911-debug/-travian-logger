@@ -12,12 +12,13 @@ auto_build.py（純 requests）和 travian_ci_run.py（Playwright）只負責「
 
 環境變數：
   GOOGLE_SERVICE_ACCOUNT_JSON, GOOGLE_SHEET_ID   選填（有的話讀 Config、寫 Actions）
-  QUIET_UTC   不運作的 UTC 小時區間 "起,迄"，預設 "17,23"（台灣 01:00~07:00）
+  QUIET_UTC   不運作的 UTC 小時區間 "起,迄"，預設 "17,23"（台灣 01:00~06:59；迄不含）
 
 Sheet 的「Config」分頁：A 欄名稱、B 欄值，例如
   enabled       TRUE       <- 改成 FALSE 就是緊急停止開關
   target_level  2
-  queue_slots   2          <- Plus 到期後改 1
+  queue_slots   （留空/auto）<- 自動偵測：羅馬族 2、其他 1，Plus 有效再 +1；填數字就是手動指定（優先）
+  is_capital    FALSE      <- 首都無資源田等級上限；非首都留 FALSE 或不填，會卡在 10 級（見 travian_agent.py）
   max_builds    2          <- 每輪最多送出幾個升級
   target_building_level 0  <- 舊流程：倉庫/糧倉升到幾級（0 = 停用）
   build_order   res:2,15:3 <- 建城順序（有填就用這個，舊流程的兩個目標等級不再使用）
@@ -40,13 +41,16 @@ def _sheet():
     return _get_credentials().open_by_key(os.environ["GOOGLE_SHEET_ID"])
 
 
+_FALSE_WORDS = ("false", "0", "no", "off", "否", "停")
+
+
 def load_config() -> dict:
     """讀 Sheet 的 Config 分頁；沒有這個分頁就用預設值（不是錯誤）。
     真正的異常（憑證、網路等）會往外拋，讓呼叫端中止本輪。"""
     from gspread.exceptions import WorksheetNotFound
 
-    cfg = {"enabled": True, "target_level": 2, "queue_slots": 2, "max_builds": 2,
-           "target_building_level": T.TARGET_BUILDING_LEVEL, "build_order": ""}
+    cfg = {"enabled": True, "target_level": 2, "queue_slots": None, "max_builds": 2,
+           "target_building_level": T.TARGET_BUILDING_LEVEL, "build_order": "", "is_capital": False}
     if not _has_sheet():
         return cfg
     try:
@@ -58,8 +62,8 @@ def load_config() -> dict:
         if len(row) < 2:
             continue
         k, v = row[0].strip().lower(), row[1].strip()
-        if k == "enabled":
-            cfg[k] = v.lower() not in ("false", "0", "no", "off", "否", "停")
+        if k in ("enabled", "is_capital"):
+            cfg[k] = v.lower() not in _FALSE_WORDS
         elif k == "build_order":
             cfg[k] = v
         elif k in ("target_level", "queue_slots", "max_builds", "target_building_level") and v.isdigit():
@@ -93,7 +97,8 @@ def log_action(row: list):
         ws.append_row(row, value_input_option="USER_ENTERED")
     except Exception as e:
         print(f"寫入 Actions 分頁失敗（不影響升級）: {e!r}")
-      
+
+
 def disable(reason: str):
     """偵測到 session / Cookie 失效等需要人工介入的狀況時呼叫：
     把 Config 的 enabled 設成 FALSE，讓之後每一輪一讀到 cfg 就直接跳過，
@@ -120,6 +125,7 @@ def disable(reason: str):
         print("已將 Config 的 enabled 設為 FALSE，排程會自動跳過，直到手動改回 TRUE")
     except Exception as e:
         print(f"嘗試寫入 Config 停用失敗（不影響本輪判定為失敗）: {e!r}")
+
 
 def _hours(sec):
     return round(sec / 3600, 1) if sec is not None else None
@@ -245,11 +251,35 @@ def _now() -> str:
     return datetime.now(timezone.utc).strftime("%F %T")
 
 
+# ---------------- 玩家資訊：佇列長度 + 文化點 ----------------
+def _setup_player(cfg: dict, d1: str, get) -> None:
+    """讀種族 / Plus / 文化點：決定 T.QUEUE_SLOTS，並印出文化點缺口。
+    這一步只讀資料，任何一步失敗都只會退回保守值，不會影響升級流程。"""
+    try:
+        info = T.parse_player_info(d1)
+        if info is None:             # dorf1 沒有內嵌資料時改讀 dorf2（真實 dorf2 頁面已確認有）
+            try:
+                info = T.parse_player_info(get("dorf2.php"))
+            except Exception as e:
+                print(f"讀 dorf2 取得玩家資訊失敗（不影響升級）: {e!r}")
+        n, why = T.resolve_queue_slots(cfg.get("queue_slots"), info)
+        T.QUEUE_SLOTS = n
+        print(f"佇列長度 = {n}（{why}）")
+        if info and info.get("cp"):
+            print(T.cp_summary(info["cp"]))
+        else:
+            print("[文化點] 讀不到（頁面沒有內嵌資料）")
+    except Exception as e:
+        print(f"讀取玩家資訊失敗，佇列長度沿用 {T.QUEUE_SLOTS}（不影響升級）: {e!r}")
+
+
 # ---------------- 主迴圈 ----------------
 def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
                     first_dorf1: str = None, sleep=time.sleep) -> int:
     """跑一輪：最多送出 cfg["max_builds"] 個升級。回傳結束碼（0 正常、1 需要人看）。"""
-    T.TARGET_LEVEL, T.QUEUE_SLOTS = cfg["target_level"], cfg["queue_slots"]
+    T.TARGET_LEVEL = cfg["target_level"]
+    T.IS_CAPITAL = bool(cfg.get("is_capital"))
+    T.QUEUE_SLOTS = cfg["queue_slots"] if cfg.get("queue_slots") is not None else 1   # 偵測前的保守值
 
     order = []
     if cfg.get("build_order"):
@@ -268,6 +298,8 @@ def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
         if 'id="stockBar"' not in d1:
             disable("抓到的不是村莊頁：session / Cookie 可能已失效，請重新複製 Cookie 更新 Secret")
             return 1
+        if i == 0:
+            _setup_player(cfg, d1, get)           # 決定佇列長度、印文化點（只讀）
         st = T.parse_dorf1(d1)
         if i == 0:
             log_village_snapshot(d1, get, st)     # 每輪記一次村莊數據到 Sheet1
