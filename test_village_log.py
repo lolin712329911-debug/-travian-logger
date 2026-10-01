@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""離線測試 village_log.py：用假的 Google Sheet（記憶體）+ 範例頁面 dorf1/dorf2/build1~3.txt。
+"""離線測試 village_log.py：用假的 Google Sheet（記憶體）+ 範例頁面 tests/fixtures/ 裡的 dorf1/dorf2/build1~3.txt。
 用法：python test_village_log.py    （不需要網路、不需要 Google 憑據）"""
 import copy
 import re
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 import travian_agent as T
 import village_log as V
@@ -53,8 +54,11 @@ class FakeSheet:
         return self.tabs[title]
 
 
+FIXTURES = Path(__file__).resolve().parent / "tests" / "fixtures"
+
+
 def read(f):
-    return open(f, encoding="utf-8", errors="replace").read()
+    return open(FIXTURES / f, encoding="utf-8", errors="replace").read()
 
 
 D1, D2 = read("dorf1.txt"), read("dorf2.txt")

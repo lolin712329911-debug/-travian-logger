@@ -2,15 +2,10 @@
 Travian (ts11.x1.international) 資源田升級排程（決策，不含網路 / Sheet）
 - 頁面解析已搬到 travian_pages.py、常數在 travian_const.py、資料結構在 travian_models.py（這裡重新匯出舊名稱）
 - plan():        純規則決策（不用 LLM）
-- run():         Playwright 持久登入 + 迴圈；DRY_RUN=True 時只印出決定，不點擊
-
-安裝: pip install playwright beautifulsoup4 requests && playwright install chromium
+- 本機 Playwright 持久登入迴圈 run() 與它的設定（BASE、DRY_RUN、QUIET_HOURS、UPGRADE_BUTTON、PROFILE_DIR）
+  已移到 tools/legacy/agent_run.py；Actions 實際執行的是 travian_ci_run.py + runner.py
 """
-import os
-import random
 import re
-import time
-from datetime import datetime
 
 from travian_const import (  # noqa: F401  重新匯出：runner / village_log 等仍用 T.xxx 存取
     BIDI, BUILD_CATEGORIES, BUILDING_GIDS, DEFAULT_TARGET_BUILDING_LEVEL, FREE_SLOT_RANGE,
@@ -27,13 +22,8 @@ from travian_pages import (  # noqa: F401  重新匯出：runner / village_log /
 )
 
 # ---------------- 設定 ----------------
-BASE = "https://ts11.x1.international.travian.com"
-DRY_RUN = True            # 確認決策正確後才改 False
-TARGET_LEVEL = 2          # 資源田先升到這個等級
-QUEUE_SLOTS = 2           # Plus 有效時 2；Plus 到期後請改 1（未驗證，請以遊戲內為準）
-QUIET_HOURS = (2, 7)      # 這段伺服器時間不運作
-UPGRADE_BUTTON = "button.textButtonV1.green.build"   # ← 未驗證，需用 build.php 頁面確認
-PROFILE_DIR = "./travian_profile"
+TARGET_LEVEL = 2          # 資源田先升到這個等級（runner 每輪用 T.TARGET_LEVEL = ... 覆蓋，必須留在這個檔案）
+QUEUE_SLOTS = 2           # runner 的 _setup_player 會依種族 / Plus 自動覆蓋；Config 的 queue_slots 填數字則優先
 
 # 0 = 停用村莊中心建築自動升級（預設，因為只是剛驗證過解析，還沒實際跑過）。
 # 要啟用時設一個 >0 的目標等級即可；Sheet 的 Config 分頁可用
@@ -279,65 +269,3 @@ def plan_with_order(st: State, order: list, get, touched=()):
         if r is not None:
             return r
     return ("done",)
-
-
-# ---------------- 執行 ----------------
-def run():
-    from playwright.sync_api import sync_playwright
-
-    with sync_playwright() as p:
-        ctx = p.chromium.launch_persistent_context(PROFILE_DIR, headless=False)
-        page = ctx.pages[0] if ctx.pages else ctx.new_page()
-        page.goto(f"{BASE}/dorf1.php")
-        input("第一次請在瀏覽器手動登入，看到資源田畫面後按 Enter ... ")
-
-        last_attacks = 0
-        while True:
-            if QUIET_HOURS[0] <= datetime.now().hour < QUIET_HOURS[1]:   # 注意：這是本機時間
-                time.sleep(random.uniform(900, 1500))
-                continue
-
-            page.goto(f"{BASE}/dorf1.php")
-            page.wait_for_load_state("networkidle")
-            if page.locator("#stockBar").count() == 0:                    # 被登出/驗證碼/改版
-                notify("找不到 #stockBar：可能被登出或出現驗證碼，已停止")
-                return
-
-            html = page.content()
-            st = parse_dorf1(html)
-            if not any(f.cost for f in st.fields):                        # title 被前端 JS 拿掉時的備案
-                html = ctx.request.get(f"{BASE}/dorf1.php").text()
-                st = parse_dorf1(html)
-
-            if st.attacks and st.attacks != last_attacks:
-                notify(f"偵測到來襲 {st.attacks} 波！請手動處理")
-            last_attacks = st.attacks
-
-            action = plan(st)
-            sleep_s = 600
-            if action[0] == "build":
-                f = action[1]
-                notify(f"{'[DRY] ' if DRY_RUN else ''}升級 slot {f.aid} (gid {f.gid}) L{f.level}->L{f.level + 1} 成本 {f.cost}")
-                if not DRY_RUN:
-                    page.goto(f"{BASE}/build.php?id={f.aid}")
-                    page.locator(UPGRADE_BUTTON).first.click()
-                    page.wait_for_load_state("networkidle")
-                sleep_s = random.uniform(20, 60)
-            elif action[0] in ("wait_res", "wait_queue"):
-                sleep_s = action[1]
-            elif action[0] == "need_storage":
-                notify(f"slot {action[1].aid} 的成本超過倉庫容量 {st.cap}，請先升倉庫/糧倉")
-                return
-            elif action[0] == "done":
-                notify("資源田都到目標等級了")
-                return
-
-            # 新手保護期間不需要密集查來襲；結束後改成最多 10 分鐘一輪
-            cap = 1800 if (st.protection_s or 0) > 0 else 600
-            sleep_s = min(max(sleep_s, 60), cap) * random.uniform(0.9, 1.3)
-            print(f"下一輪約 {int(sleep_s)} 秒後")
-            time.sleep(sleep_s)
-
-
-if __name__ == "__main__":
-    run()
