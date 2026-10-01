@@ -32,157 +32,12 @@ from datetime import datetime, timezone
 import travian_agent as T
 
 
-# ---------------- Google Sheets ----------------
-def _has_sheet() -> bool:
-    return bool(os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON") and os.getenv("GOOGLE_SHEET_ID"))
+# Sheet 讀寫已搬到 sheets_writer.py；load_config / disable / log_action 在這裡重新匯出，
+# 入口檔（auto_build.py、travian_ci_run.py）仍用 runner.xxx 存取，等步驟 7 再改成直接 import。
+from sheets_writer import (  # noqa: F401
+    disable, has_sheet, load_config, log_action, open_sheet,
+)
 
-
-def _sheet():
-    from sheets_writer import _get_credentials
-    return _get_credentials().open_by_key(os.environ["GOOGLE_SHEET_ID"])
-
-
-_FALSE_WORDS = ("false", "0", "no", "off", "否", "停")
-
-
-# Config 分頁的預設列（順序 = 補上去時的順序）。C 欄是給人看的說明，程式只讀 A、B 欄。
-_CONFIG_ORDER = ("enabled", "target_level", "queue_slots", "is_capital",
-                 "max_builds", "target_building_level", "build_order")
-_CONFIG_NOTES = {
-    "enabled": "FALSE = 緊急停止；session 失效時程式也會改成 FALSE",
-    "target_level": "資源田升到幾級（沒設 build_order 時使用）",
-    "queue_slots": "留空 = 自動偵測；填數字 = 手動指定",
-    "is_capital": "首都才填 TRUE",
-    "max_builds": "每輪最多送出幾個升級",
-    "target_building_level": "倉庫／糧倉升到幾級，0 = 停用",
-    "build_order": "建城順序，例如 res:2,10:3,15:5",
-}
-
-
-def _default_cfg() -> dict:
-    return {"enabled": True, "target_level": 2, "queue_slots": None, "max_builds": 2,
-            "target_building_level": T.TARGET_BUILDING_LEVEL, "build_order": "", "is_capital": False}
-
-
-def _cfg_cell(v) -> str:
-    """預設值轉成要寫進儲存格的純文字。"""
-    if v is None:
-        return ""
-    if isinstance(v, bool):
-        return "TRUE" if v else "FALSE"
-    return str(v)
-
-
-def _ensure_config_rows(ws, existing_rows: list) -> None:
-    """Config 缺哪一列就補哪一列（只補缺的，已有的列不覆蓋）。
-    existing_rows 是 load_config() 本來就讀進來的資料，不多打請求；
-    沒有缺列時完全不寫入。用 raw=True 寫純文字，避免 build_order 之類的值被 Sheets 誤判成時間。"""
-    have = {r[0].strip().lower() for r in existing_rows if r}
-    defaults = _default_cfg()
-    missing = [[k, _cfg_cell(defaults[k]), _CONFIG_NOTES[k]] for k in _CONFIG_ORDER if k not in have]
-    if not missing:
-        return
-    start = len(existing_rows) + 1                 # 寫在既有資料的最後一列之後
-    need_rows = start + len(missing) - 1
-    if ws.row_count < need_rows:
-        ws.add_rows(need_rows - ws.row_count)
-    if ws.col_count < 3:                           # disable() 建的 Config 只有 2 欄，C 欄要先補
-        ws.add_cols(3 - ws.col_count)
-    ws.update(range_name=f"A{start}", values=missing, raw=True)
-    print(f"Config 補上缺少的 {len(missing)} 列：{', '.join(r[0] for r in missing)}")
-
-
-def load_config() -> dict:
-    """讀 Sheet 的 Config 分頁；沒有這個分頁就用預設值（不是錯誤），並順手建立分頁、補齊預設列。
-    分頁存在但缺列時，只補缺的列，不覆蓋已填的值。補齊失敗（例如權限問題）只印 log，不影響本輪。
-    真正的異常（憑證、網路等）會往外拋，讓呼叫端中止本輪。"""
-    from gspread.exceptions import WorksheetNotFound
-
-    cfg = _default_cfg()
-    if not _has_sheet():
-        return cfg
-    sh = _sheet()
-    try:
-        ws = sh.worksheet("Config")
-    except WorksheetNotFound:
-        print("Sheet 裡沒有 Config 分頁，使用預設值，並建立分頁")
-        try:
-            _ensure_config_rows(sh.add_worksheet("Config", 20, 3), [])
-        except Exception as e:
-            print(f"建立 Config 分頁失敗（不影響本輪，使用預設值）: {e!r}")
-        return cfg
-    rows = ws.get_all_values()
-    for row in rows:
-        if len(row) < 2:
-            continue
-        k, v = row[0].strip().lower(), row[1].strip()
-        if k in ("enabled", "is_capital"):
-            cfg[k] = v.lower() not in _FALSE_WORDS
-        elif k == "build_order":
-            cfg[k] = v
-        elif k in ("target_level", "queue_slots", "max_builds", "target_building_level") and v.isdigit():
-            cfg[k] = int(v)
-    try:
-        _ensure_config_rows(ws, rows)
-    except Exception as e:
-        print(f"補齊 Config 預設列失敗（不影響本輪）: {e!r}")
-    return cfg
-
-
-ACTIONS_HEADER = ["時間(UTC)", "動作", "slot", "gid", "目前等級", "成本", "模式", "結果", "升級項目 / 說明"]
-_actions_header_ok = False
-
-
-def log_action(row: list):
-    global _actions_header_ok
-    if not _has_sheet():
-        return
-    try:
-        sh = _sheet()
-        try:
-            ws = sh.worksheet("Actions")
-        except Exception:
-            ws = sh.add_worksheet("Actions", 1000, len(ACTIONS_HEADER) + 1)
-            ws.append_row(ACTIONS_HEADER)
-            _actions_header_ok = True
-        if not _actions_header_ok:
-            # 舊分頁只有 8 欄：補欄並更新表頭，舊資料列不動
-            if ws.row_values(1) != ACTIONS_HEADER:
-                if ws.col_count < len(ACTIONS_HEADER):
-                    ws.add_cols(len(ACTIONS_HEADER) - ws.col_count)
-                ws.update(range_name="A1", values=[ACTIONS_HEADER])
-            _actions_header_ok = True
-        ws.append_row(row, value_input_option="USER_ENTERED")
-    except Exception as e:
-        print(f"寫入 Actions 分頁失敗（不影響升級）: {e!r}")
-
-
-def disable(reason: str):
-    """偵測到 session / Cookie 失效等需要人工介入的狀況時呼叫：
-    把 Config 的 enabled 設成 FALSE，讓之後每一輪一讀到 cfg 就直接跳過，
-    不會再嘗試登入、也不會每 30 分鐘重複失敗。要恢復請手動把 enabled 改回 TRUE。
-    沒有連 Sheet 時沒辦法持久化，下一輪還是會照樣重試。"""
-    T.notify(reason)
-    if not _has_sheet():
-        print("沒有連 Google Sheet，無法自動停用，下一輪還會再試一次")
-        return
-    from gspread.exceptions import WorksheetNotFound
-    try:
-        sh = _sheet()
-        try:
-            ws = sh.worksheet("Config")
-        except WorksheetNotFound:
-            ws = sh.add_worksheet("Config", 10, 2)
-        rows = ws.get_all_values()
-        for i, row in enumerate(rows, start=1):
-            if row and row[0].strip().lower() == "enabled":
-                ws.update(range_name=f"B{i}", values=[["FALSE"]])
-                break
-        else:
-            ws.append_row(["enabled", "FALSE"])
-        print("已將 Config 的 enabled 設為 FALSE，排程會自動跳過，直到手動改回 TRUE")
-    except Exception as e:
-        print(f"嘗試寫入 Config 停用失敗（不影響本輪判定為失敗）: {e!r}")
 
 
 def _hours(sec):
@@ -193,7 +48,7 @@ def log_village_snapshot(d1: str, get, st):
     """每輪把村莊數據記到 Sheet1（唯讀、失敗不影響升級）。
     數字以 dorf1 的 var resources（st）為準補齊：Playwright 抓到的 stockBar title 可能被前端 JS 清空，
     產量會變 0；只在解析結果是空／0 時才用 st 補，其他維持原本 scrape_and_log 的格式。"""
-    if not _has_sheet():
+    if not has_sheet():
         return None
     d2 = None     # 結尾回傳給 log_village_structure 用（dorf2 只抓一次）
     try:
@@ -229,11 +84,11 @@ def log_village_snapshot(d1: str, get, st):
 def log_village_structure(d1: str, d2, get, st) -> None:
     """每輪把資源田 / 村莊建築 / 空地可蓋清單同步到 Fields / Buildings / Buildable / Changes（見 village_log.py）。
     唯讀、失敗不影響升級。"""
-    if not _has_sheet():
+    if not has_sheet():
         return
     try:
         import village_log as V
-        V.log_structure(_sheet(), d2, get, st)
+        V.log_structure(open_sheet(), d2, get, st)
     except Exception as e:
         print(f"記錄村莊結構失敗（不影響升級）: {e!r}")
 
