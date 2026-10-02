@@ -1,9 +1,10 @@
 """
-Travian (ts11.x1.international) 資源田升級排程（決策，不含網路 / Sheet）
-- 頁面解析已搬到 travian_pages.py、常數在 travian_const.py、資料結構在 travian_models.py（這裡重新匯出舊名稱）
-- plan():        純規則決策（不用 LLM）
-- 本機 Playwright 持久登入迴圈 run() 與它的設定（BASE、DRY_RUN、QUIET_HOURS、UPGRADE_BUTTON、PROFILE_DIR）
-  已移到 tools/legacy/agent_run.py；Actions 實際執行的是 travian_ci_run.py + runner.py
+Travian (ts11.x1.international) 資源田 / 建城決策（不含網路、不含 Sheet）
+- 頁面解析在 travian_pages.py、常數在 travian_const.py、資料結構在 travian_models.py（這裡重新匯出舊名稱）
+- plan():            舊流程，資源田 + 倉庫/糧倉的規則決策（不用 LLM）
+- plan_with_order(): 依 build_order 建城的規則決策
+- 可變設定（TARGET_LEVEL、QUEUE_SLOTS、IS_CAPITAL）由 runner.py 每輪賦值，必須留在這個模組
+- 抓頁面與送出升級在 travian_ci_run.py / auto_build.py；流程在 runner.py
 """
 import re
 
@@ -22,8 +23,8 @@ from travian_pages import (  # noqa: F401  重新匯出：runner / village_log /
 )
 
 # ---------------- 設定 ----------------
-TARGET_LEVEL = 2          # 資源田先升到這個等級（runner 每輪用 T.TARGET_LEVEL = ... 覆蓋，必須留在這個檔案）
-QUEUE_SLOTS = 2           # runner 的 _setup_player 會依種族 / Plus 自動覆蓋；Config 的 queue_slots 填數字則優先
+TARGET_LEVEL = 2          # 資源田先升到這個等級
+QUEUE_SLOTS = 2           # 預設值；runner._setup_player() 每輪依種族 / Plus 自動偵測後賦值（Config 可手動覆蓋）
 
 # 0 = 停用村莊中心建築自動升級（預設，因為只是剛驗證過解析，還沒實際跑過）。
 # 要啟用時設一個 >0 的目標等級即可；Sheet 的 Config 分頁可用
