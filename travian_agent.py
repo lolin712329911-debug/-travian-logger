@@ -1,6 +1,6 @@
 """
 Travian (ts11.x1.international) 資源田 / 建城決策（不含網路、不含 Sheet）
-- 頁面解析在 travian_pages.py、常數在 travian_const.py、資料結構在 travian_models.py（這裡重新匯出舊名稱）
+- 頁面解析在 travian_pages.py、常數在 travian_const.py、資料結構在 travian_models.py（不再重新匯出，呼叫端請直接 import）
 - plan():            舊流程，資源田 + 倉庫/糧倉的規則決策（不用 LLM）
 - plan_with_order(): 依 build_order 建城的規則決策
 - 可變設定（TARGET_LEVEL、QUEUE_SLOTS、IS_CAPITAL）由 runner.py 每輪賦值，必須留在這個模組
@@ -8,19 +8,12 @@ Travian (ts11.x1.international) 資源田 / 建城決策（不含網路、不含
 """
 import re
 
-from travian_const import (  # noqa: F401  重新匯出：runner / village_log 等仍用 T.xxx 存取
-    BIDI, BUILD_CATEGORIES, BUILDING_GIDS, DEFAULT_TARGET_BUILDING_LEVEL, FREE_SLOT_RANGE,
-    GID_NAMES, MAX_NON_CAPITAL_FIELD_LEVEL, RES_NAMES, RESOURCE_FIELD_PRODUCTION,
-    ROMAN_TRIBE_ID, TRIBE_NAMES, gid_name,
+from travian_const import (
+    BUILDING_GIDS, DEFAULT_TARGET_BUILDING_LEVEL, FREE_SLOT_RANGE, MAX_NON_CAPITAL_FIELD_LEVEL,
+    RESOURCE_FIELD_PRODUCTION, ROMAN_TRIBE_ID, TRIBE_NAMES,
 )
-from travian_models import Field, Slot, State  # noqa: F401
-from notify import notify  # noqa: F401  重新匯出：runner 仍用 T.notify
-from travian_pages import (  # noqa: F401  重新匯出：runner / village_log / debug_*.py 仍用 T.xxx 存取
-    _MOVEMENT_KINDS, _clean_text, _hms, _js_dict, _mask_checksum, _queue_label, _rejected_seen,
-    _safe_build_url, _to_int0, fetch_build_options, find_upgrade_url, parse_build_options,
-    parse_building_cost, parse_dorf1, parse_dorf2, parse_dorf2_slots, parse_movements,
-    parse_player_info,
-)
+from travian_models import Field, State
+from travian_pages import fetch_build_options, parse_building_cost, parse_dorf2_slots
 
 # ---------------- 設定 ----------------
 TARGET_LEVEL = 2          # 資源田先升到這個等級
@@ -65,20 +58,6 @@ def resolve_queue_slots(manual, info):
         tid, plus = info["tribe_id"], info["plus_active"]
         return queue_limit(tid, plus), f"自動偵測：{TRIBE_NAMES.get(tid, f'種族 {tid}')}、Plus {'有效' if plus else '未啟用'}"
     return 1, "偵測不到種族/Plus，保守用 1"
-
-
-def cp_summary(cp: dict) -> str:
-    """把文化點缺口整理成一行 log。"""
-    have, need, per_day = cp["have"], cp["need"], cp["per_day"]
-    slots = f"村莊名額 {cp['used']}/{cp['max']}"
-    gap = need - have
-    if gap <= 0:
-        return f"[文化點] {have}/{need}，已達標；{slots}"
-    if per_day > 0:
-        eta = f"，照目前每日 +{per_day} 約 {-(-gap // per_day)} 天（不含慶典）"
-    else:
-        eta = "，目前每日產量是 0"
-    return f"[文化點] {have}/{need}，缺 {gap}{eta}；{slots}"
 
 
 # ---------------- 決策 ----------------

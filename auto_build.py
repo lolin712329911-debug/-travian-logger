@@ -18,7 +18,7 @@ import sys
 import requests
 
 import runner as R
-from travian_agent import find_upgrade_url  # noqa: F401  舊名稱轉發：debug_village_buildings.py 用 AB.find_upgrade_url
+from travian_pages import find_upgrade_url  # noqa: F401  （步驟 8 會連同這支一起移除）
 
 BASE = os.getenv("TRAVIAN_BASE_URL", "").rstrip("/")
 COOKIE = os.getenv("TRAVIAN_COOKIE", "")
