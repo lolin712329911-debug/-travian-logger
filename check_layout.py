@@ -34,7 +34,7 @@ MUST_DEFINE = {
     "travian_agent.py": ["TARGET_LEVEL", "QUEUE_SLOTS", "IS_CAPITAL", "_roi_key", "queue_limit",
                          "resolve_queue_slots", "plan", "parse_build_order", "plan_with_order"],
     "notify.py": ["notify"],
-    "sheets_writer.py": ["open_sheet", "_has_sheet", "load_config", "log_action", "disable",
+    "sheets_writer.py": ["open_sheet", "has_sheet", "load_config", "log_action", "disable",
                          "append_row", "HEADER_ROW"],
     "runner.py": ["run_build_cycle", "in_quiet_hours", "get_cfg", "cp_summary",
                   "log_village_snapshot", "log_village_structure"],
@@ -167,10 +167,12 @@ def main() -> int:
                 fail(f"{stem}.py import {mod}，不在允許清單（允許：{', '.join(sorted(allowed)) or '無'}）")
             if stem in LOW_LEVEL and mod in FORBIDDEN_3RD:
                 fail(f"{stem}.py 是低層模組，不該 import {mod}")
-    # 還沒列入規劃、也不是 debug/test 的檔案
-    for stem in py:
+    # 還沒列入規劃、也不是 debug/test 的檔案：同時列出誰 import 了它，判斷能不能刪或移走
+    for stem in sorted(py):
         if stem not in ALLOWED and not stem.startswith(("debug_", "test_", "check_")):
-            warn(f"{stem}.py 不在規劃的檔案分類裡（確認是不是該刪或該歸類）")
+            users = sorted(o for o, t in trees.items()
+                           if o != stem and any(m == stem for m, _, _ in imports(t)))
+            warn(f"{stem}.py 不在規劃的檔案分類裡；被這些檔案 import：{', '.join(users) or '沒有人'}")
 
     print("[6] 可變設定只在 travian_agent 賦值")
     for stem, tree in trees.items():
