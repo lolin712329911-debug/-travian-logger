@@ -25,6 +25,7 @@ from pathlib import Path
 
 import runner as R
 import travian_pages as P
+from notify import notify
 from sheets_writer import disable
 
 BASE = os.getenv("TRAVIAN_BASE_URL", "").rstrip("/")
@@ -129,7 +130,11 @@ def main() -> int:
                 msg = "cache 的 session 已失效，且沒有設定 TRAVIAN_SEED_COOKIE 可以救援，請設定後重跑"
             else:
                 msg = "抓到的不是村莊頁：種子 Cookie 也已失效，請重新登入複製 Cookie 更新 TRAVIAN_SEED_COOKIE"
-            disable(msg)
+            if dry:
+                # DRY（測試用）不動共用 Sheet 的 Config：否則分支上的測試失敗會把正式排程一起停掉
+                notify(msg + "（DRY 模式：不修改 Config 的 enabled）")
+            else:
+                disable(msg)
             browser.close()
             return 1
 
