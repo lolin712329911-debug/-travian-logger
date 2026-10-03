@@ -6,7 +6,7 @@ import copy
 import re
 from datetime import datetime, timedelta, timezone
 
-import travian_agent as T
+import travian_pages as P
 import village_log as V
 
 
@@ -78,7 +78,7 @@ def show(sh, name, n=None):
 
 
 sh = FakeSheet()
-st = T.parse_dorf1(D1)
+st = P.parse_dorf1(D1)
 T0 = "2026-09-30 15:00:00"
 
 print("\n[1] 第一輪：全部初始化")
@@ -104,18 +104,18 @@ print("\n[3] 第三輪：資源田升級、空地蓋了建築、石墻完工 →
 st3 = copy.deepcopy(st)
 st3.fields[0].level += 1
 st3.fields[1].building = True
-real_parse = T.parse_dorf2_slots
+real_parse = P.parse_dorf2_slots
 slots = real_parse(D2)
 empty = next(s for s in slots if s.gid == 0 and 19 <= s.aid <= 38)
 empty.gid, empty.name, empty.level, empty.building = 17, "市場", 0, True
 wall = [s for s in slots if s.aid == 40]
 for s in wall:
     s.level, s.building = 1, False
-T.parse_dorf2_slots = lambda html: slots
+P.parse_dorf2_slots = lambda html: slots
 try:
     ch = V.log_structure(sh, D2, get, st3, now="2026-09-30 16:00:00")
 finally:
-    T.parse_dorf2_slots = real_parse
+    P.parse_dorf2_slots = real_parse
 for c in ch: print("   ", c)
 kinds = [c[1] for c in ch]
 check("資源田等級" in kinds and "資源田開始施工" in kinds, "資源田：等級變化 + 開始施工")
@@ -149,11 +149,11 @@ full = [s for s in real_parse(D2)]
 for s in full:
     if s.gid == 0:
         s.gid, s.name, s.level = 17, "市場", 1
-T.parse_dorf2_slots = lambda html: full
+P.parse_dorf2_slots = lambda html: full
 try:
     V.log_structure(sh, D2, get, st3, now="2026-10-01 11:00:00")
 finally:
-    T.parse_dorf2_slots = real_parse
+    P.parse_dorf2_slots = real_parse
 check(calls == [], "沒空地 → 不抓可蓋清單")
 
 print("\n[7] 這輪沒有 dorf2（抓取失敗）→ 只記資源田，不會清空建築分頁")

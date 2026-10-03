@@ -19,7 +19,8 @@ import sys
 from pathlib import Path
 
 from bs4 import BeautifulSoup
-import travian_agent as T
+import travian_agent as T   # 只用 TARGET_LEVEL（可變設定）
+import travian_pages as P
 
 BASE = os.getenv("TRAVIAN_BASE_URL", "").rstrip("/")
 STATE_PATH = Path(os.getenv("TRAVIAN_STATE_PATH", "travian_state.json"))
@@ -47,7 +48,7 @@ def main() -> int:
         print("session 可能已失效，抓到的不是村莊頁")
         return 1
 
-    st = T.parse_dorf1(html)
+    st = P.parse_dorf1(html)
     print(f"目標等級 TARGET_LEVEL = {T.TARGET_LEVEL}")
     print(f"佇列 queue = {st.queue}")
     print(f"存量 stock = {st.stock}")

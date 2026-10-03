@@ -5,7 +5,7 @@
 主建築等都在這一頁）的建築資料印出來，特別針對「倉庫」「糧倉」這兩項，
 額外去對應的 build.php?id=<aid> 頁面測試：
   1. 能不能用跟資源田一樣的正則表達式解析出升級成本
-  2. 能不能用既有的 auto_build.find_upgrade_url() 找到綠色升級按鈕
+  2. 能不能用既有的 travian_pages.find_upgrade_url() 找到綠色升級按鈕
 
 這兩件事都確認可行，才代表可以安全地把倉庫/糧倉納入自動升級範圍，
 不用再改動任何解析邏輯（因為兩者共用同一套 build.php 頁面結構）。
@@ -23,9 +23,7 @@ import sys
 from pathlib import Path
 
 from bs4 import BeautifulSoup
-import auto_build as AB  # 重用 find_upgrade_url()
-import travian_agent as T  # 重用 parse_building_cost()：跟正式流程用同一份解析邏輯，
-                             # 避免這支 debug 腳本自己另外維護一份 regex 兜不起來
+import travian_pages as P  # 跟正式流程用同一份解析邏輯（parse_building_cost、find_upgrade_url）
 
 BASE = os.getenv("TRAVIAN_BASE_URL", "").rstrip("/")
 STATE_PATH = Path(os.getenv("TRAVIAN_STATE_PATH", "travian_state.json"))
@@ -103,18 +101,18 @@ def main() -> int:
             print(f"=== 測試 {label}（aid={aid}, gid={gid}）的 build.php 頁面 ===")
 
             build_html = fetch(context, page, f"build.php?id={aid}")
-            cost, secs = T.parse_building_cost(build_html)
+            cost, secs = P.parse_building_cost(build_html)
             print(f"  用瀏覽器直接載入 → 解析到的成本：{cost or '（空）'}  工期：{secs}秒"
                   f"{'（正常，非空）' if cost else '（懷疑 title 被 JS 清空）'}")
 
             if not cost:
                 build_html_http = fetch(context, page, f"build.php?id={aid}", force_http=True)
-                cost_http, secs_http = T.parse_building_cost(build_html_http)
+                cost_http, secs_http = P.parse_building_cost(build_html_http)
                 print(f"  改用純 HTTP 請求重抓 → 解析到的成本：{cost_http or '（空）'}  工期：{secs_http}秒"
                       f"{'（純 HTTP 有效！）' if cost_http else '（純 HTTP 也是空的，需要人工看原始 HTML）'}")
                 build_html = build_html_http if cost_http else build_html
 
-            url = AB.find_upgrade_url(build_html)
+            url = P.find_upgrade_url(build_html)
             print(f"  find_upgrade_url() 找到的升級網址：{url or '（找不到，可能已達最高等級或前置條件未滿足）'}")
 
             out_path = HTML_DUMP_DIR / f"aid{aid}_gid{gid}_{label}.html"

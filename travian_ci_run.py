@@ -12,7 +12,7 @@ tooltip 套件會在頁面載入後把 <a> 標籤的 title 讀走再清空，純
 v2.2：安靜時段（QUIET_UTC）不再直接離開。原本整段時間完全沒有請求，session 會因為閒置
 太久被伺服器端過期（實測：跳過 UTC 17~23 之後 cache 與種子 Cookie 都失效）。現在安靜時段
 仍然會載入一次 dorf1 確認 session 活著、把最新狀態存回 travian_state.json，但不建造、
-不寫 Sheet。session 真的失效時照舊走 R.disable()。
+不寫 Sheet。session 真的失效時照舊走 disable()（sheets_writer）。
 
 這支只負責「Playwright 的 session（cache / 種子 Cookie）、怎麼抓頁面、怎麼送出網址」；
 決策、build_order、送出與驗證、Config / Actions 分頁都在 runner.py。
@@ -24,7 +24,9 @@ import sys
 from pathlib import Path
 
 import runner as R
-import travian_agent as T
+import travian_pages as P
+from notify import notify
+from sheets_writer import disable
 
 BASE = os.getenv("TRAVIAN_BASE_URL", "").rstrip("/")
 STATE_PATH = Path(os.getenv("TRAVIAN_STATE_PATH", "travian_state.json"))
@@ -94,7 +96,7 @@ def main() -> int:
             html = page.content()
 
             if need_cost and 'id="stockBar"' in html:
-                probe = T.parse_dorf1(html)
+                probe = P.parse_dorf1(html)
                 if probe.fields and not any(f.cost for f in probe.fields):
                     print(f"  [備援] {path} 的 title 被前端 JS 清空，"
                           f"改用純 HTTP 請求重抓一次（不執行 JS）")
@@ -128,7 +130,11 @@ def main() -> int:
                 msg = "cache 的 session 已失效，且沒有設定 TRAVIAN_SEED_COOKIE 可以救援，請設定後重跑"
             else:
                 msg = "抓到的不是村莊頁：種子 Cookie 也已失效，請重新登入複製 Cookie 更新 TRAVIAN_SEED_COOKIE"
-            R.disable(msg)
+            if dry:
+                # DRY（測試用）不動共用 Sheet 的 Config：否則分支上的測試失敗會把正式排程一起停掉
+                notify(msg + "（DRY 模式：不修改 Config 的 enabled）")
+            else:
+                disable(msg)
             browser.close()
             return 1
 

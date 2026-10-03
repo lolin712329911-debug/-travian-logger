@@ -29,160 +29,15 @@ import random
 import time
 from datetime import datetime, timezone
 
-import travian_agent as T
+import travian_agent as T   # 決策與可變設定：QUEUE_SLOTS / TARGET_LEVEL / IS_CAPITAL 由這裡賦值，plan / plan_with_order
+import travian_pages as P   # 頁面解析
+from notify import notify
+from travian_const import BUILDING_GIDS, RES_NAMES, gid_name
+from travian_models import Field
 
 
-# ---------------- Google Sheets ----------------
-def _has_sheet() -> bool:
-    return bool(os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON") and os.getenv("GOOGLE_SHEET_ID"))
-
-
-def _sheet():
-    from sheets_writer import _get_credentials
-    return _get_credentials().open_by_key(os.environ["GOOGLE_SHEET_ID"])
-
-
-_FALSE_WORDS = ("false", "0", "no", "off", "否", "停")
-
-
-# Config 分頁的預設列（順序 = 補上去時的順序）。C 欄是給人看的說明，程式只讀 A、B 欄。
-_CONFIG_ORDER = ("enabled", "target_level", "queue_slots", "is_capital",
-                 "max_builds", "target_building_level", "build_order")
-_CONFIG_NOTES = {
-    "enabled": "FALSE = 緊急停止；session 失效時程式也會改成 FALSE",
-    "target_level": "資源田升到幾級（沒設 build_order 時使用）",
-    "queue_slots": "留空 = 自動偵測；填數字 = 手動指定",
-    "is_capital": "首都才填 TRUE",
-    "max_builds": "每輪最多送出幾個升級",
-    "target_building_level": "倉庫／糧倉升到幾級，0 = 停用",
-    "build_order": "建城順序，例如 res:2,10:3,15:5",
-}
-
-
-def _default_cfg() -> dict:
-    return {"enabled": True, "target_level": 2, "queue_slots": None, "max_builds": 2,
-            "target_building_level": T.TARGET_BUILDING_LEVEL, "build_order": "", "is_capital": False}
-
-
-def _cfg_cell(v) -> str:
-    """預設值轉成要寫進儲存格的純文字。"""
-    if v is None:
-        return ""
-    if isinstance(v, bool):
-        return "TRUE" if v else "FALSE"
-    return str(v)
-
-
-def _ensure_config_rows(ws, existing_rows: list) -> None:
-    """Config 缺哪一列就補哪一列（只補缺的，已有的列不覆蓋）。
-    existing_rows 是 load_config() 本來就讀進來的資料，不多打請求；
-    沒有缺列時完全不寫入。用 raw=True 寫純文字，避免 build_order 之類的值被 Sheets 誤判成時間。"""
-    have = {r[0].strip().lower() for r in existing_rows if r}
-    defaults = _default_cfg()
-    missing = [[k, _cfg_cell(defaults[k]), _CONFIG_NOTES[k]] for k in _CONFIG_ORDER if k not in have]
-    if not missing:
-        return
-    start = len(existing_rows) + 1                 # 寫在既有資料的最後一列之後
-    need_rows = start + len(missing) - 1
-    if ws.row_count < need_rows:
-        ws.add_rows(need_rows - ws.row_count)
-    if ws.col_count < 3:                           # disable() 建的 Config 只有 2 欄，C 欄要先補
-        ws.add_cols(3 - ws.col_count)
-    ws.update(range_name=f"A{start}", values=missing, raw=True)
-    print(f"Config 補上缺少的 {len(missing)} 列：{', '.join(r[0] for r in missing)}")
-
-
-def load_config() -> dict:
-    """讀 Sheet 的 Config 分頁；沒有這個分頁就用預設值（不是錯誤），並順手建立分頁、補齊預設列。
-    分頁存在但缺列時，只補缺的列，不覆蓋已填的值。補齊失敗（例如權限問題）只印 log，不影響本輪。
-    真正的異常（憑證、網路等）會往外拋，讓呼叫端中止本輪。"""
-    from gspread.exceptions import WorksheetNotFound
-
-    cfg = _default_cfg()
-    if not _has_sheet():
-        return cfg
-    sh = _sheet()
-    try:
-        ws = sh.worksheet("Config")
-    except WorksheetNotFound:
-        print("Sheet 裡沒有 Config 分頁，使用預設值，並建立分頁")
-        try:
-            _ensure_config_rows(sh.add_worksheet("Config", 20, 3), [])
-        except Exception as e:
-            print(f"建立 Config 分頁失敗（不影響本輪，使用預設值）: {e!r}")
-        return cfg
-    rows = ws.get_all_values()
-    for row in rows:
-        if len(row) < 2:
-            continue
-        k, v = row[0].strip().lower(), row[1].strip()
-        if k in ("enabled", "is_capital"):
-            cfg[k] = v.lower() not in _FALSE_WORDS
-        elif k == "build_order":
-            cfg[k] = v
-        elif k in ("target_level", "queue_slots", "max_builds", "target_building_level") and v.isdigit():
-            cfg[k] = int(v)
-    try:
-        _ensure_config_rows(ws, rows)
-    except Exception as e:
-        print(f"補齊 Config 預設列失敗（不影響本輪）: {e!r}")
-    return cfg
-
-
-ACTIONS_HEADER = ["時間(UTC)", "動作", "slot", "gid", "目前等級", "成本", "模式", "結果", "升級項目 / 說明"]
-_actions_header_ok = False
-
-
-def log_action(row: list):
-    global _actions_header_ok
-    if not _has_sheet():
-        return
-    try:
-        sh = _sheet()
-        try:
-            ws = sh.worksheet("Actions")
-        except Exception:
-            ws = sh.add_worksheet("Actions", 1000, len(ACTIONS_HEADER) + 1)
-            ws.append_row(ACTIONS_HEADER)
-            _actions_header_ok = True
-        if not _actions_header_ok:
-            # 舊分頁只有 8 欄：補欄並更新表頭，舊資料列不動
-            if ws.row_values(1) != ACTIONS_HEADER:
-                if ws.col_count < len(ACTIONS_HEADER):
-                    ws.add_cols(len(ACTIONS_HEADER) - ws.col_count)
-                ws.update(range_name="A1", values=[ACTIONS_HEADER])
-            _actions_header_ok = True
-        ws.append_row(row, value_input_option="USER_ENTERED")
-    except Exception as e:
-        print(f"寫入 Actions 分頁失敗（不影響升級）: {e!r}")
-
-
-def disable(reason: str):
-    """偵測到 session / Cookie 失效等需要人工介入的狀況時呼叫：
-    把 Config 的 enabled 設成 FALSE，讓之後每一輪一讀到 cfg 就直接跳過，
-    不會再嘗試登入、也不會每 30 分鐘重複失敗。要恢復請手動把 enabled 改回 TRUE。
-    沒有連 Sheet 時沒辦法持久化，下一輪還是會照樣重試。"""
-    T.notify(reason)
-    if not _has_sheet():
-        print("沒有連 Google Sheet，無法自動停用，下一輪還會再試一次")
-        return
-    from gspread.exceptions import WorksheetNotFound
-    try:
-        sh = _sheet()
-        try:
-            ws = sh.worksheet("Config")
-        except WorksheetNotFound:
-            ws = sh.add_worksheet("Config", 10, 2)
-        rows = ws.get_all_values()
-        for i, row in enumerate(rows, start=1):
-            if row and row[0].strip().lower() == "enabled":
-                ws.update(range_name=f"B{i}", values=[["FALSE"]])
-                break
-        else:
-            ws.append_row(["enabled", "FALSE"])
-        print("已將 Config 的 enabled 設為 FALSE，排程會自動跳過，直到手動改回 TRUE")
-    except Exception as e:
-        print(f"嘗試寫入 Config 停用失敗（不影響本輪判定為失敗）: {e!r}")
+# Sheet 讀寫在 sheets_writer.py
+from sheets_writer import disable, has_sheet, load_config, log_action, open_sheet
 
 
 def _hours(sec):
@@ -193,7 +48,7 @@ def log_village_snapshot(d1: str, get, st):
     """每輪把村莊數據記到 Sheet1（唯讀、失敗不影響升級）。
     數字以 dorf1 的 var resources（st）為準補齊：Playwright 抓到的 stockBar title 可能被前端 JS 清空，
     產量會變 0；只在解析結果是空／0 時才用 st 補，其他維持原本 scrape_and_log 的格式。"""
-    if not _has_sheet():
+    if not has_sheet():
         return None
     d2 = None     # 結尾回傳給 log_village_structure 用（dorf2 只抓一次）
     try:
@@ -209,7 +64,7 @@ def log_village_snapshot(d1: str, get, st):
         ov = parse_village_page(d2 if 'id="stockBar"' in d2 else d1)
         if any(st.cap):
             for i, key in enumerate(("l1", "l2", "l3", "l4")):
-                r = ov.resources.get(key) or ResourceInfo(key=key, name=T.RES_NAMES[i])
+                r = ov.resources.get(key) or ResourceInfo(key=key, name=RES_NAMES[i])
                 r.amount = r.amount or st.stock[i]
                 r.production = r.production or st.prod[i]
                 r.capacity = r.capacity or st.cap[i]
@@ -229,18 +84,18 @@ def log_village_snapshot(d1: str, get, st):
 def log_village_structure(d1: str, d2, get, st) -> None:
     """每輪把資源田 / 村莊建築 / 空地可蓋清單同步到 Fields / Buildings / Buildable / Changes（見 village_log.py）。
     唯讀、失敗不影響升級。"""
-    if not _has_sheet():
+    if not has_sheet():
         return
     try:
         import village_log as V
-        V.log_structure(_sheet(), d2, get, st)
+        V.log_structure(open_sheet(), d2, get, st)
     except Exception as e:
         print(f"記錄村莊結構失敗（不影響升級）: {e!r}")
 
 
 # ---------------- 決策 → 人看得懂的說明 ----------------
 def _fname(f) -> str:
-    n = T.gid_name(f.gid)
+    n = gid_name(f.gid)
     return f"{n}(slot {f.aid})" if f.gid in (1, 2, 3, 4) else n
 
 
@@ -258,7 +113,7 @@ def describe(action: tuple, st) -> tuple:
     kind = action[0]
     if kind == "wait_res":
         f = action[2]
-        short = [f"{T.RES_NAMES[i]}缺{c - s}" for i, (c, s) in enumerate(zip(f.cost, st.stock)) if c > s]
+        short = [f"{RES_NAMES[i]}缺{c - s}" for i, (c, s) in enumerate(zip(f.cost, st.stock)) if c > s]
         return "等待資源", f, (f"下一個要升級 {_fname(f)} {_flv(f)}，資源不夠：{'、'.join(short) or '（差一點）'}，"
                              f"預計約 {_mins(action[1])} 後足夠")
     if kind == "wait_queue":
@@ -269,12 +124,12 @@ def describe(action: tuple, st) -> tuple:
         return "等待佇列", None, f"{why}，約 {_mins(action[1])} 後再試"
     if kind == "need_storage":
         f = action[1]
-        over = [f"{T.RES_NAMES[i]}成本{c}>容量{m}" for i, (c, m) in enumerate(zip(f.cost, st.cap)) if c > m]
+        over = [f"{RES_NAMES[i]}成本{c}>容量{m}" for i, (c, m) in enumerate(zip(f.cost, st.cap)) if c > m]
         return "倉容不足", f, f"{_fname(f)} {_flv(f)} 的成本超過倉庫/糧倉容量（{'、'.join(over)}），需先升倉庫/糧倉"
     if kind == "blocked":
         return "計畫卡住", None, f"需要人處理：{action[1]}"
     if kind == "no_slot":
-        return "無空地", None, f"要蓋新建築 {T.gid_name(action[1])}，但村莊沒有空地了"
+        return "無空地", None, f"要蓋新建築 {gid_name(action[1])}，但村莊沒有空地了"
     if kind == "done":
         return "已完成", None, "設定的目標都已達成，沒有需要升級的項目"
     return kind, None, ""
@@ -310,14 +165,14 @@ def _legacy_candidates(get, target_level: int, touched: set) -> list:
     if target_level <= 0:
         return []
     out = []
-    for gid, (aid, level) in T.parse_dorf2(get("dorf2.php")).items():
+    for gid, (aid, level) in P.parse_dorf2(get("dorf2.php")).items():
         if level >= target_level or aid in touched:
             continue
-        cost, secs = T.parse_building_cost(get(f"build.php?id={aid}"))
+        cost, secs = P.parse_building_cost(get(f"build.php?id={aid}"))
         if not cost:
-            print(f"警告：{T.BUILDING_GIDS.get(gid, gid)} (aid={aid}) 的 build.php 解析不到成本，跳過")
+            print(f"警告：{BUILDING_GIDS.get(gid, gid)} (aid={aid}) 的 build.php 解析不到成本，跳過")
             continue
-        out.append(T.Field(aid=aid, gid=gid, level=level, cost=cost, secs=secs, building=False))
+        out.append(Field(aid=aid, gid=gid, level=level, cost=cost, secs=secs, building=False))
     return out
 
 
@@ -326,21 +181,35 @@ def _now() -> str:
 
 
 # ---------------- 玩家資訊：佇列長度 + 文化點 ----------------
+def cp_summary(cp: dict) -> str:
+    """把文化點缺口整理成一行 log。"""
+    have, need, per_day = cp["have"], cp["need"], cp["per_day"]
+    slots = f"村莊名額 {cp['used']}/{cp['max']}"
+    gap = need - have
+    if gap <= 0:
+        return f"[文化點] {have}/{need}，已達標；{slots}"
+    if per_day > 0:
+        eta = f"，照目前每日 +{per_day} 約 {-(-gap // per_day)} 天（不含慶典）"
+    else:
+        eta = "，目前每日產量是 0"
+    return f"[文化點] {have}/{need}，缺 {gap}{eta}；{slots}"
+
+
 def _setup_player(cfg: dict, d1: str, get) -> None:
     """讀種族 / Plus / 文化點：決定 T.QUEUE_SLOTS，並印出文化點缺口。
     這一步只讀資料，任何一步失敗都只會退回保守值，不會影響升級流程。"""
     try:
-        info = T.parse_player_info(d1)
+        info = P.parse_player_info(d1)
         if info is None:             # dorf1 沒有內嵌資料時改讀 dorf2（真實 dorf2 頁面已確認有）
             try:
-                info = T.parse_player_info(get("dorf2.php"))
+                info = P.parse_player_info(get("dorf2.php"))
             except Exception as e:
                 print(f"讀 dorf2 取得玩家資訊失敗（不影響升級）: {e!r}")
         n, why = T.resolve_queue_slots(cfg.get("queue_slots"), info)
         T.QUEUE_SLOTS = n
         print(f"佇列長度 = {n}（{why}）")
         if info and info.get("cp"):
-            print(T.cp_summary(info["cp"]))
+            print(cp_summary(info["cp"]))
         else:
             print("[文化點] 讀不到（頁面沒有內嵌資料）")
     except Exception as e:
@@ -360,7 +229,7 @@ def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
         try:
             order = T.parse_build_order(cfg["build_order"])
         except ValueError as e:
-            T.notify(f"Config 的 build_order 格式錯誤，本輪不動作：{e}")
+            notify(f"Config 的 build_order 格式錯誤，本輪不動作：{e}")
             return 1
         print(f"使用建城順序（{len(order)} 個目標）：{cfg['build_order']}")
 
@@ -374,7 +243,7 @@ def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
             return 1
         if i == 0:
             _setup_player(cfg, d1, get)           # 決定佇列長度、印文化點（只讀）
-        st = T.parse_dorf1(d1)
+        st = P.parse_dorf1(d1)
         if i == 0:
             d2 = log_village_snapshot(d1, get, st)     # 每輪記一次村莊數據到 Sheet1
             log_village_structure(d1, d2, get, st)     # 資源田/建築/可蓋清單，有變動才寫
@@ -394,13 +263,13 @@ def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
         print(f"[{mode}] 決策: {action[0]}  佇列={st.queue}  存量={st.stock}  來襲={st.attacks}")
         if st.attacks:
             eta = f"，最快 {_mins(st.attack_eta_s)} 後抵達" if st.attack_eta_s is not None else ""
-            T.notify(f"偵測到來襲 {st.attacks} 波{eta}！請手動處理")   # 目前只寫 log，見 README
+            notify(f"偵測到來襲 {st.attacks} 波{eta}！請手動處理")   # 目前只寫 log，見 README
         if action[0] == "need_storage":
-            T.notify(f"slot {action[1].aid} 的成本超過倉庫容量 {st.cap}，請先升倉庫/糧倉")
+            notify(f"slot {action[1].aid} 的成本超過倉庫容量 {st.cap}，請先升倉庫/糧倉")
         elif action[0] == "blocked":
-            T.notify(f"建城計畫卡住了：{action[1]}")
+            notify(f"建城計畫卡住了：{action[1]}")
         elif action[0] == "no_slot":
-            T.notify(f"要蓋新建築（gid {action[1]}）但村莊沒有空地了")
+            notify(f"要蓋新建築（gid {action[1]}）但村莊沒有空地了")
         if action[0] != "build":
             label, nf, desc = describe(action, st)
             print(f"[{mode}] {label}：{desc}")
@@ -412,7 +281,7 @@ def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
         f = action[1]
         cost = "/".join(map(str, f.cost))
         what = f"升級 {_fname(f)} {_flv(f)}"
-        url = f.url or T.find_upgrade_url(get(f"build.php?id={f.aid}"))
+        url = f.url or P.find_upgrade_url(get(f"build.php?id={f.aid}"))
         if not url:
             print(f"slot {f.aid}: 找不到綠色擴建按鈕（資源不足、佇列滿、前置條件未達，"
                   f"或網址被白名單擋下：往上找有沒有 [警告] 那行）")
@@ -430,13 +299,13 @@ def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
         sleep(random.uniform(2, 6))
         submit(url)
         sleep(random.uniform(2, 5))
-        after = T.parse_dorf1(get("dorf1.php"))
+        after = P.parse_dorf1(get("dorf1.php"))
         ok = len(after.queue) > len(st.queue) or sum(after.stock) < sum(st.stock) - 0.5 * sum(f.cost)
         log_action([_now(), "升級", f.aid, f.gid, f.level, cost, mode, "成功" if ok else "沒看到變化",
                     _with_queue(what if ok else f"{what}，但送出後沒看到資源被扣或佇列增加", st)])
         if not ok:
-            T.notify(f"送出 slot {f.aid} 的升級後沒看到資源被扣或佇列增加，已停止")
+            notify(f"送出 slot {f.aid} 的升級後沒看到資源被扣或佇列增加，已停止")
             return 1
-        T.notify(f"已升級 slot {f.aid} (gid {f.gid}) L{f.level}->L{f.level + 1}，成本 {cost}")
+        notify(f"已升級 slot {f.aid} (gid {f.gid}) L{f.level}->L{f.level + 1}，成本 {cost}")
         sleep(random.uniform(3, 8))
     return 0

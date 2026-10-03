@@ -20,7 +20,8 @@ Buildable 只在需要時重抓（省請求）：第一次、Buildings 有變動
 """
 from datetime import datetime, timezone
 
-import travian_agent as T
+import travian_const as C
+import travian_pages as P
 
 TS_FMT = "%Y-%m-%d %H:%M:%S"
 BUILDABLE_MAX_AGE_H = 24
@@ -121,7 +122,7 @@ def fields_rows(st, values) -> list:
         o = prev.get(str(f.aid))
         if not cost and o and len(o) > 5 and o[2] == str(f.level):
             cost, dur = o[4], o[5]
-        rows.append([f.aid, T.gid_name(f.gid), f.level, _yes(f.building), cost, dur])
+        rows.append([f.aid, C.gid_name(f.gid), f.level, _yes(f.building), cost, dur])
     return rows
 
 
@@ -158,7 +159,7 @@ def dedupe_slots(slots) -> list:
 
 
 def buildings_rows(slots) -> list:
-    return [[s.aid, s.gid, (s.name or T.gid_name(s.gid)) if s.gid else "（空地）", s.level, _yes(s.building)]
+    return [[s.aid, s.gid, (s.name or C.gid_name(s.gid)) if s.gid else "（空地）", s.level, _yes(s.building)]
             for s in slots]
 
 
@@ -203,7 +204,7 @@ def buildable_rows(opts) -> list:
     rows = []
     for o in opts:
         unmet = [c for c in o["conditions"] if not c["met"]]
-        rows.append([o["gid"], o["name"] or T.gid_name(o["gid"]), o.get("category", ""),
+        rows.append([o["gid"], o["name"] or C.gid_name(o["gid"]), o.get("category", ""),
                      "/".join(map(str, o["cost"])), _dur(o["secs"]),   # 不能蓋時頁面不給工期 → 空白
                      _yes(not unmet), _cond_text(o["conditions"])])
     return rows
@@ -278,7 +279,7 @@ def log_structure(sh, d2, get, st, now=None) -> list:
 
     slots = None
     if d2 and 'id="villageContent"' in d2:
-        slots = dedupe_slots(T.parse_dorf2_slots(d2))
+        slots = dedupe_slots(P.parse_dorf2_slots(d2))
     if not slots:
         print("[村莊結構] 這輪沒有 dorf2，略過村莊建築與可蓋清單")
     else:
@@ -298,7 +299,7 @@ def log_structure(sh, d2, get, st, now=None) -> list:
         step("村莊建築", do_buildings)
 
         def do_buildable():
-            lo, hi = T.FREE_SLOT_RANGE
+            lo, hi = C.FREE_SLOT_RANGE
             empty = sorted(s.aid for s in slots if s.gid == 0 and lo <= s.aid <= hi)
             if not empty:
                 print("[村莊結構] 村莊沒有空地，略過可蓋清單")
@@ -308,7 +309,7 @@ def log_structure(sh, d2, get, st, now=None) -> list:
             if not (any(b_changed) or buildable_due(values)):
                 print("[村莊結構] 可蓋清單：沒有觸發條件，這輪不重抓")
                 return
-            opts = T.fetch_build_options(get, empty[0])
+            opts = P.fetch_build_options(get, empty[0])
             if not opts:
                 print("[村莊結構] 可蓋清單讀不到任何建築（頁面異常？），這輪不更新")
                 return
