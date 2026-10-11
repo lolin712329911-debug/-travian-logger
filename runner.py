@@ -32,12 +32,12 @@ from datetime import datetime, timezone
 import travian_agent as T   # 決策與可變設定：QUEUE_SLOTS / TARGET_LEVEL / IS_CAPITAL 由這裡賦值，plan / plan_with_order
 import travian_pages as P   # 頁面解析
 from notify import notify
-from travian_const import BUILDING_GIDS, RES_NAMES, gid_name
+from travian_const import BUILDING_GIDS, RES_NAMES, TRIBE_NAMES, gid_name
 from travian_models import Field
 
 
 # Sheet 讀寫在 sheets_writer.py
-from sheets_writer import disable, has_sheet, load_config, log_action, open_sheet
+from sheets_writer import disable, has_sheet, load_config, log_action, open_sheet, write_state
 
 
 def _hours(sec):
@@ -195,9 +195,59 @@ def cp_summary(cp: dict) -> str:
     return f"[文化點] {have}/{need}，缺 {gap}{eta}；{slots}"
 
 
-def _setup_player(cfg: dict, d1: str, get) -> None:
+def build_state_rows(info, st, queue_slots) -> list:
+    """把玩家／村莊狀態整理成 [(key, 值, 說明)]，給 write_state 寫進 Sheet 的「state」分頁（Gemini 會讀）。
+    純函式，不碰網路／Sheet。info 可能是 None（頁面沒有內嵌資料），cp 也可能缺：讀不到的欄位就不列，不要猜。"""
+    rows = []
+
+    def put(key, value, note):
+        if value is not None:
+            rows.append((key, value, note))
+
+    if info:
+        tid = info.get("tribe_id")
+        if tid is not None:
+            put("tribe", TRIBE_NAMES.get(tid, f"種族 {tid}"), "種族")
+        plus = info.get("plus_active")
+        if plus is not None:
+            put("plus_active", "TRUE" if plus else "FALSE", "Plus 是否有效")
+        cp = info.get("cp")
+        if cp:
+            have, need, per_day = cp.get("have"), cp.get("need"), cp.get("per_day")
+            put("cp_have", have, "目前文化點")
+            put("cp_need", need, "下一個村莊名額需要的文化點")
+            if have is not None and need is not None:
+                gap = max(0, need - have)
+                put("cp_gap", gap, "還缺多少文化點（0 = 已達標）")
+                if gap == 0:
+                    put("cp_eta_days", 0, "照目前每日產量估計還要幾天達標（不含慶典）")
+                elif per_day and per_day > 0:
+                    put("cp_eta_days", -(-gap // per_day), "照目前每日產量估計還要幾天達標（不含慶典）")
+            put("cp_per_day", per_day, "文化點每日增加量（不含慶典）")
+            put("village_slots_used", cp.get("used"), "已用村莊名額")
+            put("village_slots_max", cp.get("max"), "目前文化點可擁有的村莊名額上限")
+    put("queue_slots", queue_slots, "施工佇列長度（自動偵測或 Config 指定）")
+    if st is not None and any(st.cap):
+        for i, key in enumerate(("wood", "clay", "iron", "crop")):
+            put(f"cap_{key}", st.cap[i], f"{RES_NAMES[i]}倉容量")
+    return rows
+
+
+def log_player_state(info, st) -> None:
+    """每輪把文化點、倉庫容量等寫進 state 分頁（覆蓋式、只寫 Sheet、失敗不影響升級）。"""
+    if not has_sheet():
+        return
+    try:
+        write_state(build_state_rows(info, st, T.QUEUE_SLOTS), _now())
+    except Exception as e:
+        print(f"記錄 state 失敗（不影響升級）: {e!r}")
+
+
+def _setup_player(cfg: dict, d1: str, get):
     """讀種族 / Plus / 文化點：決定 T.QUEUE_SLOTS，並印出文化點缺口。
-    這一步只讀資料，任何一步失敗都只會退回保守值，不會影響升級流程。"""
+    這一步只讀資料，任何一步失敗都只會退回保守值，不會影響升級流程。
+    回傳讀到的 info（讀不到是 None），給 log_player_state 用。"""
+    info = None
     try:
         info = P.parse_player_info(d1)
         if info is None:             # dorf1 沒有內嵌資料時改讀 dorf2（真實 dorf2 頁面已確認有）
@@ -214,6 +264,7 @@ def _setup_player(cfg: dict, d1: str, get) -> None:
             print("[文化點] 讀不到（頁面沒有內嵌資料）")
     except Exception as e:
         print(f"讀取玩家資訊失敗，佇列長度沿用 {T.QUEUE_SLOTS}（不影響升級）: {e!r}")
+    return info
 
 
 # ---------------- 主迴圈 ----------------
@@ -235,6 +286,7 @@ def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
 
     mode = "DRY" if dry else "LIVE"
     touched = set()
+    info = None
 
     for i in range(cfg["max_builds"]):
         d1 = first_dorf1 if (i == 0 and first_dorf1 is not None) else get_dorf1()
@@ -242,11 +294,12 @@ def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
             disable("抓到的不是村莊頁：session / Cookie 可能已失效，請重新複製 Cookie 更新 Secret")
             return 1
         if i == 0:
-            _setup_player(cfg, d1, get)           # 決定佇列長度、印文化點（只讀）
+            info = _setup_player(cfg, d1, get)    # 決定佇列長度、印文化點（只讀）
         st = P.parse_dorf1(d1)
         if i == 0:
             d2 = log_village_snapshot(d1, get, st)     # 每輪記一次村莊數據到 Sheet1
             log_village_structure(d1, d2, get, st)     # 資源田/建築/可蓋清單，有變動才寫
+            log_player_state(info, st)                 # 文化點、倉庫容量 → state 分頁（覆蓋式，給 Gemini 讀）
         for f in st.fields:                       # 本輪已送出的田，不要重複選
             if f.aid in touched:
                 f.building = True
