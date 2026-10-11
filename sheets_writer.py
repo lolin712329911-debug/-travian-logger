@@ -240,6 +240,31 @@ def log_action(row: list):
         print(f"寫入 Actions 分頁失敗（不影響升級）: {e!r}")
 
 
+STATE_HEADER = ["項目(key)", "值", "說明", "更新時間(UTC)"]
+
+
+def write_state(rows: list, updated: str) -> bool:
+    """把玩家／村莊狀態（文化點、倉庫容量…）整份覆蓋寫到「state」分頁，給 Apps Script / Gemini 讀。
+    rows 是 [(key, 值, 說明), ...]；覆蓋式（不是追加），所以分頁永遠只有最新一份。
+    用 raw 寫入純值，避免日期字串被 Sheets 轉型。失敗只印 log、不影響升級；回傳是否成功。"""
+    if not has_sheet():
+        return False
+    try:
+        from gspread.exceptions import WorksheetNotFound
+        sh = open_sheet()
+        try:
+            ws = sh.worksheet("state")
+        except WorksheetNotFound:
+            ws = sh.add_worksheet("state", 60, len(STATE_HEADER))
+        values = [STATE_HEADER] + [[k, v, note, updated] for k, v, note in rows]
+        ws.clear()
+        ws.update(range_name="A1", values=values, raw=True)
+        return True
+    except Exception as e:
+        print(f"寫入 state 分頁失敗（不影響升級）: {e!r}")
+        return False
+
+
 def disable(reason: str):
     """偵測到 session / Cookie 失效等需要人工介入的狀況時呼叫：
     把 Config 的 enabled 設成 FALSE，讓之後每一輪一讀到 cfg 就直接跳過，
