@@ -250,6 +250,36 @@ def parse_player_and_village(soup: BeautifulSoup) -> dict:
     return info
 
 
+_ARC_RE = re.compile(r"M\s*55\s+55\s*L\s*(-?[\d.]+)[ ,]+(-?[\d.]+)\s*A\s*[\d.]+[ ,]+[\d.]+\s+\d+\s+\d+\s+(\d)\s+(-?[\d.]+)[ ,]+(-?[\d.]+)")
+
+
+def _ring_pct(svg) -> Optional[int]:
+    """英雄頭像外圈（110x110，圓心 55,55）：clipPath 的弧線終點 = 目前百分比的位置，
+    path.title 的弧線終點 = 100% 的位置，兩者與起點的夾角比就是百分比。"""
+    import math
+    if svg is None:
+        return None
+    clip = svg.select_one("clipPath path")
+    full = svg.select_one("path.title")
+    if clip is None or full is None:
+        return None
+    m1, m2 = _ARC_RE.search(clip.get("d", "")), _ARC_RE.search(full.get("d", ""))
+    if not (m1 and m2):
+        return None
+    sx, sy = float(m2.group(1)), float(m2.group(2))
+    sweep = int(m2.group(3))
+
+    def ang(x, y):
+        return math.degrees(math.atan2(y - 55, x - 55)) % 360
+    a0 = ang(sx, sy)
+
+    def span(m):
+        a = ang(float(m.group(4)), float(m.group(5)))
+        return ((a0 - a) if sweep == 0 else (a - a0)) % 360
+    total = span(m2)
+    return int(round(100 * span(m1) / total)) if total else None
+
+
 def parse_hero(soup: BeautifulSoup) -> HeroInfo:
     hero = HeroInfo()
     hero_box = soup.find(id="topBarHero")
@@ -267,6 +297,12 @@ def parse_hero(soup: BeautifulSoup) -> HeroInfo:
 
     hero.health_percent = _pct(hero_box.select_one("svg.health path.title"))
     hero.experience_percent = _pct(hero_box.select_one("svg.experience path.title"))
+    # 備援：Playwright 渲染後的 DOM 裡，<title> 提示文字可能被前端 JS 清掉（stockBar 的產量
+    # 也有同樣問題），文字讀不到時改用圓環弧線的幾何位置反推百分比（clipPath 是靜態的）。
+    if hero.health_percent is None:
+        hero.health_percent = _ring_pct(hero_box.select_one("svg.health"))
+    if hero.experience_percent is None:
+        hero.experience_percent = _ring_pct(hero_box.select_one("svg.experience"))
 
     status_tag = hero_box.find(class_="heroStatus")
     hero.status_title = status_tag.get("title") if status_tag else None
