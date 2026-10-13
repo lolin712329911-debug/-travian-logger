@@ -22,6 +22,10 @@ Sheet 的「Config」分頁：A 欄名稱、B 欄值，例如
   max_builds    2          <- 每輪最多送出幾個升級
   target_building_level 0  <- 舊流程：倉庫/糧倉升到幾級（0 = 停用）
   build_order   res:2,15:3 <- 建城順序（有填就用這個，舊流程的兩個目標等級不再使用）
+  hero_adventure        FALSE <- TRUE = 英雄在家且條件符合時自動派冒險（空白／看不懂 = FALSE）
+  hero_min_health       45    <- 體力 <= 這個數字不出發（讀不到也不出發）
+  hero_allowed          normal <- 允許的難度圖示：normal 或 normal,hard
+  hero_skip_on_incoming TRUE  <- 有來襲時不派英雄
 C 欄是說明，程式不讀。分頁不存在會自動建立；缺哪一列就補哪一列（只補缺的，已填的值不動）。
 """
 import os
@@ -31,6 +35,7 @@ from datetime import datetime, timezone
 
 import travian_agent as T   # 決策與可變設定：QUEUE_SLOTS / TARGET_LEVEL / IS_CAPITAL 由這裡賦值，plan / plan_with_order
 import travian_pages as P   # 頁面解析
+import travian_hero as H    # 英雄冒險：解析與決策（純函式）
 from notify import notify
 from travian_const import BUILDING_GIDS, RES_NAMES, TRIBE_NAMES, gid_name
 from travian_models import Field
@@ -362,3 +367,73 @@ def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
         notify(f"已升級 slot {f.aid} (gid {f.gid}) L{f.level}->L{f.level + 1}，成本 {cost}")
         sleep(random.uniform(3, 8))
     return 0
+
+
+# ---------------- 英雄冒險（獨立於建城；失敗只通知，不 disable、不改結束碼）----------------
+def _hero_log(mode: str, result: str, desc: str) -> None:
+    log_action([_now(), "冒險", "", "", "", "", mode, result, desc])
+
+
+def run_hero_cycle(cfg: dict, *, get, get_dorf1, click_adventure, dry: bool) -> None:
+    """英雄在家、體力 > hero_min_health、有符合難度的冒險時，派出一趟。其他情況記錄原因、不動作。
+
+      get(path)           -> str  抓頁面（Playwright 渲染後的 HTML，例如 "hero/adventures"）
+      get_dorf1()         -> str  抓 dorf1（頂端列有英雄圖示；也用來數來襲）
+      click_adventure(number, row_index, row) -> (bool, 說明)  由 travian_ci_run 提供，負責點擊與驗證
+
+    任何例外都只通知，不往外拋；hero_adventure 預設 FALSE。"""
+    if not cfg.get("hero_adventure"):
+        print("[冒險] hero_adventure 不是 TRUE，略過")
+        return
+    mode = "DRY" if dry else "LIVE"
+    try:
+        d1 = get_dorf1()
+        if 'id="stockBar"' not in d1:
+            print("[冒險] dorf1 不是村莊頁（session 問題由建城流程處理），略過")
+            return
+        hud1 = H.parse_hero_hud(d1)
+        if hud1.at_home is False:
+            print(f"[冒險] 英雄不在家（頂端列圖示），略過（體力 {hud1.health}%）")
+            return
+        incoming = P.parse_dorf1(d1).attacks if cfg.get("hero_skip_on_incoming", True) else 0
+
+        html = get("hero/adventures")
+        hero = H.parse_hero_json(html)
+        rows = H.parse_adventure_rows(html)
+        hud = H.parse_hero_hud(html)
+        action = H.plan_adventure(hero, rows, hud.health, cfg, incoming)
+        print(f"[{mode}][冒險] 決策: {action[0]}  體力={hud.health}  冒險數={len(rows)}  來襲={incoming}")
+
+        if action[0] == "skip":
+            reason = action[1]
+            if hero is not None and hero.status in (50, 9):      # 去程／返回中：正常等待，只印 log
+                print(f"[冒險] 略過：{reason}")
+                return
+            _hero_log(mode, "未出發", reason)
+            if hero is None or "未知狀態" in reason or "不一致" in reason:   # 資料結構不對勁：要人看
+                notify(f"英雄冒險略過：{reason}")
+            else:
+                print(f"[冒險] 略過：{reason}")
+            return
+
+        _, number, idx = action
+        row = rows[idx]
+        adv = hero.adventures[idx]
+        what = (f"冒險 #{number}（第 {idx + 1} 列，{adv.place}，{row.icon}，距離 {adv.distance}，"
+                f"去程 {adv.duration // 60} 分，體力 {hud.health}%）")
+        if dry:
+            print(f"[DRY][冒險] 會派出 {what}")
+            _hero_log(mode, "未送出", f"{what}（乾跑，沒有真的點擊）")
+            return
+
+        time.sleep(random.uniform(2, 6))
+        ok, msg = click_adventure(number, idx, row)
+        if ok:
+            _hero_log(mode, "成功", f"{what}；{msg}")
+            notify(f"英雄已出發：{what}")
+        else:
+            _hero_log(mode, "沒看到變化", f"{what}；{msg}")
+            notify(f"英雄冒險沒有確認成功（不重試）：{msg}")
+    except Exception as e:                      # 英雄流程出錯不能影響建城
+        print(f"[冒險] 英雄流程失敗（不影響建城）: {e!r}")
+        notify(f"英雄流程出錯（不影響建城）: {e!r}")
