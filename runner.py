@@ -401,8 +401,9 @@ def run_hero_cycle(cfg: dict, *, get, get_dorf1, click_adventure, dry: bool) -> 
         hero = H.parse_hero_json(html)
         rows = H.parse_adventure_rows(html)
         hud = H.parse_hero_hud(html)
-        action = H.plan_adventure(hero, rows, hud.health, cfg, incoming)
-        print(f"[{mode}][冒險] 決策: {action[0]}  體力={hud.health}  冒險數={len(rows)}  來襲={incoming}")
+        health = hud1.health if hud1.health is not None else hud.health   # 渲染頁的 title 常被清空
+        action = H.plan_adventure(hero, rows, health, cfg, incoming)
+        print(f"[{mode}][冒險] 決策: {action[0]}  體力={health}  冒險數={len(rows)}  來襲={incoming}")
 
         if action[0] == "skip":
             reason = action[1]
