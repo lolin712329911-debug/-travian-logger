@@ -88,11 +88,14 @@ def main() -> int:
 
         page = context.new_page()
 
-        def get_html(path: str, need_cost: bool = False) -> str:
+        def get_html(path: str, need_cost: bool = False, raw: bool = False) -> str:
             """load 這一頁；need_cost=True 時，若解析出來所有田的成本
             都是空的（title 被前端 JS 拿掉），改發一次純 HTTP 請求
             （不執行 JS），沿用同一組 session 取得未被 JS 動過的原始 HTML。"""
             url = f"{BASE}/{path.lstrip('/')}"
+            if raw:
+                # 純 HTTP、不執行 JS：拿伺服器原始吐出的 HTML（title 完整）
+                return context.request.get(url).text()
             page.goto(url, wait_until="networkidle")
             html = page.content()
 
@@ -184,7 +187,7 @@ def main() -> int:
             submit=submit, dry=dry, first_dorf1=d1)
 
         # 英雄冒險：獨立於建城，失敗只通知（run_hero_cycle 內部已接住例外）；hero_adventure 預設 FALSE
-        R.run_hero_cycle(cfg, get=get_html, get_dorf1=lambda: get_html("dorf1.php"),
+        R.run_hero_cycle(cfg, get=get_html, get_dorf1=lambda: get_html("dorf1.php", raw=True),
                          click_adventure=click_adventure, dry=dry)
 
         # 不管這輪做了什麼，只要一開始 session 是活的，就把最新狀態存回去，
