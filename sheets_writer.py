@@ -126,11 +126,13 @@ def open_sheet():
 
 
 _FALSE_WORDS = ("false", "0", "no", "off", "否", "停")
+_TRUE_WORDS = ("true", "1", "yes", "on", "是", "啟用")   # hero_adventure 專用：只有明確的 TRUE 才算開
 
 
 # Config 分頁的預設列（順序 = 補上去時的順序）。C 欄是給人看的說明，程式只讀 A、B 欄。
 _CONFIG_ORDER = ("enabled", "target_level", "queue_slots", "is_capital",
-                 "max_builds", "target_building_level", "build_order")
+                 "max_builds", "target_building_level", "build_order",
+                 "hero_adventure", "hero_min_health", "hero_allowed", "hero_skip_on_incoming")
 _CONFIG_NOTES = {
     "enabled": "FALSE = 緊急停止；session 失效時程式也會改成 FALSE",
     "target_level": "資源田升到幾級（沒設 build_order 時使用）",
@@ -139,12 +141,18 @@ _CONFIG_NOTES = {
     "max_builds": "每輪最多送出幾個升級",
     "target_building_level": "倉庫／糧倉升到幾級，0 = 停用",
     "build_order": "建城順序，例如 res:2,10:3,15:5",
+    "hero_adventure": "TRUE = 英雄在家時自動派冒險；留空或看不懂一律當 FALSE",
+    "hero_min_health": "英雄體力 ≤ 這個數字就不出發（讀不到體力也不出發）",
+    "hero_allowed": "允許的冒險難度圖示：normal 或 normal,hard（預設 normal）",
+    "hero_skip_on_incoming": "TRUE = 村莊有來襲時不派英雄（預設 TRUE）",
 }
 
 
 def _default_cfg() -> dict:
     return {"enabled": True, "target_level": 2, "queue_slots": None, "max_builds": 2,
-            "target_building_level": DEFAULT_TARGET_BUILDING_LEVEL, "build_order": "", "is_capital": False}
+            "target_building_level": DEFAULT_TARGET_BUILDING_LEVEL, "build_order": "", "is_capital": False,
+            "hero_adventure": False, "hero_min_health": 45, "hero_allowed": "normal",
+            "hero_skip_on_incoming": True}
 
 
 def _cfg_cell(v) -> str:
@@ -201,9 +209,17 @@ def load_config() -> dict:
         k, v = row[0].strip().lower(), row[1].strip()
         if k in ("enabled", "is_capital"):
             cfg[k] = v.lower() not in _FALSE_WORDS
+        elif k == "hero_adventure":
+            cfg[k] = v.lower() in _TRUE_WORDS            # 空白／看不懂 = False（不能沿用上面「空白 = TRUE」的規則）
+        elif k == "hero_skip_on_incoming":
+            cfg[k] = v.lower() not in _FALSE_WORDS       # 空白 = True（保守：有來襲就不派）
+        elif k == "hero_allowed":
+            if v:
+                cfg[k] = v
         elif k == "build_order":
             cfg[k] = v
-        elif k in ("target_level", "queue_slots", "max_builds", "target_building_level") and v.isdigit():
+        elif k in ("target_level", "queue_slots", "max_builds", "target_building_level",
+                   "hero_min_health") and v.isdigit():
             cfg[k] = int(v)
     try:
         _ensure_config_rows(ws, rows)
