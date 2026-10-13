@@ -32,6 +32,9 @@ _VIEWDATA_RE = re.compile(r"viewData:\s*(\{.*\}),\s*activePerspective")
 
 
 def _clean(s: str) -> str:
+    # 專案的 travian_const.BIDI 是編譯好的正規表示式（有 .sub）；備援表是字元 list，兩種都支援
+    if hasattr(BIDI, "sub"):
+        return BIDI.sub("", s).strip()
     for ch in BIDI:
         s = s.replace(ch, "")
     return s.strip()
