@@ -421,7 +421,7 @@ def run_hero_cycle(cfg: dict, *, get, get_dorf1, click_adventure, dry: bool) -> 
         row = rows[idx]
         adv = hero.adventures[idx]
         what = (f"冒險 #{number}（第 {idx + 1} 列，{adv.place}，{row.icon}，距離 {adv.distance}，"
-                f"去程 {adv.duration // 60} 分，體力 {hud.health}%）")
+                f"去程 {adv.duration // 60} 分，體力 {health}%）")
         if dry:
             print(f"[DRY][冒險] 會派出 {what}")
             _hero_log(mode, "未送出", f"{what}（乾跑，沒有真的點擊）")
