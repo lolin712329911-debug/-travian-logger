@@ -69,7 +69,7 @@ jobs:
           QUIET_UTC: "0,0"
         #run: python travian_ci_run.py
         
-        run: python test_hero.py
+        run: python test_hero_cycle.py
         #run: python debug_login_flow.py
         #run: python debug_village_buildings.py
 
