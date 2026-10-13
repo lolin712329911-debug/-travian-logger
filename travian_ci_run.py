@@ -24,6 +24,7 @@ import sys
 from pathlib import Path
 
 import runner as R
+import travian_hero as H
 import travian_pages as P
 from notify import notify
 from sheets_writer import disable
@@ -108,6 +109,39 @@ def main() -> int:
             page.goto(url if url.startswith("http") else f"{BASE}/{url.lstrip('/')}",
                       wait_until="networkidle")
 
+        def click_adventure(number: int, row_index: int, expected):
+            """點冒險頁第 row_index 列的「探索」，並重讀頁面確認英雄真的出發。回傳 (成功與否, 說明)。
+            安全規則：點擊前重讀並核對（狀態、列數、地點／距離／時間／難度圖示、按鈕沒有 disabled、沒有
+            difficulty bonus）；只點 table.adventureList 裡的按鈕（不碰「觀看影片」）；成功只看重讀結果，
+            不看網路請求；不重試。確認視窗（International 11 未驗證）若出現且沒人按，重讀會看到沒變化。"""
+            page.goto(f"{BASE}/hero/adventures", wait_until="networkidle")
+            html = page.content()
+            hero, rows = H.parse_hero_json(html), H.parse_adventure_rows(html)
+            if hero is None or hero.status != H.STATUS_HOME:
+                return False, "點擊前重讀：英雄已不在家或讀不到狀態，不點"
+            if hero.difficulty_bonus:
+                return False, "點擊前重讀：difficulty bonus 為真，不點"
+            bad = H.rows_match_json(hero, rows)
+            if bad:
+                return False, f"點擊前核對失敗：{bad}"
+            if row_index >= len(rows) or hero.adventures[row_index].number != number:
+                return False, f"點擊前核對失敗：第 {row_index + 1} 列已不是 #{number}（清單變了）"
+            row = rows[row_index]
+            if (row.place, row.distance, row.duration, row.icon) != (
+                    expected.place, expected.distance, expected.duration, expected.icon):
+                return False, "點擊前核對失敗：該列內容和決策時不同"
+            if not row.has_button or row.disabled:
+                return False, "點擊前核對失敗：按鈕不存在或是 disabled"
+            btn = page.locator("table.adventureList tbody tr").nth(row_index).locator("td.button button")
+            btn.click()
+            page.wait_for_timeout(3000)
+            page.goto(f"{BASE}/hero/adventures", wait_until="networkidle")
+            after = H.parse_hero_json(page.content())
+            if after is not None and after.status == H.STATUS_GOING and after.adventure_number == number:
+                return True, f"已確認出發，約 {after.arrival_in} 秒後抵達"
+            got = None if after is None else (after.status, after.adventure_number)
+            return False, f"點擊後重讀沒看到出發（狀態/編號 = {got}）"
+
         # 安靜時段只是確認 session 還活著，不需要田的成本，省掉備援那次額外請求
         d1 = get_html("dorf1.php", need_cost=not quiet)
 
@@ -148,6 +182,10 @@ def main() -> int:
         code = R.run_build_cycle(
             cfg, get=get_html, get_dorf1=lambda: get_html("dorf1.php", need_cost=True),
             submit=submit, dry=dry, first_dorf1=d1)
+
+        # 英雄冒險：獨立於建城，失敗只通知（run_hero_cycle 內部已接住例外）；hero_adventure 預設 FALSE
+        R.run_hero_cycle(cfg, get=get_html, get_dorf1=lambda: get_html("dorf1.php"),
+                         click_adventure=click_adventure, dry=dry)
 
         # 不管這輪做了什麼，只要一開始 session 是活的，就把最新狀態存回去，
         # 讓下一輪 actions/cache 可以接續使用
