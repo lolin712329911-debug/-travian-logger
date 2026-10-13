@@ -118,4 +118,14 @@ check("allow hard picks #5", plan(HOME, cfg={"hero_allowed": "normal,hard"}), ("
 check("disabled button skip", plan(HOME, disabled=True)[0], "skip")
 only_hard = [a for a in ADV_P0 if a[3] == 0]
 check("only hard & normal-only cfg", plan(HOME, advs=only_hard)[0], "skip")
+
+
+# ---- BIDI 兩種型態（專案是正規表示式、備援是 list）
+import re, travian_hero as _H
+_orig = _H.BIDI
+for b in (re.compile("[\u202a-\u202e\u200e\u200f]"), ["\u202c", "\u202d"]):
+    _H.BIDI = b
+    check("clean with " + type(b).__name__, _H._clean("\u202d41\u202c%"), "41%")
+    check("hud with " + type(b).__name__, parse_hero_hud(hud(41)).health, 41)
+_H.BIDI = _orig
 print("ALL PASSED")
