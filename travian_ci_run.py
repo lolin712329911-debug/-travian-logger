@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-GitHub Actions 用的「Playwright 版」自動升級資源田（v2.2：安靜時段改為 keep-alive）。
+GitHub Actions 用的「Playwright 版」自動升級資源田（v2.3：接上 transfer_io）。
 
 v2.1：修正 title 被前端 JS 清空導致成本解析失敗的問題。get_html() 會在「這一頁抓到的
 所有田成本都是空的」時，改用 context.request.get() 發一個不經過瀏覽器渲染、不執行任何
@@ -14,6 +14,11 @@ v2.2：安靜時段（QUIET_UTC）不再直接離開。原本整段時間完全�
 仍然會載入一次 dorf1 確認 session 活著、把最新狀態存回 travian_state.json，但不建造、
 不寫 Sheet。session 真的失效時照舊走 disable()（sheets_writer）。
 
+v2.3：修正 NameError: name 'context' is not defined。transfer_io 的 make_io() 原本被貼在
+檔案最上層（context / dry / cfg 都還不存在）。現在改在 main() 裡、session 驗證完成且確定
+不會再替換 context 之後才建立 send / read_state，並以 transfer_io=(send, read_state)
+傳給 R.run_build_cycle。DRY 模式下 send 換成只印 log 的 make_dry_send()。
+
 這支只負責「Playwright 的 session（cache / 種子 Cookie）、怎麼抓頁面、怎麼送出網址」；
 決策、build_order、送出與驗證、Config / Actions 分頁都在 runner.py。
 
@@ -24,6 +29,7 @@ import sys
 from pathlib import Path
 
 import runner as R
+import transfer_io as TIO
 import travian_hero as H
 import travian_pages as P
 from notify import notify
@@ -31,15 +37,7 @@ from sheets_writer import disable
 
 BASE = os.getenv("TRAVIAN_BASE_URL", "").rstrip("/")
 STATE_PATH = Path(os.getenv("TRAVIAN_STATE_PATH", "travian_state.json"))
-import transfer_io as TIO   # 也可以放到檔案最上面
-send, read_state = TIO.make_io(context, BASE, referer=f"{BASE}/dorf1.php")
-if dry:
-    send = TIO.make_dry_send()   # DRY：use-item 一律不送（read_state 是唯讀查詢，照常送）
 
-code = R.run_build_cycle(
-    cfg, get=get_html, get_dorf1=lambda: get_html("dorf1.php", need_cost=True),
-    submit=submit, dry=dry, first_dorf1=d1,
-    transfer_io=(send, read_state))
 
 def parse_cookie_header(header: str, url: str) -> list:
     """把 'name1=value1; name2=value2' 這種原始 Cookie header 字串，
@@ -190,9 +188,16 @@ def main() -> int:
             browser.close()
             return 0
 
+        # session 已確認有效、context 之後不會再被替換，這時才建立 transfer_io
+        # （make_io 會把「當下」的 context 綁進 closure，所以不能在 context 重建之前呼叫）
+        send, read_state = TIO.make_io(context, BASE, referer=f"{BASE}/dorf1.php")
+        if dry:
+            send = TIO.make_dry_send()   # DRY：use-item 一律不送（read_state 是唯讀查詢，照常送）
+
         code = R.run_build_cycle(
             cfg, get=get_html, get_dorf1=lambda: get_html("dorf1.php", need_cost=True),
-            submit=submit, dry=dry, first_dorf1=d1)
+            submit=submit, dry=dry, first_dorf1=d1,
+            transfer_io=(send, read_state))
 
         # 英雄冒險：獨立於建城，失敗只通知（run_hero_cycle 內部已接住例外）；hero_adventure 預設 FALSE
         R.run_hero_cycle(cfg, get=get_html, get_dorf1=lambda: get_html("dorf1.php", raw=True),
