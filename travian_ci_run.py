@@ -31,7 +31,15 @@ from sheets_writer import disable
 
 BASE = os.getenv("TRAVIAN_BASE_URL", "").rstrip("/")
 STATE_PATH = Path(os.getenv("TRAVIAN_STATE_PATH", "travian_state.json"))
+import transfer_io as TIO   # 也可以放到檔案最上面
+send, read_state = TIO.make_io(context, BASE, referer=f"{BASE}/dorf1.php")
+if dry:
+    send = TIO.make_dry_send()   # DRY：use-item 一律不送（read_state 是唯讀查詢，照常送）
 
+code = R.run_build_cycle(
+    cfg, get=get_html, get_dorf1=lambda: get_html("dorf1.php", need_cost=True),
+    submit=submit, dry=dry, first_dorf1=d1,
+    transfer_io=(send, read_state))
 
 def parse_cookie_header(header: str, url: str) -> list:
     """把 'name1=value1; name2=value2' 這種原始 Cookie header 字串，
