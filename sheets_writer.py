@@ -132,7 +132,7 @@ _TRUE_WORDS = ("true", "1", "yes", "on", "是", "啟用")   # hero_adventure 專
 # Config 分頁的預設列（順序 = 補上去時的順序）。C 欄是給人看的說明，程式只讀 A、B 欄。
 _CONFIG_ORDER = ("enabled", "target_level", "queue_slots", "is_capital",
                  "max_builds", "target_building_level", "build_order",
-                 "hero_adventure", "hero_min_health", "hero_allowed", "hero_skip_on_incoming")
+                 "hero_adventure", "hero_min_health", "hero_allowed", "hero_skip_on_incoming", "hero_transfer_mode", "hero_transfer_min", "hero_transfer_max_gap", "hero_transfer_eta_min")
 _CONFIG_NOTES = {
     "enabled": "FALSE = 緊急停止；session 失效時程式也會改成 FALSE",
     "target_level": "資源田升到幾級（沒設 build_order 時使用）",
