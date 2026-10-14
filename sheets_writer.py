@@ -220,7 +220,7 @@ def load_config() -> dict:
             cfg[k] = v.lower() not in _FALSE_WORDS       # 空白 = True（保守：有來襲就不派）
         elif k == "hero_allowed":
             if v:
-            cfg[k] = v
+                cfg[k] = v
         elif k == "build_order":
             cfg[k] = v
         elif k == "hero_transfer_mode":
