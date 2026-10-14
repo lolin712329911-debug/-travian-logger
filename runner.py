@@ -36,6 +36,7 @@ from datetime import datetime, timezone
 import travian_agent as T   # 決策與可變設定：QUEUE_SLOTS / TARGET_LEVEL / IS_CAPITAL 由這裡賦值，plan / plan_with_order
 import travian_pages as P   # 頁面解析
 import travian_hero as H    # 英雄冒險：解析與決策（純函式）
+import travian_transfer as TR   # 英雄道具庫轉資源：決策與執行（純函式＋注入 send/read_state）
 from notify import notify
 from travian_const import BUILDING_GIDS, RES_NAMES, TRIBE_NAMES, gid_name
 from travian_models import Field
@@ -273,8 +274,48 @@ def _setup_player(cfg: dict, d1: str, get):
 
 
 # ---------------- 主迴圈 ----------------
+def _try_transfer(tcfg, action, st, transfer_io, dry: bool, mode: str):
+    """action 是 wait_res 時，判斷要不要從英雄道具庫轉資源。回傳 (attempted, ok)：
+    attempted = 真的送出過 use-item（不管成敗，用來擋「每輪最多一次」）；ok = 全部送出且村莊現量驗證到位。
+    任何例外只通知、不往外拋、不 disable。"""
+    send, read_state = transfer_io
+    f = action[2]
+    target = dict(zip(TR.RES, f.cost))             # 目標＝這個升級的成本；缺口由 decide_transfer 算
+    eta = st.attack_eta_s if st.attacks else None  # 佇列沒滿才會有 wait_res，所以 queue_busy 固定 False
+    try:
+        state = read_state()
+        plan = TR.decide_transfer(tcfg, eta, False, target, state)
+    except Exception as e:
+        print(f"[{mode}][轉移] 讀取狀態／決策失敗，略過本輪轉移: {e!r}")
+        notify(f"英雄道具庫轉移：讀取狀態失敗，略過本輪（不影響建城）: {e!r}")
+        return False, False
+
+    desc = f"{_fname(f)} {_flv(f)}｜{plan.decision}：{plan.reason}｜缺口={plan.gaps}｜來襲ETA={eta}"
+    print(f"[{mode}][轉移] {desc}")
+
+    def log(result, extra=""):
+        log_action([_now(), "轉移", f.aid, f.gid, f.level, "/".join(map(str, f.cost)),
+                    mode, result, desc + extra])
+
+    if plan.decision != "transfer":
+        log(plan.decision)
+        return False, False
+    if dry:
+        log("未送出", f"｜items={plan.items}（乾跑，沒有真的送 use-item）")
+        return False, False
+
+    try:
+        res = TR.execute_transfer(plan, target, send, read_state, phases=TR.FRONTEND_PHASES)
+    except Exception as e:
+        log("例外", f"｜{e!r}")
+        notify(f"英雄道具庫轉移出錯（已送出的不會重送）: {e!r}")
+        return True, False
+    log("成功" if res.ok else "失敗", f"｜{res.detail}｜sent={res.sent}")
+    notify(("已從英雄道具庫轉資源：" if res.ok else "英雄道具庫轉移沒有確認成功（不重試）：") + f"{res.detail}")
+    return True, res.ok
+  
 def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
-                    first_dorf1: str = None, sleep=time.sleep) -> int:
+                    first_dorf1: str = None, sleep=time.sleep, transfer_io=None) -> int:
     """跑一輪：最多送出 cfg["max_builds"] 個升級。回傳結束碼（0 正常、1 需要人看）。"""
     T.TARGET_LEVEL = cfg["target_level"]
     T.IS_CAPITAL = bool(cfg.get("is_capital"))
@@ -292,6 +333,8 @@ def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
     mode = "DRY" if dry else "LIVE"
     touched = set()
     info = None
+    tcfg = TR.parse_config(cfg)
+    transferred = False        # 每輪最多嘗試一次轉移（max_builds > 1 也一樣）
 
     for i in range(cfg["max_builds"]):
         d1 = first_dorf1 if (i == 0 and first_dorf1 is not None) else get_dorf1()
@@ -300,23 +343,36 @@ def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
             return 1
         if i == 0:
             info = _setup_player(cfg, d1, get)    # 決定佇列長度、印文化點（只讀）
-        st = P.parse_dorf1(d1)
+                st = P.parse_dorf1(d1)
         if i == 0:
-            d2 = log_village_snapshot(d1, get, st)     # 每輪記一次村莊數據到 Sheet1
-            log_village_structure(d1, d2, get, st)     # 資源田/建築/可蓋清單，有變動才寫
-            log_player_state(info, st)                 # 文化點、倉庫容量 → state 分頁（覆蓋式，給 Gemini 讀）
-        for f in st.fields:                       # 本輪已送出的田，不要重複選
-            if f.aid in touched:
-                f.building = True
-        if dry and touched:                       # 乾跑沒真的送出，佇列不會變：
-            st.queue = st.queue + [1800] * len(touched)   # 把本輪「已送出」的也算進佇列長度
-            st.queue_info = st.queue_info + ["（乾跑模擬：本輪已排入的升級）"] * len(touched)
+            d2 = log_village_snapshot(d1, get, st)
+            log_village_structure(d1, d2, get, st)
+            log_player_state(info, st)
 
-        if order:                                 # 有設 build_order：照順序建城
-            action = T.plan_with_order(st, order, get, touched)
-        else:                                     # 沒設：資源田 + 倉庫/糧倉
+        def _plan(st):
+            for f in st.fields:                       # 本輪已送出的田，不要重複選
+                if f.aid in touched:
+                    f.building = True
+            if dry and touched:                       # 乾跑沒真的送出：把「已送出」的也算進佇列長度
+                st.queue = st.queue + [1800] * len(touched)
+                st.queue_info = st.queue_info + ["（乾跑模擬：本輪已排入的升級）"] * len(touched)
+            if order:
+                return T.plan_with_order(st, order, get, touched)
             st.fields += _legacy_candidates(get, cfg["target_building_level"], touched)
-            action = T.plan(st)
+            return T.plan(st)
+
+        action = _plan(st)
+
+        # 付不起 → 來襲時從英雄道具庫補缺口（mode=off 或沒傳 transfer_io 時完全不動）
+        if (action[0] == "wait_res" and transfer_io is not None
+                and tcfg.mode != "off" and not transferred):
+            attempted, ok = _try_transfer(tcfg, action, st, transfer_io, dry, mode)
+            transferred = transferred or attempted
+            if ok:                                    # 資源到位：重讀 dorf1，同一輪重新決策、開工
+                d1 = get_dorf1()
+                st = P.parse_dorf1(d1)
+                action = _plan(st)
+              
 
         print(f"[{mode}] 決策: {action[0]}  佇列={st.queue}  存量={st.stock}  來襲={st.attacks}")
         if st.attacks:
