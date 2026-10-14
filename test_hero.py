@@ -1,4 +1,5 @@
-"""travian_hero 離線測試（不需網路、不需 pytest：python test_hero.py）。
+"""版本：hero-v1.2（2026-10-13，加入真實 HUD 片段測試；版本歷史見 project-notes 的「版本對照」）
+travian_hero 離線測試（不需網路、不需 pytest：python test_hero.py）。
 
 fixtures：
 - JSON 兩份是 International 11 的真實 viewData（P0 在家 ts1791799322、P1 去程 ts1791799378）。
@@ -128,4 +129,15 @@ for b in (re.compile("[\u202a-\u202e\u200e\u200f]"), ["\u202c", "\u202d"]):
     check("clean with " + type(b).__name__, _H._clean("\u202d41\u202c%"), "41%")
     check("hud with " + type(b).__name__, parse_hero_hud(hud(41)).health, 41)
 _H.BIDI = _orig
+
+# ---- 真實頁面片段（International 11，2026-10-13 報告頁頂端列，返回中）：fixture_hud_returning_real.html
+# 內容取自使用者上傳的原始碼（體力／經驗／冒險數／heroStatus 逐字；英雄頭像與長提示做了縮短）
+import os
+_p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixture_hud_returning_real.html")
+if os.path.exists(_p):
+    _real = parse_hero_hud(open(_p, encoding="utf-8").read())
+    check("real hud health", _real.health, 90)
+    check("real hud exp", _real.experience, 21)
+    check("real hud adv count", _real.adventures_count, 16)
+    check("real hud returning = not at home", _real.at_home, False)
 print("ALL PASSED")
