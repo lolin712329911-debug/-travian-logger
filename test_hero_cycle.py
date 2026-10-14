@@ -1,4 +1,5 @@
-"""Config 解析與 run_hero_cycle 的離線測試（python test_hero_cycle.py）。
+"""版本：hero-v1.2（2026-10-14，加入 4 項體力回歸測試；版本歷史見 project-notes 的「版本對照」）
+Config 解析與 run_hero_cycle 的離線測試（python test_hero_cycle.py）。
 專案其他模組（notify、travian_const、travian_pages）若不在路徑上，會用最小的 stub 取代，只為了能 import。"""
 import contextlib, io, sys, types
 
@@ -73,11 +74,11 @@ R.time.sleep = lambda s: None
 STOCK = '<div id="stockBar"></div>'
 
 def run(status, cfg=None, h=100, icon="heroHome", attacks=0, click=None, dry=False, advs=TH.ADV_P0,
-        flag=True, get_raises=False, **kw):
+        flag=True, get_raises=False, d1_h=None, adv_h=None, **kw):
     logs.clear(); notes.clear(); clicks.clear()
     R.P.parse_dorf1 = lambda html: State(stock=[0]*4, cap=[0]*4, prod=[0]*4, free_crop=0, attacks=attacks)
-    d1 = STOCK + TH.hud(h, icon)
-    adv = TH.hud(h, "heroHome") + TH._json(status, advs) + (TH.table(advs, **kw) if status["status"] != 50 else "")
+    d1 = STOCK + TH.hud(h if d1_h is None else d1_h, icon)           # d1_h=""：模擬 dorf1 讀不到體力
+    adv = TH.hud(h if adv_h is None else adv_h, "heroHome") + TH._json(status, advs) + (TH.table(advs, **kw) if status["status"] != 50 else "")
     def get(p):
         if get_raises: raise RuntimeError("boom")
         return adv
@@ -101,5 +102,10 @@ run(TH.RETURN, disabled=True);           check("returning: silent", (logs, click
 run(TH.HOME, icon="heroRunning");        check("hud not at home: silent", (logs, clicks), ([], []))
 run({**TH.HOME, "status": 30});          check("unknown status: log + notify", (len(logs), len(notes), clicks), (1, 1, []))
 run(TH.HOME, get_raises=True);           check("exception: notified, not raised", (len(notes), clicks), (1, []))
-R_ok = True
+# LIVE 首輪的問題（2026-10-13）：渲染頁的 title 被前端 JS 清空 → 體力讀不到。
+# 修法：體力優先用 dorf1（原始 HTML）的值，冒險頁的值當備援。
+run(TH.HOME, adv_h="");                  check("health from dorf1 when adventure page blank → send", len(clicks), 1)
+run(TH.HOME, d1_h="");                   check("health from adventure page when dorf1 blank → send", len(clicks), 1)
+run(TH.HOME, d1_h="", adv_h="");         check("health unknown on both → skip + log", (clicks, logs[0][7]), ([], "未出發"))
+run(TH.HOME, d1_h=40, adv_h=100);        check("dorf1 health wins over adventure page", clicks, [])
 print("ALL PASSED")
