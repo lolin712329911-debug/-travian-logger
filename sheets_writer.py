@@ -145,7 +145,10 @@ _CONFIG_NOTES = {
     "hero_min_health": "英雄體力 ≤ 這個數字就不出發（讀不到體力也不出發）",
     "hero_allowed": "允許的冒險難度圖示：normal 或 normal,hard（預設 normal）",
     "hero_skip_on_incoming": "TRUE = 村莊有來襲時不派英雄（預設 TRUE）",
-    "hero_transfer_mode":"off／incoming_only／always",
+    "hero_transfer_mode": "off／incoming_only／always（看不懂一律當 off）",
+    "hero_transfer_min": "需要轉的每一種資源，道具庫存量都要 ≥ 此值才轉",
+    "hero_transfer_max_gap": "各資源缺口加總 > 此值就不轉",
+    "hero_transfer_eta_min": "最快來襲 ETA ≤ 此分鐘數才處理",
 }
 
 
@@ -217,8 +220,8 @@ def load_config() -> dict:
             cfg[k] = v.lower() not in _FALSE_WORDS       # 空白 = True（保守：有來襲就不派）
         elif k == "hero_allowed":
             if v:
-                cfg[k] = v
-         elif k == "build_order":
+            cfg[k] = v
+        elif k == "build_order":
             cfg[k] = v
         elif k == "hero_transfer_mode":
             cfg[k] = v.lower()          # 只是存字串；空白／看不懂由 parse_config 當成 off
