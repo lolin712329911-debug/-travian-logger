@@ -1,8 +1,11 @@
-"""travian_transfer.py v1.0  英雄道具庫 → 村莊 資源轉移（決策為純函式，網路由呼叫端注入）
+"""travian_transfer.py v1.1  英雄道具庫 → 村莊 資源轉移（決策為純函式，網路由呼叫端注入）
 
-已驗證（見筆記 §3.6）：graphql 回應格式、use-item 的 Payload、typeId 145~148。
-未驗證（✗）：use-item 的 HTTP 方法（PUT/204 與 POST/200 都出現過）、graphql 請求的 body 外層格式。
-→ 本模組不替你決定方法：send 由呼叫端提供；轉完一定用 read_state 驗證，沒到位只回報、不重試。
+已驗證（見筆記 §3.6）：graphql 回應格式、use-item 的 Payload、typeId 145~148、
+  前端轉移＝先對每個缺的資源 PUT（204），再對每個資源 POST（200），PUT 與 POST 的 Payload 相同，庫存只扣一次。
+未驗證（✗）：只送其中一種是否有效；graphql 外層 body（△ 推定 {"query": ...}）。
+→ 轉移照前端順序複製（phases=("PUT","POST")）；轉完一定用 read_state 驗證，沒到位只回報、不重試。
+
+v1.1 變更：execute_transfer 新增 phases 參數；新增 graphql_body()。phases=None 時行為與 v1.0 完全相同。
 """
 from __future__ import annotations
 import re
@@ -12,6 +15,7 @@ RES = ("lumber", "clay", "iron", "crop")
 TYPE_ID = {"lumber": 145, "clay": 146, "iron": 147, "crop": 148}   # ✓ graphql 回應
 USE_ITEM_PATH = "/api/v1/hero/v2/inventory/use-item"
 GRAPHQL_PATH = "/api/v1/graphql"
+FRONTEND_PHASES = ("PUT", "POST")   # ✓ 前端實際順序：全部 PUT，再全部 POST
 
 # ✓ 使用者提供的實際 query（原樣）
 STATE_QUERY = (
@@ -24,6 +28,11 @@ STATE_QUERY = (
     "fragment heroInventoryItemFields on HeroInventoryItem{id amount placeId name typeId isConsumable "
     "isUsableIfDead attributes{description descriptionDetails}slot quality rarity possibleAmountsToSell}"
 )
+
+
+def graphql_body() -> dict:
+    """△ 外層 body 推定只有 query（未看到 variables）。"""
+    return {"query": STATE_QUERY}
 
 
 @dataclass(frozen=True)
@@ -145,18 +154,29 @@ class Result:
     sent: list = field(default_factory=list)
 
 
-def execute_transfer(plan: Plan, target: dict, send, read_state) -> Result:
-    """send(payload)->None（失敗請 raise）；read_state()->State。
-    每個缺的資源送一筆；中途失敗就停（不重試、不換方法）；最後讀村莊驗證。"""
+def execute_transfer(plan: Plan, target: dict, send, read_state, phases=None) -> Result:
+    """read_state()->State。失敗一律停（不重試、不換方法），最後讀村莊驗證。
+    phases=None：send(payload)->None，每個缺的資源送一筆（v1.0 行為）。
+    phases=("PUT","POST")：依序對每個 phase、每個 payload 呼叫 send(payload, method)；
+      任一筆失敗（send raise）就停，不再送後面的 phase。送出記錄 sent 為 (method, payload)。"""
     if plan.decision != "transfer":
         return Result(False, f"plan 不是 transfer: {plan.decision}")
     sent = []
-    for payload in plan.items:
-        try:
-            send(payload)
-        except Exception as e:  # noqa: BLE001
-            return Result(False, f"送出失敗 {payload['itemId']}: {e}", sent)
-        sent.append(payload)
+    if phases is None:
+        for payload in plan.items:
+            try:
+                send(payload)
+            except Exception as e:  # noqa: BLE001
+                return Result(False, f"送出失敗 {payload['itemId']}: {e}", sent)
+            sent.append(payload)
+    else:
+        for method in phases:
+            for payload in plan.items:
+                try:
+                    send(payload, method)
+                except Exception as e:  # noqa: BLE001
+                    return Result(False, f"{method} 失敗 {payload['itemId']}: {e}（不重試、不送後面的階段）", sent)
+                sent.append((method, payload))
     st = read_state()
     short = {r: (st.stock[r], target[r]) for r in RES if plan.gaps.get(r) and st.stock[r] < target[r]}
     if short:
