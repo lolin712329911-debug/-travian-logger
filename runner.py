@@ -343,7 +343,7 @@ def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
             return 1
         if i == 0:
             info = _setup_player(cfg, d1, get)    # 決定佇列長度、印文化點（只讀）
-                st = P.parse_dorf1(d1)
+        st = P.parse_dorf1(d1)
         if i == 0:
             d2 = log_village_snapshot(d1, get, st)
             log_village_structure(d1, d2, get, st)
