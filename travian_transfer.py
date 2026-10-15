@@ -1,9 +1,11 @@
-"""travian_transfer.py v1.1  英雄道具庫 → 村莊 資源轉移（決策為純函式，網路由呼叫端注入）
+"""travian_transfer.py v1.2  英雄道具庫 → 村莊 資源轉移（決策為純函式，網路由呼叫端注入）
 
 已驗證（見筆記 §3.6）：graphql 回應格式、use-item 的 Payload、typeId 145~148、
   前端轉移＝先對每個缺的資源 PUT（204），再對每個資源 POST（200），PUT 與 POST 的 Payload 相同，庫存只扣一次。
 未驗證（✗）：只送其中一種是否有效；graphql 外層 body（△ 推定 {"query": ...}）。
 → 轉移照前端順序複製（phases=("PUT","POST")）；轉完一定用 read_state 驗證，沒到位只回報、不重試。
+
+v1.2 變更：phases 路徑（非 None）送出前先讀一次狀態當基準，結束（成功或失敗）後都重讀，把村莊現量與道具庫庫存的變化寫進 detail；失敗時也會讀，用來判斷 PUT 有沒有生效。phases=None 行為與 v1.0 完全相同。
 
 v1.1 變更：execute_transfer 新增 phases 參數；新增 graphql_body()。phases=None 時行為與 v1.0 完全相同。
 """
@@ -162,6 +164,30 @@ def execute_transfer(plan: Plan, target: dict, send, read_state, phases=None) ->
     if plan.decision != "transfer":
         return Result(False, f"plan 不是 transfer: {plan.decision}")
     sent = []
+    before = None
+    if phases is not None:
+        try:
+            before = read_state()
+        except Exception:  # noqa: BLE001
+            before = None          # 讀不到基準不阻擋轉移（原本就沒有這一步），只是少了前後對照
+
+    def diag() -> str:
+        """前後對照：村莊現量與道具庫庫存的變化（只在 phases 路徑；讀不到就說讀不到）。"""
+        if before is None:
+            return "（沒有送出前基準，無法對照）"
+        try:
+            now = read_state()
+        except Exception as e:  # noqa: BLE001
+            return f"（送出後重讀失敗: {e!r}）"
+        parts = []
+        for r in RES:
+            if not plan.gaps.get(r):
+                continue
+            b_inv, n_inv = before.inventory.get(r), now.inventory.get(r)
+            inv = f"{b_inv['amount']}→{n_inv['amount']}" if b_inv and n_inv else "?"
+            parts.append(f"{r}: 村莊 {before.stock[r]}→{now.stock[r]}（目標 {target[r]}）｜庫存 {inv}（預計轉 {plan.gaps[r]}）")
+        return "｜前後對照 " + "；".join(parts)
+
     if phases is None:
         for payload in plan.items:
             try:
@@ -173,12 +199,13 @@ def execute_transfer(plan: Plan, target: dict, send, read_state, phases=None) ->
         for method in phases:
             for payload in plan.items:
                 try:
-                    send(payload, method)
+                    status = send(payload, method)
                 except Exception as e:  # noqa: BLE001
-                    return Result(False, f"{method} 失敗 {payload['itemId']}: {e}（不重試、不送後面的階段）", sent)
-                sent.append((method, payload))
+                    return Result(False, f"{method} 失敗 {payload['itemId']}: {e}（不重試、不送後面的階段）" + diag(), sent)
+                sent.append((method, payload, status))
     st = read_state()
     short = {r: (st.stock[r], target[r]) for r in RES if plan.gaps.get(r) and st.stock[r] < target[r]}
+    extra = diag() if phases is not None else ""
     if short:
-        return Result(False, f"轉移後村莊仍不足 {short}（可能方法錯誤；不重試）", sent)
-    return Result(True, "已轉移並驗證", sent)
+        return Result(False, f"轉移後村莊仍不足 {short}（可能方法錯誤；不重試）" + extra, sent)
+    return Result(True, "已轉移並驗證" + extra, sent)
