@@ -374,6 +374,17 @@ def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
                 action = _plan(st)
               
 
+        # 缺口太大／庫存不足／轉移失敗，且有來襲：改做「現有資源就付得起」的項目，趁資源被搶之前用掉。
+        # 只在轉移功能開著（mode≠off）、舊流程（沒有 build_order，有 build_order 就是嚴格照順序）時啟用；
+        # 直接用這一輪已算好候選的 st，不重抓頁面、不重複加候選。
+        if (action[0] == "wait_res" and transfer_io is not None and tcfg.mode != "off"
+                and st.attacks and not order):
+            alt = T.plan(st, affordable_only=True)
+            if alt[0] == "build":
+                print(f"[{mode}][轉移] 資源補不到，有來襲：改做付得起的 {_fname(alt[1])} {_flv(alt[1])}"
+                      f"（原本要等 {_fname(action[2])} {_flv(action[2])}）")
+                action = alt
+
         print(f"[{mode}] 決策: {action[0]}  佇列={st.queue}  存量={st.stock}  來襲={st.attacks}")
         if st.attacks:
             eta = f"，最快 {_mins(st.attack_eta_s)} 後抵達" if st.attack_eta_s is not None else ""
