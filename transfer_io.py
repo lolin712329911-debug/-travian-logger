@@ -1,4 +1,6 @@
-"""transfer_io.py v1.0  travian_transfer 需要的網路函式（send／read_state），用 Playwright 的 context.request。
+"""transfer_io.py v1.1（失敗時帶出回應內容；成功時回傳狀態碼）
+
+v1.0  travian_transfer 需要的網路函式（send／read_state），用 Playwright 的 context.request。
 
 △ 全部未實測：認證靠同一個 context 的 Cookie（graphql 請求標頭只有 Cookie 認證，use-item 推測相同）。
 用法（在 travian_ci_run.py 有 context 的地方）：
@@ -17,11 +19,16 @@ def make_io(context, base_url: str, referer: str = ""):
     if referer:
         headers["referer"] = referer
 
-    def send(payload: dict, method: str = "POST") -> None:
+    def send(payload: dict, method: str = "POST") -> str:
         fn = {"PUT": context.request.put, "POST": context.request.post}[method]
         r = fn(base + TR.USE_ITEM_PATH, data=json.dumps(payload), headers=headers)
         if not r.ok:                       # PUT 預期 204，POST 預期 200
-            raise RuntimeError(f"{method} use-item HTTP {r.status}")
+            try:
+                body = r.text()[:300]
+            except Exception as e:  # noqa: BLE001
+                body = f"(讀不到回應內容: {e!r})"
+            raise RuntimeError(f"{method} use-item HTTP {r.status} 回應={body!r}")
+        return f"{method} {r.status}"      # 讓呼叫端記錄成功的狀態碼（可驗證 PUT 是 204）
 
     def read_state() -> "TR.State":
         r = context.request.post(base + TR.GRAPHQL_PATH, data=json.dumps(TR.graphql_body()), headers=headers)
