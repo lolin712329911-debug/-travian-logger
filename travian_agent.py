@@ -61,8 +61,10 @@ def resolve_queue_slots(manual, info):
 
 
 # ---------------- 決策 ----------------
-def plan(st: State):
-    """回傳 (動作, 參數...)。動作: build / wait_res / wait_queue / need_storage / done"""
+def plan(st: State, affordable_only: bool = False):
+    """回傳 (動作, 參數...)。動作: build / wait_res / wait_queue / need_storage / done
+    affordable_only=True：只在「現有資源就付得起」的候選裡挑 ROI 最好的；沒有付得起的就回 (\"no_affordable\",)。
+    （來襲時趁資源被搶前用掉，由 runner 在轉移補不到資源時呼叫；預設 False＝原行為完全不變）"""
     if len(st.queue) >= QUEUE_SLOTS:
         return ("wait_queue", min(st.queue) + 5)
 
@@ -75,6 +77,10 @@ def plan(st: State):
              and (f.gid in BUILDING_GIDS or f.level < eff_target)]
     if not cands:
         return ("done",)
+    if affordable_only:
+        cands = [f for f in cands if all(c <= s for c, s in zip(f.cost, st.stock))]
+        if not cands:
+            return ("no_affordable",)
 
     # 糧食淨產出太低時優先升農田
     pool = [f for f in cands if f.gid == 4] if st.free_crop < 5 else cands
