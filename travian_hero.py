@@ -1,4 +1,4 @@
-"""版本：hero-v1.1（2026-10-13，BIDI 同時支援正規表示式與 list；版本歷史見 project-notes 的「版本對照」）
+"""版本：hero-v1.2（2026-10-16，體力 > hero_hard_min_health 才可選 hard，可選時優先 hard；2026-10-13 hero-v1.1，BIDI 同時支援正規表示式與 list；版本歷史見 project-notes 的「版本對照」）
 英雄冒險：解析（階段 A）與決策（階段 B）。純函式，不碰網路、不碰 Sheet。
 
 依據：project-notes §13.0（英雄冒險自動化統整）。
@@ -259,14 +259,16 @@ def plan_adventure(
         return ("skip", mismatch)
 
     allowed = {x.strip() for x in str(cfg.get("hero_allowed", "normal")).split(",") if x.strip()}
+    if health <= int(cfg.get("hero_hard_min_health", 60)):
+        allowed.discard("hard")                       # 體力不夠高時，即使 hero_allowed 有 hard 也不選困難
     candidates = []
     for i, (r, a) in enumerate(zip(rows, hero.adventures)):
         if r.icon not in allowed:
             continue
         if not r.has_button or r.disabled:
             continue
-        candidates.append((a.duration, a.number, i))
+        candidates.append((0 if r.icon == "hard" else 1, a.duration, a.number, i))   # 能選 hard（體力夠高且允許）就優先 hard
     if not candidates:
         return ("skip", f"沒有符合難度 {sorted(allowed)} 且可按的冒險")
-    _, number, idx = min(candidates)  # 去程最短；同時間取編號小
+    _, _, number, idx = min(candidates)  # hard 優先（體力不夠時 hard 已被排除）；同類取去程最短；同時間取編號小
     return ("send", number, idx)
