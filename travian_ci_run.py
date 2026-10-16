@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-GitHub Actions 用的「Playwright 版」自動升級資源田（v2.3：接上 transfer_io）。
+GitHub Actions 用的「Playwright 版」自動升級資源田（v2.4：接上 hero_focus）。
 
 v2.1：修正 title 被前端 JS 清空導致成本解析失敗的問題。get_html() 會在「這一頁抓到的
 所有田成本都是空的」時，改用 context.request.get() 發一個不經過瀏覽器渲染、不執行任何
@@ -19,6 +19,10 @@ v2.3：修正 NameError: name 'context' is not defined。transfer_io 的 make_io
 不會再替換 context 之後才建立 send / read_state，並以 transfer_io=(send, read_state)
 傳給 R.run_build_cycle。DRY 模式下 send 換成只印 log 的 make_dry_send()。
 
+v2.4：接上英雄產量加成（hero_focus）。和 transfer_io 同一個時機建立 read_focus / set_focus，
+以 focus_io=(read_focus, set_focus) 傳給 R.run_build_cycle；DRY 時 set_focus 換成只印 log 的版本
+（read_focus 是唯讀 GET，照常送）。是否真的切換由 Config 的 hero_focus_mode（預設 off）決定。
+
 這支只負責「Playwright 的 session（cache / 種子 Cookie）、怎麼抓頁面、怎麼送出網址」；
 決策、build_order、送出與驗證、Config / Actions 分頁都在 runner.py。
 
@@ -29,6 +33,7 @@ import sys
 from pathlib import Path
 
 import runner as R
+import hero_focus as HF
 import transfer_io as TIO
 import travian_hero as H
 import travian_pages as P
@@ -193,11 +198,14 @@ def main() -> int:
         send, read_state = TIO.make_io(context, BASE, referer=f"{BASE}/dorf1.php")
         if dry:
             send = TIO.make_dry_send()   # DRY：use-item 一律不送（read_state 是唯讀查詢，照常送）
+        read_focus, set_focus = HF.make_focus_io(context, BASE)
+        if dry:
+            set_focus = HF.make_dry_set_focus()   # DRY：改加成一律不送（read_focus 是唯讀 GET）
 
         code = R.run_build_cycle(
             cfg, get=get_html, get_dorf1=lambda: get_html("dorf1.php", need_cost=True),
             submit=submit, dry=dry, first_dorf1=d1,
-            transfer_io=(send, read_state))
+            transfer_io=(send, read_state), focus_io=(read_focus, set_focus))
 
         # 英雄冒險：獨立於建城，失敗只通知（run_hero_cycle 內部已接住例外）；hero_adventure 預設 FALSE
         R.run_hero_cycle(cfg, get=get_html, get_dorf1=lambda: get_html("dorf1.php", raw=True),
