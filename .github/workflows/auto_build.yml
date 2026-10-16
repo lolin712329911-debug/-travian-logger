@@ -67,8 +67,9 @@ jobs:
           # 安靜時段「起,迄」（UTC，起 ≤ 小時 < 迄）：這段時間只做 keep-alive、不建造。
           # "0,0" = 起迄相同 = 永不安靜（目前）；"17,23" = UTC 17~22 安靜。需與上面的 cron 搭配。
           QUIET_UTC: "0,0"
-        run: python travian_ci_run.py
-        
+        #run: python travian_ci_run.py
+
+        run: python test_focus.py
         #run: python test_transfer.py
         #run: python test_hero_cycle.py
         #run: python debug_login_flow.py
