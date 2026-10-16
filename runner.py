@@ -26,6 +26,8 @@ Sheet 的「Config」分頁：A 欄名稱、B 欄值，例如
   hero_min_health       45    <- 體力 <= 這個數字不出發（讀不到也不出發）
   hero_allowed          normal <- 允許的難度圖示：normal 或 normal,hard
   hero_skip_on_incoming TRUE  <- 有來襲時不派英雄
+  hero_focus_mode       off   <- auto = 建城「等待資源」時自動切換英雄產量加成（其餘一律當 off）
+  hero_focus_min_hours  3     <- 兩次切換至少間隔幾小時
 C 欄是說明，程式不讀。分頁不存在會自動建立；缺哪一列就補哪一列（只補缺的，已填的值不動）。
 """
 import os
@@ -37,13 +39,14 @@ import travian_agent as T   # 決策與可變設定：QUEUE_SLOTS / TARGET_LEVEL
 import travian_pages as P   # 頁面解析
 import travian_hero as H    # 英雄冒險：解析與決策（純函式）
 import travian_transfer as TR   # 英雄道具庫轉資源：決策與執行（純函式＋注入 send/read_state）
+import hero_focus as HF         # 英雄產量加成切換：決策（純函式）＋注入 read_focus/set_focus
 from notify import notify
 from travian_const import BUILDING_GIDS, RES_NAMES, TRIBE_NAMES, gid_name
 from travian_models import Field
 
 
 # Sheet 讀寫在 sheets_writer.py
-from sheets_writer import disable, has_sheet, load_config, log_action, open_sheet, write_state
+from sheets_writer import disable, has_sheet, last_action_age_hours, load_config, log_action, open_sheet, write_state
 
 
 def _hours(sec):
@@ -314,8 +317,63 @@ def _try_transfer(tcfg, action, st, transfer_io, dry: bool, mode: str):
     notify(("已從英雄道具庫轉資源：" if res.ok else "英雄道具庫轉移沒有確認成功（不重試）：") + f"{res.detail}")
     return True, res.ok
   
+def _try_focus(cfg, action, st, focus_io, get_dorf1, dry: bool, mode: str) -> None:
+    """action 是 wait_res 時，看要不要切換英雄產量加成，讓缺的資源補得更快。
+    只有「要切換」才寫 Actions；不用切換只印 log（避免每 40 分鐘一列）。
+    任何例外只通知、不往外拋、不 disable。DRY 只記錄「會改成什麼」，不送。"""
+    read_focus, set_focus = focus_io
+    f = action[2]
+    gaps = {i + 1: c - s for i, (c, s) in enumerate(zip(f.cost, st.stock)) if c > s}
+    prod = {i + 1: st.prod[i] for i in range(4)}
+    prod[4] = st.free_crop if st.free_crop is not None else st.prod[3]   # 穀用淨產量（自由穀物），切換前後同一來源
+    try:
+        cur, types = read_focus()
+        age = last_action_age_hours("加成")
+        dec = HF.decide_focus(gaps, prod, cur, types, age,
+                              min_hours=float(cfg.get("hero_focus_min_hours", 3)),
+                              back_to_balanced=False)
+    except Exception as e:
+        print(f"[{mode}][加成] 讀取狀態／決策失敗，略過: {e!r}")
+        notify(f"英雄產量加成：讀取狀態失敗，略過本輪（不影響建城）: {e!r}")
+        return
+    kind, target, why = dec
+    desc = (f"{_fname(f)} {_flv(f)}｜目前 {HF.RES_NAME[cur]}｜缺口={gaps}｜"
+            f"產量={[prod[k] for k in (1, 2, 3, 4)]}｜{kind}：{why}")
+    print(f"[{mode}][加成] {desc}")
+    if kind != "switch":
+        return
+
+    def log(result, extra=""):
+        log_action([_now(), "加成", f.aid, f.gid, f.level, "/".join(map(str, f.cost)),
+                    mode, result, desc + extra])
+
+    expect = {r: prod[r] - HF.hero_bonus(cur, types, r) + HF.hero_bonus(target, types, r) for r in (1, 2, 3, 4)}
+    if dry:
+        log("未送出", f"｜改成 {HF.RES_NAME[target]}，預期產量={[expect[k] for k in (1, 2, 3, 4)]}（乾跑，沒有真的送出）")
+        return
+    try:
+        sent = set_focus(target)
+    except Exception as e:
+        log("失敗", f"｜{e!r}")
+        notify(f"英雄產量加成切換失敗（不重試）: {e!r}")
+        return
+    extra = f"｜{sent}"
+    try:
+        after = P.parse_dorf1(get_dorf1())
+        got = {1: after.prod[0], 2: after.prod[1], 3: after.prod[2], 4: after.free_crop if after.free_crop is not None else after.prod[3]}
+        bad = [HF.RES_NAME[r] for r in (1, 2, 3, 4) if abs(got[r] - expect[r]) > 2]
+        extra += f"｜產量 預期={[expect[k] for k in (1, 2, 3, 4)]} 實際={[got[k] for k in (1, 2, 3, 4)]}"
+        extra += "｜驗證符合" if not bad else f"｜驗證不符：{'、'.join(bad)}"
+        if bad:
+            notify(f"英雄產量加成已切到 {HF.RES_NAME[target]}，但產量與預期不符：{'、'.join(bad)}")
+    except Exception as e:
+        extra += f"｜切換後重讀產量失敗：{e!r}"
+    log("成功", extra)
+    notify(f"英雄產量加成：{HF.RES_NAME[cur]} → {HF.RES_NAME[target]}（{why}）")
+
+
 def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
-                    first_dorf1: str = None, sleep=time.sleep, transfer_io=None) -> int:
+                    first_dorf1: str = None, sleep=time.sleep, transfer_io=None, focus_io=None) -> int:
     """跑一輪：最多送出 cfg["max_builds"] 個升級。回傳結束碼（0 正常、1 需要人看）。"""
     T.TARGET_LEVEL = cfg["target_level"]
     T.IS_CAPITAL = bool(cfg.get("is_capital"))
@@ -335,6 +393,8 @@ def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
     info = None
     tcfg = TR.parse_config(cfg)
     transferred = False        # 每輪最多嘗試一次轉移（max_builds > 1 也一樣）
+    focus_on = focus_io is not None and str(cfg.get("hero_focus_mode", "off")).strip().lower() == "auto"
+    focused = False            # 每輪最多評估一次加成切換
 
     for i in range(cfg["max_builds"]):
         d1 = first_dorf1 if (i == 0 and first_dorf1 is not None) else get_dorf1()
@@ -384,6 +444,11 @@ def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
                 print(f"[{mode}][轉移] 資源補不到，有來襲：改做付得起的 {_fname(alt[1])} {_flv(alt[1])}"
                       f"（原本要等 {_fname(action[2])} {_flv(action[2])}）")
                 action = alt
+
+        # 還是付不起（轉移沒做、沒補到或沒開）→ 看要不要把英雄產量加成切到缺的資源
+        if action[0] == "wait_res" and focus_on and not focused:
+            focused = True
+            _try_focus(cfg, action, st, focus_io, get_dorf1, dry, mode)
 
         print(f"[{mode}] 決策: {action[0]}  佇列={st.queue}  存量={st.stock}  來襲={st.attacks}")
         if st.attacks:
