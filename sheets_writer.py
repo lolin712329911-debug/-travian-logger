@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import json
 import os
+from datetime import datetime, timezone
 from typing import Optional
 
 from notify import notify
@@ -132,7 +133,8 @@ _TRUE_WORDS = ("true", "1", "yes", "on", "是", "啟用")   # hero_adventure 專
 # Config 分頁的預設列（順序 = 補上去時的順序）。C 欄是給人看的說明，程式只讀 A、B 欄。
 _CONFIG_ORDER = ("enabled", "target_level", "queue_slots", "is_capital",
                  "max_builds", "target_building_level", "build_order",
-                 "hero_adventure", "hero_min_health", "hero_allowed", "hero_skip_on_incoming", "hero_transfer_mode", "hero_transfer_min", "hero_transfer_max_gap", "hero_transfer_eta_min")
+                 "hero_adventure", "hero_min_health", "hero_allowed", "hero_skip_on_incoming", "hero_transfer_mode", "hero_transfer_min", "hero_transfer_max_gap", "hero_transfer_eta_min",
+                 "hero_focus_mode", "hero_focus_min_hours")
 _CONFIG_NOTES = {
     "enabled": "FALSE = 緊急停止；session 失效時程式也會改成 FALSE",
     "target_level": "資源田升到幾級（沒設 build_order 時使用）",
@@ -149,6 +151,8 @@ _CONFIG_NOTES = {
     "hero_transfer_min": "需要轉的每一種資源，道具庫存量都要 ≥ 此值才轉",
     "hero_transfer_max_gap": "各資源缺口加總 > 此值就不轉",
     "hero_transfer_eta_min": "最快來襲 ETA ≤ 此分鐘數才處理",
+    "hero_focus_mode": "off／auto：auto = 建城「等待資源」時自動切換英雄產量加成（看不懂一律當 off；DRY 只記錄不送出）",
+    "hero_focus_min_hours": "兩次切換加成之間至少間隔幾小時（整數，預設 3）",
 }
 
 
@@ -157,7 +161,8 @@ def _default_cfg() -> dict:
             "target_building_level": DEFAULT_TARGET_BUILDING_LEVEL, "build_order": "", "is_capital": False,
             "hero_adventure": False, "hero_min_health": 45, "hero_allowed": "normal",
             "hero_skip_on_incoming": True,"hero_transfer_mode": "off", "hero_transfer_min": 20000,
-            "hero_transfer_max_gap": 1000, "hero_transfer_eta_min": 45}
+            "hero_transfer_max_gap": 1000, "hero_transfer_eta_min": 45,
+            "hero_focus_mode": "off", "hero_focus_min_hours": 3}
 
 
 def _cfg_cell(v) -> str:
@@ -225,9 +230,11 @@ def load_config() -> dict:
             cfg[k] = v
         elif k == "hero_transfer_mode":
             cfg[k] = v.lower()          # 只是存字串；空白／看不懂由 parse_config 當成 off
+        elif k == "hero_focus_mode":
+            cfg[k] = v.lower()          # 只有 "auto" 算開，其餘一律當 off（由 runner 判斷）
         elif k in ("target_level", "queue_slots", "max_builds", "target_building_level",
                    "hero_min_health", "hero_transfer_min", "hero_transfer_max_gap",
-                   "hero_transfer_eta_min") and v.isdigit():
+                   "hero_transfer_eta_min", "hero_focus_min_hours") and v.isdigit():
             cfg[k] = int(v)
     try:
         _ensure_config_rows(ws, rows)
@@ -262,6 +269,33 @@ def log_action(row: list):
         ws.append_row(row, value_input_option="USER_ENTERED")
     except Exception as e:
         print(f"寫入 Actions 分頁失敗（不影響升級）: {e!r}")
+
+
+def last_action_age_hours(action: str, result: str = "成功") -> Optional[float]:
+    """Actions 分頁裡最近一筆（動作＝action、結果＝result）距現在幾小時。沒有這種列回 None。
+    有這種列但時間讀不懂（儲存格被 Sheets 轉成別的日期格式）→ 回 0.0（保守：擋住切換），並印 log。
+    讀取失敗回 0.0（同樣保守）。給「最短切換間隔」用，因為排程每輪都是全新的行程，記不住上次。"""
+    if not has_sheet():
+        return None
+    try:
+        ws = open_sheet().worksheet("Actions")
+        acts, res = ws.col_values(2), ws.col_values(8)
+        idx = next((i for i in range(min(len(acts), len(res)) - 1, 0, -1)
+                    if acts[i] == action and res[i] == result), None)
+        if idx is None:
+            return None
+        raw = ws.cell(idx + 1, 1).value or ""
+        for fmt in ("%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S", "%m/%d/%Y %H:%M:%S", "%Y-%m-%d %H:%M"):
+            try:
+                t = datetime.strptime(raw.strip(), fmt).replace(tzinfo=timezone.utc)
+                return max(0.0, (datetime.now(timezone.utc) - t).total_seconds() / 3600)
+            except ValueError:
+                continue
+        print(f"Actions 最近一筆「{action}」的時間讀不懂（{raw!r}），保守當成剛剛才發生")
+        return 0.0
+    except Exception as e:
+        print(f"讀取 Actions 最近一筆「{action}」失敗，保守當成剛剛才發生: {e!r}")
+        return 0.0
 
 
 STATE_HEADER = ["項目(key)", "值", "說明", "更新時間(UTC)"]
