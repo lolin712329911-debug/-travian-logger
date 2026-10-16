@@ -1,6 +1,7 @@
 name: test-focus
 # 手動觸發：Actions 分頁 → test-focus → Run workflow
-# 注意：這個檔案要在預設分支上，Run workflow 按鈕才會出現。
+# 注意：這個檔案要在預設分支（main）上，Run workflow 按鈕才會出現；
+#       按鈕出現後，「Use workflow from」可選 refactor，跑 refactor 上的程式。
 on:
   workflow_dispatch:
     inputs:
@@ -14,6 +15,11 @@ on:
         type: choice
         default: "2"
         options: ["0", "1", "2", "3", "4"]
+
+# 和主 workflow（auto_build.yml）同一組：避免測試切換時，排程同時在操作同一個帳號。
+concurrency:
+  group: travian
+  cancel-in-progress: false
 
 jobs:
   test:
@@ -29,7 +35,7 @@ jobs:
       - name: 離線測試 test_focus.py
         run: python test_focus.py
 
-      # 2. 還原 auto_build 存的 session（我沒看到 auto_build.yml，key 是猜的；
+      # 2. 還原 auto_build 存的 session（key 是猜的；
       #    對不到只會是 cache miss，會退回用 TRAVIAN_SEED_COOKIE）
       - name: 還原 session cache
         if: inputs.mode != 'offline'
@@ -39,11 +45,13 @@ jobs:
           key: travian-state-none
           restore-keys: travian-state-
 
-      - name: 安裝 playwright（只用 API request，不需要瀏覽器）
+      # playwright：只用 API request，不需要瀏覽器。
+      # beautifulsoup4：travian_pages.parse_dorf1 需要，沒裝的話 live 測試讀不到產量。
+      - name: 安裝 playwright + beautifulsoup4
         if: inputs.mode != 'offline'
-        run: pip install playwright
+        run: pip install playwright beautifulsoup4
 
-      # 3a. 只讀：印出目前加成，不送任何 POST
+      # 3a. 只讀：印出目前加成與產量，不送任何 POST
       - name: 真實伺服器：只讀
         if: inputs.mode == 'live_read'
         env:
