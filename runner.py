@@ -326,26 +326,35 @@ def _try_focus(cfg, action, st, focus_io, get_dorf1, dry: bool, mode: str) -> No
     gaps = {i + 1: c - s for i, (c, s) in enumerate(zip(f.cost, st.stock)) if c > s}
     prod = {i + 1: st.prod[i] for i in range(4)}
     prod[4] = st.free_crop if st.free_crop is not None else st.prod[3]   # 穀用淨產量（自由穀物），切換前後同一來源
+    # 說明欄一律帶「穀總產量」（st.prod[3]）與淨產量並列：兩者差距若不等於人口耗糧，代表淨產量沒算進英雄加成
+    desc = (f"{_fname(f)} {_flv(f)}｜缺口={gaps}｜產量={[prod[k] for k in (1, 2, 3, 4)]}"
+            f"｜穀總產量={st.prod[3]}")
+
+    def log(result, extra=""):
+        # desc 會在決策完成後更新（閉包讀的是呼叫當下的值），所以「不動」「讀取失敗」「切換」都用同一個函式寫 Actions
+        log_action([_now(), "加成", f.aid, f.gid, f.level, "/".join(map(str, f.cost)),
+                    mode, result, desc + extra])
+
     try:
         cur, types = read_focus()
-        age = last_action_age_hours("加成")
+        age = last_action_age_hours("加成")     # 只認結果＝「成功」的列，所以下面寫的「不動」「讀取失敗」不會影響最短間隔
         dec = HF.decide_focus(gaps, prod, cur, types, age,
                               min_hours=float(cfg.get("hero_focus_min_hours", 3)),
                               back_to_balanced=False)
     except Exception as e:
         print(f"[{mode}][加成] 讀取狀態／決策失敗，略過: {e!r}")
         notify(f"英雄產量加成：讀取狀態失敗，略過本輪（不影響建城）: {e!r}")
+        log("讀取失敗", f"｜{e!r}")
         return
     kind, target, why = dec
+    age_txt = "無紀錄" if age is None else f"{age:.1f}h"
     desc = (f"{_fname(f)} {_flv(f)}｜目前 {HF.RES_NAME[cur]}｜缺口={gaps}｜"
-            f"產量={[prod[k] for k in (1, 2, 3, 4)]}｜{kind}：{why}")
+            f"產量={[prod[k] for k in (1, 2, 3, 4)]}｜穀總產量={st.prod[3]}｜加成量={types}｜"
+            f"距上次切換={age_txt}｜{kind}：{why}")
     print(f"[{mode}][加成] {desc}")
     if kind != "switch":
+        log("不動")          # 以前這裡只印 log、不寫 Actions；「等待資源」一輪才一列，量很小
         return
-
-    def log(result, extra=""):
-        log_action([_now(), "加成", f.aid, f.gid, f.level, "/".join(map(str, f.cost)),
-                    mode, result, desc + extra])
 
     expect = {r: prod[r] - HF.hero_bonus(cur, types, r) + HF.hero_bonus(target, types, r) for r in (1, 2, 3, 4)}
     if dry:
