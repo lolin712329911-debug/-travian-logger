@@ -154,7 +154,7 @@ _CONFIG_NOTES = {
     "hero_transfer_eta_min": "最快來襲 ETA ≤ 此分鐘數才處理",
     "hero_focus_mode": "off／auto：auto = 建城「等待資源」時自動切換英雄產量加成（看不懂一律當 off；DRY 只記錄不送出）",
     "hero_hard_min_health": "體力 > 此數字才可選困難冒險（hero_allowed 要含 hard 才有作用，預設 60）",
-    "hero_focus_min_hours": "兩次切換加成之間至少間隔幾小時（整數，預設 1）",
+    "hero_focus_min_hours": "「加成」（等待資源時的切換）兩次之間至少間隔幾小時（整數，預設 1）；庫存守衛「防搶加成」不看這個值，每輪都可切",
     "hero_guard_mode": "off／dry／incoming／always：庫存防搶＋防溢出守衛。dry = 只記錄「防搶加成」列、不送出；incoming = 有來襲才算暴露（溢出一律算）；always = 一律；要 hero_focus_mode=auto 才會真的切（看不懂一律當 off）",
     "hero_guard_hidden": "山洞每種資源的隱藏量（整數，預設 2000；本村埃及 10 級實測 2000）",
 }
