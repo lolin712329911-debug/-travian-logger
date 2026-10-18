@@ -28,6 +28,8 @@ Sheet 的「Config」分頁：A 欄名稱、B 欄值，例如
   hero_skip_on_incoming TRUE  <- 有來襲時不派英雄
   hero_focus_mode       off   <- auto = 建城「等待資源」時自動切換英雄產量加成（其餘一律當 off）
   hero_focus_min_hours  1     <- 兩次切換至少間隔幾小時
+  hero_guard_mode       off   <- off／dry／incoming／always：庫存防搶＋防溢出守衛（dry 只記錄不送出；要 hero_focus_mode=auto 才會真的切）
+  hero_guard_hidden     2000  <- 山洞每種資源隱藏量
 C 欄是說明，程式不讀。分頁不存在會自動建立；缺哪一列就補哪一列（只補缺的，已填的值不動）。
 """
 import os
@@ -40,6 +42,7 @@ import travian_pages as P   # 頁面解析
 import travian_hero as H    # 英雄冒險：解析與決策（純函式）
 import travian_transfer as TR   # 英雄道具庫轉資源：決策與執行（純函式＋注入 send/read_state）
 import hero_focus as HF         # 英雄產量加成切換：決策（純函式）＋注入 read_focus/set_focus
+import stock_guard as SG        # 庫存防搶＋防溢出守衛（純函式；重用 focus_io 的 read_focus/set_focus）
 from notify import notify
 from travian_const import BUILDING_GIDS, RES_NAMES, TRIBE_NAMES, gid_name
 from travian_models import Field
@@ -317,10 +320,11 @@ def _try_transfer(tcfg, action, st, transfer_io, dry: bool, mode: str):
     notify(("已從英雄道具庫轉資源：" if res.ok else "英雄道具庫轉移沒有確認成功（不重試）：") + f"{res.detail}")
     return True, res.ok
   
-def _try_focus(cfg, action, st, focus_io, get_dorf1, dry: bool, mode: str) -> None:
+def _try_focus(cfg, action, st, focus_io, get_dorf1, dry: bool, mode: str) -> bool:
     """action 是 wait_res 時，看要不要切換英雄產量加成，讓缺的資源補得更快。
     只有「要切換」才寫 Actions；不用切換只印 log（避免每 40 分鐘一列）。
-    任何例外只通知、不往外拋、不 disable。DRY 只記錄「會改成什麼」，不送。"""
+    任何例外只通知、不往外拋、不 disable。DRY 只記錄「會改成什麼」，不送。
+    回傳 True＝本輪加成已處理（決定要切、切換失敗、或讀取失敗），守衛本輪不再跑；False＝沒動作。"""
     read_focus, set_focus = focus_io
     f = action[2]
     gaps = {i + 1: c - s for i, (c, s) in enumerate(zip(f.cost, st.stock)) if c > s}
@@ -346,7 +350,7 @@ def _try_focus(cfg, action, st, focus_io, get_dorf1, dry: bool, mode: str) -> No
         print(f"[{mode}][加成] 讀取狀態／決策失敗，略過: {e!r}")
         notify(f"英雄產量加成：讀取狀態失敗，略過本輪（不影響建城）: {e!r}")
         log("讀取失敗", f"｜{e!r}")
-        return
+        return True
     kind, target, why = dec
     age_txt = "無紀錄" if age is None else f"{age:.1f}h"
     desc = (f"{_fname(f)} {_flv(f)}｜目前 {HF.RES_NAME[cur]}｜缺口={gaps}｜"
@@ -355,18 +359,18 @@ def _try_focus(cfg, action, st, focus_io, get_dorf1, dry: bool, mode: str) -> No
     print(f"[{mode}][加成] {desc}")
     if kind != "switch":
         log("不動")          # 以前這裡只印 log、不寫 Actions；「等待資源」一輪才一列，量很小
-        return
+        return False
 
     expect = {r: prod[r] - HF.hero_bonus(cur, types, r) + HF.hero_bonus(target, types, r) for r in (1, 2, 3, 4)}
     if dry:
         log("未送出", f"｜改成 {HF.RES_NAME[target]}，預期產量={[expect[k] for k in (1, 2, 3, 4)]}（乾跑，沒有真的送出）")
-        return
+        return True
     try:
         sent = set_focus(target)
     except Exception as e:
         log("失敗", f"｜{e!r}")
         notify(f"英雄產量加成切換失敗（不重試）: {e!r}")
-        return
+        return True
     extra = f"｜{sent}"
     try:
         after = P.parse_dorf1(get_dorf1())
@@ -380,6 +384,78 @@ def _try_focus(cfg, action, st, focus_io, get_dorf1, dry: bool, mode: str) -> No
         extra += f"｜切換後重讀產量失敗：{e!r}"
     log("成功", extra)
     notify(f"英雄產量加成：{HF.RES_NAME[cur]} → {HF.RES_NAME[target]}（{why}）")
+    return True
+
+
+def _guard_mode(cfg) -> str:
+    """off／dry／incoming／always；空白或看不懂一律當 off。"""
+    m = str(cfg.get("hero_guard_mode", "off")).strip().lower()
+    return m if m in ("dry", "incoming", "always") else "off"
+
+
+def _try_guard(cfg, action, st, focus_io, get_dorf1, dry: bool, mode: str, gmode: str) -> bool:
+    """庫存防搶＋防溢出守衛：action 是 wait_res 或 wait_queue 時，預估下一輪的溢出與超過山洞隱藏量的暴露，
+    必要時把英雄產量加成移到成本最低的資源。和 _try_focus 分開記錄（Actions 動作名稱「防搶加成」）。
+    gmode：dry＝只記錄不送出；incoming＝沒有來襲時暴露不計（只防溢出）；always＝一律計。
+    任何例外只通知、不往外拋、不 disable。回傳 True＝LIVE 已切換成功。"""
+    read_focus, set_focus = focus_io
+    f = action[2] if action[0] == "wait_res" else None          # wait_queue 沒有目標，缺口不明（第一階段傳 None）
+    stock = {i + 1: st.stock[i] for i in range(4)}
+    prod = {i + 1: st.prod[i] for i in range(4)}                   # 穀＝l4（含加成），和 _try_focus 同一來源
+    cap = {i + 1: st.cap[i] for i in range(4)} if any(st.cap) else None
+    gaps = {i + 1: c - s for i, (c, s) in enumerate(zip(f.cost, st.stock)) if c > s} if f is not None else None
+    hidden = float(cfg.get("hero_guard_hidden", 2000))
+    lam = 0.5 if (gmode in ("always", "dry") or st.attacks) else 0.0
+    head = (f"{_fname(f)} {_flv(f)}｜" if f is not None else "施工佇列忙｜")
+    desc = (f"{head}存量={[stock[k] for k in (1, 2, 3, 4)]}｜產量={[prod[k] for k in (1, 2, 3, 4)]}"
+            f"｜缺口={gaps}｜來襲={st.attacks}｜模式={gmode}")
+
+    def log(result, extra=""):
+        log_action([_now(), "防搶加成", f.aid if f else "", f.gid if f else "", f.level if f else "",
+                    "/".join(map(str, f.cost)) if f else "", mode, result, desc + extra])
+
+    try:
+        cur, types = read_focus()
+        dec = SG.guard_focus(stock, prod, cur, types, hidden=hidden, capacity=cap, gaps=gaps,
+                             lambda_exposure=lam)
+    except Exception as e:
+        print(f"[{mode}][守衛] 讀取狀態／決策失敗，略過: {e!r}")
+        notify(f"庫存守衛：讀取狀態失敗，略過本輪（不影響建城）: {e!r}")
+        log("讀取失敗", f"｜{e!r}")
+        return False
+    kind, target, why = dec
+    desc += f"｜目前 {HF.RES_NAME[cur]}｜{kind}：{why}"
+    print(f"[{mode}][守衛] {desc}")
+    if kind != "switch":
+        if gmode == "dry":
+            log("不動")            # dry 階段每輪都記，方便對照實際存量；其他模式「不動」只印 log
+        return False
+    if dry or gmode == "dry":
+        log("未送出", f"｜改成 {HF.RES_NAME[target]}（{'乾跑' if dry else '守衛 dry'}，沒有真的送出）")
+        return False
+    try:
+        ages = [a for a in (last_action_age_hours("加成"), last_action_age_hours("防搶加成")) if a is not None]
+        min_hours = float(cfg.get("hero_focus_min_hours", 1))
+        if ages and min(ages) < min_hours:
+            log("不動", f"｜冷卻：距上次切換 {min(ages):.1f}h < {min_hours:g}h（本來要改成 {HF.RES_NAME[target]}）")
+            return False
+        sent = set_focus(target)
+    except Exception as e:
+        log("失敗", f"｜{e!r}")
+        notify(f"庫存守衛切換加成失敗（不重試）: {e!r}")
+        return False
+    extra = f"｜{sent}"
+    try:
+        cur2, _t = read_focus()
+        extra += "｜重讀加成符合" if cur2 == target else f"｜重讀加成不符：{HF.RES_NAME.get(cur2, cur2)}"
+        if cur2 != target:
+            notify(f"庫存守衛已送出 {HF.RES_NAME[target]}，但重讀加成是 {HF.RES_NAME.get(cur2, cur2)}")
+    except Exception as e:
+        extra += f"｜重讀加成失敗：{e!r}"
+    log("成功", extra)
+    notify(f"庫存守衛：加成 {HF.RES_NAME[cur]} → {HF.RES_NAME[target]}（{why}）")
+    return True
+
 
 
 def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
@@ -405,6 +481,9 @@ def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
     transferred = False        # 每輪最多嘗試一次轉移（max_builds > 1 也一樣）
     focus_on = focus_io is not None and str(cfg.get("hero_focus_mode", "off")).strip().lower() == "auto"
     focused = False            # 每輪最多評估一次加成切換
+    guard_mode = _guard_mode(cfg)
+    guarded = False            # 每輪最多評估一次守衛
+    focus_switched = False     # 本輪 _try_focus 是否已處理加成（是的話守衛不跑）
 
     for i in range(cfg["max_builds"]):
         d1 = first_dorf1 if (i == 0 and first_dorf1 is not None) else get_dorf1()
@@ -458,7 +537,14 @@ def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
         # 還是付不起（轉移沒做、沒補到或沒開）→ 看要不要把英雄產量加成切到缺的資源
         if action[0] == "wait_res" and focus_on and not focused:
             focused = True
-            _try_focus(cfg, action, st, focus_io, get_dorf1, dry, mode)
+            focus_switched = _try_focus(cfg, action, st, focus_io, get_dorf1, dry, mode)
+
+        # 庫存守衛：付不起或佇列忙時，預估下一輪的溢出／暴露，必要時移動加成（dry 模式只記錄；其餘模式要 hero_focus_mode=auto）
+        if (action[0] in ("wait_res", "wait_queue") and focus_io is not None and not guarded
+                and guard_mode != "off" and (focus_on or guard_mode == "dry")):
+            guarded = True
+            if not focus_switched:
+                _try_guard(cfg, action, st, focus_io, get_dorf1, dry, mode, guard_mode)
 
         print(f"[{mode}] 決策: {action[0]}  佇列={st.queue}  存量={st.stock}  來襲={st.attacks}")
         if st.attacks:
