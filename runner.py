@@ -29,9 +29,10 @@ Sheet 的「Config」分頁：A 欄名稱、B 欄值，例如
   hero_focus_mode       off   <- auto = 建城「等待資源」時自動切換英雄產量加成（其餘一律當 off）
   hero_focus_min_hours  1     <- 兩次切換至少間隔幾小時
   hero_guard_mode       off   <- off／dry／incoming／always：庫存防搶＋防溢出守衛（dry 只記錄不送出；要 hero_focus_mode=auto 才會真的切）
-  hero_guard_hidden     2000  <- 山洞每種資源隱藏量
+  hero_guard_hidden     2000  <- 山洞每種資源隱藏量（守衛不看 hero_focus_min_hours，每輪都可切）
 C 欄是說明，程式不讀。分頁不存在會自動建立；缺哪一列就補哪一列（只補缺的，已填的值不動）。
 """
+import copy
 import os
 import random
 import time
@@ -393,7 +394,33 @@ def _guard_mode(cfg) -> str:
     return m if m in ("dry", "incoming", "always") else "off"
 
 
-def _try_guard(cfg, action, st, focus_io, get_dorf1, dry: bool, mode: str, gmode: str) -> bool:
+def _next_target(st, order, get, touched, action):
+    """佇列忙（wait_queue）時，算「下一個目標」的缺口，給守衛當補齊時間的下限依據。
+    做法：複製 State、清空佇列，用同一份 build_order 再跑 plan_with_order，結果交給 SG.gaps_from_plan 轉換。
+    回傳 (gaps, ready_in_h, 說明) 或 None（沒有 build_order、下一目標正在施工、讀頁失敗…一律退回 gaps=None＝純拉平）。
+    ready_in_h＝wait_queue 的等待秒數（施工結束、可以買的時間）。
+    會多抓 dorf2／build.php（只有順序裡有資源田以外的目標才抓），所以守衛只在「真的想切換」時才呼叫。任何例外都回 None。"""
+    if not order or action[0] != "wait_queue":
+        return None
+    try:
+        st2 = copy.deepcopy(st)
+        st2.queue = []
+        if hasattr(st2, "queue_info"):
+            st2.queue_info = []
+        nxt = T.plan_with_order(st2, order, get, touched)
+        ready_h = float(action[1]) / 3600.0
+        got = SG.gaps_from_plan(nxt, st.stock, ready_h)
+    except Exception as e:
+        print(f"[守衛] 取下一目標缺口失敗，退回無缺口: {e!r}")
+        return None
+    if got is None:
+        return None
+    gaps, ready_h = got
+    f = nxt[2] if nxt[0] == "wait_res" else nxt[1]
+    return gaps, ready_h, f"｜下一目標 {_fname(f)} {_flv(f)}｜{ready_h:.2f}h 後可買｜下一目標缺口={gaps}"
+
+
+def _try_guard(cfg, action, st, focus_io, get_dorf1, dry: bool, mode: str, gmode: str, lookup=None) -> bool:
     """庫存防搶＋防溢出守衛：action 是 wait_res 或 wait_queue 時，預估下一輪的溢出與超過山洞隱藏量的暴露，
     必要時把英雄產量加成移到成本最低的資源。和 _try_focus 分開記錄（Actions 動作名稱「防搶加成」）。
     gmode：dry＝只記錄不送出；incoming＝沒有來襲時暴露不計（只防溢出）；always＝一律計。
@@ -418,6 +445,17 @@ def _try_guard(cfg, action, st, focus_io, get_dorf1, dry: bool, mode: str, gmode
         cur, types = read_focus()
         dec = SG.guard_focus(stock, prod, cur, types, hidden=hidden, capacity=cap, gaps=gaps,
                              lambda_exposure=lam)
+        # 佇列忙：先不帶缺口跑一次；只有「真的想切換」才去查下一目標缺口，再用缺口重算一次
+        # （缺口只會縮小候選範圍，所以第一次說「不動」時，帶缺口也一定是不動，不用多抓頁面）
+        if dec[0] == "switch" and f is None and lookup is not None:
+            nt = lookup()
+            if nt is not None:
+                gaps, ready_h, note = nt
+                desc += note
+                dec = SG.guard_focus(stock, prod, cur, types, hidden=hidden, capacity=cap, gaps=gaps,
+                                     lambda_exposure=lam, ready_in_h=ready_h)
+            else:
+                desc += "｜下一目標缺口算不出來（正在施工／無 build_order／讀頁失敗），只看溢出與暴露"
     except Exception as e:
         print(f"[{mode}][守衛] 讀取狀態／決策失敗，略過: {e!r}")
         notify(f"庫存守衛：讀取狀態失敗，略過本輪（不影響建城）: {e!r}")
@@ -434,11 +472,7 @@ def _try_guard(cfg, action, st, focus_io, get_dorf1, dry: bool, mode: str, gmode
         log("未送出", f"｜改成 {HF.RES_NAME[target]}（{'乾跑' if dry else '守衛 dry'}，沒有真的送出）")
         return False
     try:
-        ages = [a for a in (last_action_age_hours("加成"), last_action_age_hours("防搶加成")) if a is not None]
-        min_hours = float(cfg.get("hero_focus_min_hours", 1))
-        if ages and min(ages) < min_hours:
-            log("不動", f"｜冷卻：距上次切換 {min(ages):.1f}h < {min_hours:g}h（本來要改成 {HF.RES_NAME[target]}）")
-            return False
+        # 2026-10-18：守衛不設冷卻，每一輪都可以切（使用者決定；decide_focus 的 hero_focus_min_hours 不受影響）
         sent = set_focus(target)
     except Exception as e:
         log("失敗", f"｜{e!r}")
@@ -544,7 +578,9 @@ def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
                 and guard_mode != "off" and (focus_on or guard_mode == "dry")):
             guarded = True
             if not focus_switched:
-                _try_guard(cfg, action, st, focus_io, get_dorf1, dry, mode, guard_mode)
+                lookup = ((lambda: _next_target(st, order, get, touched, action))
+                          if action[0] == "wait_queue" else None)
+                _try_guard(cfg, action, st, focus_io, get_dorf1, dry, mode, guard_mode, lookup)
 
         print(f"[{mode}] 決策: {action[0]}  佇列={st.queue}  存量={st.stock}  來襲={st.attacks}")
         if st.attacks:
