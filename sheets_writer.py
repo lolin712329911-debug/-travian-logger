@@ -134,7 +134,8 @@ _TRUE_WORDS = ("true", "1", "yes", "on", "是", "啟用")   # hero_adventure 專
 _CONFIG_ORDER = ("enabled", "target_level", "queue_slots", "is_capital",
                  "max_builds", "target_building_level", "build_order",
                  "hero_adventure", "hero_min_health", "hero_allowed", "hero_skip_on_incoming", "hero_transfer_mode", "hero_transfer_min", "hero_transfer_max_gap", "hero_transfer_eta_min",
-                 "hero_focus_mode", "hero_focus_min_hours", "hero_hard_min_health")
+                 "hero_focus_mode", "hero_focus_min_hours", "hero_hard_min_health",
+                 "hero_guard_mode", "hero_guard_hidden")
 _CONFIG_NOTES = {
     "enabled": "FALSE = 緊急停止；session 失效時程式也會改成 FALSE",
     "target_level": "資源田升到幾級（沒設 build_order 時使用）",
@@ -153,7 +154,9 @@ _CONFIG_NOTES = {
     "hero_transfer_eta_min": "最快來襲 ETA ≤ 此分鐘數才處理",
     "hero_focus_mode": "off／auto：auto = 建城「等待資源」時自動切換英雄產量加成（看不懂一律當 off；DRY 只記錄不送出）",
     "hero_hard_min_health": "體力 > 此數字才可選困難冒險（hero_allowed 要含 hard 才有作用，預設 60）",
-    "hero_focus_min_hours": "兩次切換加成之間至少間隔幾小時（整數，預設 3）",
+    "hero_focus_min_hours": "兩次切換加成之間至少間隔幾小時（整數，預設 1）",
+    "hero_guard_mode": "off／dry／incoming／always：庫存防搶＋防溢出守衛。dry = 只記錄「防搶加成」列、不送出；incoming = 有來襲才算暴露（溢出一律算）；always = 一律；要 hero_focus_mode=auto 才會真的切（看不懂一律當 off）",
+    "hero_guard_hidden": "山洞每種資源的隱藏量（整數，預設 2000；本村埃及 10 級實測 2000）",
 }
 
 
@@ -163,7 +166,8 @@ def _default_cfg() -> dict:
             "hero_adventure": False, "hero_min_health": 45, "hero_allowed": "normal",
             "hero_skip_on_incoming": True,"hero_transfer_mode": "off", "hero_transfer_min": 20000,
             "hero_transfer_max_gap": 1000, "hero_transfer_eta_min": 45,
-            "hero_focus_mode": "off", "hero_focus_min_hours": 3, "hero_hard_min_health": 60}
+            "hero_focus_mode": "off", "hero_focus_min_hours": 1, "hero_hard_min_health": 60,
+            "hero_guard_mode": "off", "hero_guard_hidden": 2000}
 
 
 def _cfg_cell(v) -> str:
@@ -233,9 +237,12 @@ def load_config() -> dict:
             cfg[k] = v.lower()          # 只是存字串；空白／看不懂由 parse_config 當成 off
         elif k == "hero_focus_mode":
             cfg[k] = v.lower()          # 只有 "auto" 算開，其餘一律當 off（由 runner 判斷）
+        elif k == "hero_guard_mode":
+            cfg[k] = v.lower()          # off／dry／incoming／always，其餘由 runner 當 off
         elif k in ("target_level", "queue_slots", "max_builds", "target_building_level",
                    "hero_min_health", "hero_transfer_min", "hero_transfer_max_gap",
-                   "hero_transfer_eta_min", "hero_focus_min_hours", "hero_hard_min_health") and v.isdigit():
+                   "hero_transfer_eta_min", "hero_focus_min_hours", "hero_hard_min_health",
+                   "hero_guard_hidden") and v.isdigit():
             cfg[k] = int(v)
     try:
         _ensure_config_rows(ws, rows)
