@@ -27,7 +27,7 @@ Sheet 的「Config」分頁：A 欄名稱、B 欄值，例如
   hero_allowed          normal <- 允許的難度圖示：normal 或 normal,hard
   hero_skip_on_incoming TRUE  <- 有來襲時不派英雄
   hero_focus_mode       off   <- auto = 建城「等待資源」時自動切換英雄產量加成（其餘一律當 off）
-  hero_focus_min_hours  3     <- 兩次切換至少間隔幾小時
+  hero_focus_min_hours  1     <- 兩次切換至少間隔幾小時
 C 欄是說明，程式不讀。分頁不存在會自動建立；缺哪一列就補哪一列（只補缺的，已填的值不動）。
 """
 import os
@@ -325,10 +325,11 @@ def _try_focus(cfg, action, st, focus_io, get_dorf1, dry: bool, mode: str) -> No
     f = action[2]
     gaps = {i + 1: c - s for i, (c, s) in enumerate(zip(f.cost, st.stock)) if c > s}
     prod = {i + 1: st.prod[i] for i in range(4)}
-    prod[4] = st.free_crop if st.free_crop is not None else st.prod[3]   # 穀用淨產量（自由穀物），切換前後同一來源
+    # v2.31：穀改用 var resources 的 l4（st.prod[3]，含英雄加成）。實測 l5（free_crop）不含加成：押穀時 l4=1,505、l5=227；押磚時 l4=225、l5=227
+    prod[4] = st.prod[3]
     # 說明欄一律帶「穀總產量」（st.prod[3]）與淨產量並列：兩者差距若不等於人口耗糧，代表淨產量沒算進英雄加成
     desc = (f"{_fname(f)} {_flv(f)}｜缺口={gaps}｜產量={[prod[k] for k in (1, 2, 3, 4)]}"
-            f"｜穀總產量={st.prod[3]}")
+            f"｜穀自由產量l5={st.free_crop}")
 
     def log(result, extra=""):
         # desc 會在決策完成後更新（閉包讀的是呼叫當下的值），所以「不動」「讀取失敗」「切換」都用同一個函式寫 Actions
@@ -339,7 +340,7 @@ def _try_focus(cfg, action, st, focus_io, get_dorf1, dry: bool, mode: str) -> No
         cur, types = read_focus()
         age = last_action_age_hours("加成")     # 只認結果＝「成功」的列，所以下面寫的「不動」「讀取失敗」不會影響最短間隔
         dec = HF.decide_focus(gaps, prod, cur, types, age,
-                              min_hours=float(cfg.get("hero_focus_min_hours", 3)),
+                              min_hours=float(cfg.get("hero_focus_min_hours", 1)),
                               back_to_balanced=False)
     except Exception as e:
         print(f"[{mode}][加成] 讀取狀態／決策失敗，略過: {e!r}")
@@ -349,7 +350,7 @@ def _try_focus(cfg, action, st, focus_io, get_dorf1, dry: bool, mode: str) -> No
     kind, target, why = dec
     age_txt = "無紀錄" if age is None else f"{age:.1f}h"
     desc = (f"{_fname(f)} {_flv(f)}｜目前 {HF.RES_NAME[cur]}｜缺口={gaps}｜"
-            f"產量={[prod[k] for k in (1, 2, 3, 4)]}｜穀總產量={st.prod[3]}｜加成量={types}｜"
+            f"產量={[prod[k] for k in (1, 2, 3, 4)]}｜穀自由產量l5={st.free_crop}｜加成量={types}｜"
             f"距上次切換={age_txt}｜{kind}：{why}")
     print(f"[{mode}][加成] {desc}")
     if kind != "switch":
@@ -369,7 +370,7 @@ def _try_focus(cfg, action, st, focus_io, get_dorf1, dry: bool, mode: str) -> No
     extra = f"｜{sent}"
     try:
         after = P.parse_dorf1(get_dorf1())
-        got = {1: after.prod[0], 2: after.prod[1], 3: after.prod[2], 4: after.free_crop if after.free_crop is not None else after.prod[3]}
+        got = {1: after.prod[0], 2: after.prod[1], 3: after.prod[2], 4: after.prod[3]}
         bad = [HF.RES_NAME[r] for r in (1, 2, 3, 4) if abs(got[r] - expect[r]) > 2]
         extra += f"｜產量 預期={[expect[k] for k in (1, 2, 3, 4)]} 實際={[got[k] for k in (1, 2, 3, 4)]}"
         extra += "｜驗證符合" if not bad else f"｜驗證不符：{'、'.join(bad)}"
