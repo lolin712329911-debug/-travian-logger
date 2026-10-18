@@ -29,7 +29,9 @@ Sheet 的「Config」分頁：A 欄名稱、B 欄值，例如
   hero_focus_mode       off   <- auto = 建城「等待資源」時自動切換英雄產量加成（其餘一律當 off）
   hero_focus_min_hours  1     <- 兩次切換至少間隔幾小時
   hero_guard_mode       off   <- off／dry／incoming／always：庫存防搶＋防溢出守衛（dry 只記錄不送出；要 hero_focus_mode=auto 才會真的切）
-  hero_guard_hidden     2000  <- 山洞每種資源隱藏量（守衛不看 hero_focus_min_hours，每輪都可切）
+  hero_guard_hidden     2000  <- 山洞每種資源隱藏量（守衛不看 hero_focus_min_hours，每輪都可切；插隊的來襲放寬也用它）
+  fill_in_mode          off   <- off／dry／on：有 build_order 且主目標「等待資源」時，插隊做後面付得起、且不會拖慢主目標的項目（dry 只記錄「插隊」列、不送出）
+  fill_in_slack_min     0     <- 插隊允許把主目標開工時間拖慢幾分鐘（整數，預設 0＝不准拖慢）
 C 欄是說明，程式不讀。分頁不存在會自動建立；缺哪一列就補哪一列（只補缺的，已填的值不動）。
 """
 import copy
@@ -43,6 +45,7 @@ import travian_pages as P   # 頁面解析
 import travian_hero as H    # 英雄冒險：解析與決策（純函式）
 import travian_transfer as TR   # 英雄道具庫轉資源：決策與執行（純函式＋注入 send/read_state）
 import hero_focus as HF         # 英雄產量加成切換：決策（純函式）＋注入 read_focus/set_focus
+import fill_in as FI          # 插隊：build_order 主目標等資源時，做後面付得起且不拖慢主目標的項目（純函式）
 import stock_guard as SG        # 庫存防搶＋防溢出守衛（純函式；重用 focus_io 的 read_focus/set_focus）
 from notify import notify
 from travian_const import BUILDING_GIDS, RES_NAMES, TRIBE_NAMES, gid_name
@@ -394,6 +397,54 @@ def _guard_mode(cfg) -> str:
     return m if m in ("dry", "incoming", "always") else "off"
 
 
+def _fill_mode(cfg) -> str:
+    """off／dry／on；空白或看不懂一律當 off。"""
+    m = str(cfg.get("fill_in_mode", "off")).strip().lower()
+    return m if m in ("dry", "on") else "off"
+
+
+def _try_fill_in(cfg, st, order, get, touched, mode: str, fmode: str):
+    """build_order 主目標是 wait_res 時，看後面的目標有沒有「付得起、而且不會拖慢主目標開工」的可以先做。
+    回傳 ("build", Field)＝插隊（fmode=on）；None＝不動（fmode=dry 永遠回 None，只記錄）。
+    判斷在 fill_in.should_fill；候選由 T.plan_fill_ins 依 build_order 順序給，取第一個符合的。
+    任何例外只印 log、回 None，不影響原本流程。Actions 動作名稱「插隊」（dry 每輪都記，on 只記有插隊的）。"""
+    try:
+        main, cands = T.plan_fill_ins(st, order, get, touched)
+    except Exception as e:
+        print(f"[{mode}][插隊] 取候選失敗，略過: {e!r}")
+        return None
+    if main[0] != "wait_res":
+        return None
+    mf = main[2]
+    hidden = float(cfg.get("hero_guard_hidden", 2000))
+    slack_h = float(cfg.get("fill_in_slack_min", 0)) / 60.0
+    head = f"主目標 {_fname(mf)} {_flv(mf)}（成本 {'/'.join(map(str, mf.cost))}）"
+    picked, notes = None, []
+    for f in cands:
+        ok, info = FI.should_fill(st.stock, st.prod, mf.cost, f.cost, f.secs, st.queue, T.QUEUE_SLOTS,
+                                  hidden=hidden, attacks=st.attacks, attack_eta_s=st.attack_eta_s, slack_h=slack_h)
+        notes.append(f"{_fname(f)} {_flv(f)}：{info['why']}")
+        if ok and picked is None:
+            picked = (f, info)
+            if fmode == "on":
+                break
+    if not cands:
+        notes.append("後面沒有現在付得起的目標")
+    desc = f"{head}｜存量={[int(x) for x in st.stock]}｜來襲={st.attacks}｜" + "；".join(notes)
+    print(f"[{mode}][插隊] {desc}")
+    if picked is None:
+        if fmode == "dry":
+            log_action([_now(), "插隊", mf.aid, mf.gid, mf.level, "/".join(map(str, mf.cost)), mode, "不動", desc])
+        return None
+    f, info = picked
+    log_action([_now(), "插隊", f.aid, f.gid, f.level, "/".join(map(str, f.cost)), mode,
+                "未送出" if fmode == "dry" else "採用", desc])
+    if fmode == "dry":
+        return None
+    notify(f"插隊：先升 {_fname(f)} {_flv(f)}（{info['why']}）")
+    return ("build", f)
+
+
 def _next_target(st, order, get, touched, action):
     """佇列忙（wait_queue）時，算「下一個目標」的缺口，給守衛當補齊時間的下限依據。
     做法：複製 State、清空佇列，用同一份 build_order 再跑 plan_with_order，結果交給 SG.gaps_from_plan 轉換。
@@ -516,6 +567,7 @@ def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
     focus_on = focus_io is not None and str(cfg.get("hero_focus_mode", "off")).strip().lower() == "auto"
     focused = False            # 每輪最多評估一次加成切換
     guard_mode = _guard_mode(cfg)
+    fill_mode = _fill_mode(cfg)
     guarded = False            # 每輪最多評估一次守衛
     focus_switched = False     # 本輪 _try_focus 是否已處理加成（是的話守衛不跑）
 
@@ -566,6 +618,13 @@ def run_build_cycle(cfg: dict, *, get, get_dorf1, submit, dry: bool,
             if alt[0] == "build":
                 print(f"[{mode}][轉移] 資源補不到，有來襲：改做付得起的 {_fname(alt[1])} {_flv(alt[1])}"
                       f"（原本要等 {_fname(action[2])} {_flv(action[2])}）")
+                action = alt
+
+        # 有 build_order、主目標付不起（轉移沒做、沒補到或沒開）→ 看後面有沒有付得起、而且不拖慢主目標的項目可以先做
+        # 插隊成功時 action 變成 build，下面的加成與守衛本輪不跑；fill_in_mode＝dry 只記錄、action 不變
+        if action[0] == "wait_res" and order and fill_mode != "off":
+            alt = _try_fill_in(cfg, st, order, get, touched, mode, fill_mode)
+            if alt is not None:
                 action = alt
 
         # 還是付不起（轉移沒做、沒補到或沒開）→ 看要不要把英雄產量加成切到缺的資源
