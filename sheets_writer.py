@@ -135,7 +135,8 @@ _CONFIG_ORDER = ("enabled", "target_level", "queue_slots", "is_capital",
                  "max_builds", "target_building_level", "build_order",
                  "hero_adventure", "hero_min_health", "hero_allowed", "hero_skip_on_incoming", "hero_transfer_mode", "hero_transfer_min", "hero_transfer_max_gap", "hero_transfer_eta_min",
                  "hero_focus_mode", "hero_focus_min_hours", "hero_hard_min_health",
-                 "hero_guard_mode", "hero_guard_hidden", "fill_in_mode", "fill_in_slack_min")
+                 "hero_guard_mode", "hero_guard_hidden", "fill_in_mode", "fill_in_slack_min",
+                 "hide_mode")
 _CONFIG_NOTES = {
     "enabled": "FALSE = 緊急停止；session 失效時程式也會改成 FALSE",
     "target_level": "資源田升到幾級（沒設 build_order 時使用）",
@@ -159,6 +160,7 @@ _CONFIG_NOTES = {
     "hero_guard_hidden": "山洞每種資源的隱藏量（整數，預設 2000；本村埃及 10 級實測 2000）",
     "fill_in_mode": "off／dry／on：有 build_order 且主目標「等待資源」時，插隊做後面付得起、而且不會拖慢主目標開工的項目。dry = 只記錄「插隊」列、不送出；on = 真的先升；來襲時超過 hero_guard_hidden 的存量視為已被搶（看不懂一律當 off）",
     "fill_in_slack_min": "插隊允許把主目標開工時間拖慢幾分鐘（整數，預設 0＝不准拖慢）",
+    "hide_mode": "躲兵：off／observe。observe = 有來襲時只讀、只記錄到 Actions（動作「躲兵觀察」），絕不派兵；off = 完全不做（看不懂一律當 off）。之後才會加 dry／live",
 }
 
 
@@ -170,7 +172,8 @@ def _default_cfg() -> dict:
             "hero_transfer_max_gap": 1000, "hero_transfer_eta_min": 45,
             "hero_focus_mode": "off", "hero_focus_min_hours": 1, "hero_hard_min_health": 60,
             "hero_guard_mode": "off", "hero_guard_hidden": 2000,
-            "fill_in_mode": "off", "fill_in_slack_min": 0}
+            "fill_in_mode": "off", "fill_in_slack_min": 0,
+            "hide_mode": "observe"}
 
 
 def _cfg_cell(v) -> str:
@@ -244,6 +247,8 @@ def load_config() -> dict:
             cfg[k] = v.lower()          # off／dry／incoming／always，其餘由 runner 當 off
         elif k == "fill_in_mode":
             cfg[k] = v.lower()          # off／dry／on，其餘由 runner 當 off
+        elif k == "hide_mode":
+            cfg[k] = v.lower()          # off／observe，其餘由 hide_observe 當 off（空白也是 off）
         elif k in ("target_level", "queue_slots", "max_builds", "target_building_level",
                    "hero_min_health", "hero_transfer_min", "hero_transfer_max_gap",
                    "hero_transfer_eta_min", "hero_focus_min_hours", "hero_hard_min_health",

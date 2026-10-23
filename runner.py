@@ -32,6 +32,7 @@ Sheet 的「Config」分頁：A 欄名稱、B 欄值，例如
   hero_guard_hidden     2000  <- 山洞每種資源隱藏量（守衛不看 hero_focus_min_hours，每輪都可切；插隊的來襲放寬也用它）
   fill_in_mode          off   <- off／dry／on：有 build_order 且主目標「等待資源」時，插隊做後面付得起、且不會拖慢主目標的項目（dry 只記錄「插隊」列、不送出）
   fill_in_slack_min     0     <- 插隊允許把主目標開工時間拖慢幾分鐘（整數，預設 0＝不准拖慢）
+  hide_mode             observe <- off／observe：躲兵。observe＝有來襲時只讀、只記錄到 Actions（動作「躲兵觀察」），絕不派兵；其餘（含空白）一律當 off
 C 欄是說明，程式不讀。分頁不存在會自動建立；缺哪一列就補哪一列（只補缺的，已填的值不動）。
 """
 import copy
