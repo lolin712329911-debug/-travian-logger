@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-GitHub Actions 用的「Playwright 版」自動升級資源田（v2.5：加上躲兵「只觀察」）。
+GitHub Actions 用的「Playwright 版」自動升級資源田（v2.6：躲兵接 dry／live）。
 
 v2.1：修正 title 被前端 JS 清空導致成本解析失敗的問題。get_html() 會在「這一頁抓到的
 所有田成本都是空的」時，改用 context.request.get() 發一個不經過瀏覽器渲染、不執行任何
@@ -27,6 +27,9 @@ v2.5：躲兵「只觀察」。session 確認有效、確定不是安靜時段�
 有來襲才開集結點概況（唯讀 GET）、存 debug_html/、算「如果要躲會怎麼派」、寫一列 Actions（動作＝躲兵觀察、
 模式＝PLAN）。**絕不派兵**。模組載入失敗（例如缺 beautifulsoup4）或執行出錯都只印 log，不影響建城。
 開關在 Sheet 的 Config 分頁：hide_mode（off／observe，預設 observe）。
+
+v2.6：躲兵接上 dry／live（hide_mode＝observe／dry／live；預設仍是 observe）。HO.observe 多傳 min_attack（Config hide_min_attack，
+預設 20）、wait_max_s（hide_wait_max_s，預設 180）、dry_run（DRY_RUN 測試環境下 live 會降成 dry）。observe 行為不變、仍絕不派兵。
 
 這支只負責「Playwright 的 session（cache / 種子 Cookie）、怎麼抓頁面、怎麼送出網址」；
 決策、build_order、送出與驗證、Config / Actions 分頁都在 runner.py。
@@ -206,7 +209,9 @@ def main() -> int:
 
         # 躲兵「只觀察」：只讀、只記錄、不派兵；沒有來襲時不多打任何請求；任何例外都不影響建城
         if HO is not None:
-            HO.observe(page, BASE, d1, mode=cfg.get("hide_mode", "observe"))
+            HO.observe(page, BASE, d1, mode=cfg.get("hide_mode", "observe"),
+                       min_attack=cfg.get("hide_min_attack", 20),
+                       wait_max_s=cfg.get("hide_wait_max_s", 180), dry_run=dry)
 
         # session 已確認有效、context 之後不會再被替換，這時才建立 transfer_io
         # （make_io 會把「當下」的 context 綁進 closure，所以不能在 context 重建之前呼叫）

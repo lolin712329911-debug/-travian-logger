@@ -1,4 +1,11 @@
-"""躲兵自動化 v0.4：讀集結點概況 → 判斷要不要躲 → 即時驗證綠洲 → 派兵 → 事後核對。
+"""躲兵自動化 v0.5：讀集結點概況 → 判斷要不要躲 → 即時驗證綠洲 → 派兵 → 事後核對。
+
+v0.5（2026-10-24，v2.80）：依 v2.79 的決定補 dry／live 需要的邏輯（離線測，✗ 未對真實遊戲跑）：
+  - decide 新增 min_attack（嚴格大於；None＝不檢查，行為同 v0.4）：派出兵力的攻擊力合計（dispatch.UNIT_ATTACK，未知兵種算 0）要 > 門檻，否則 skip；
+  - Plan 新增 code（no_units／weak／…），方便呼叫端分辨為什麼 skip；
+  - 新增 return_windows：自己的兵（inReturn）歸來後、下一波來襲前的空檔；run_once 新增 wait_return_max_s／sleep_fn／clock：
+    dry／live 時若現在沒兵可派、但歸來夠快（≤ 上限秒）且歸來後到下一波還來得及，就等到歸來後重讀一次再決策；plan 模式只回報（res['windows']）；
+  - 取消「概況已有 outRaid 就略過」的手動避讓：程式本來就沒有這條，不新增（決定 c）；英雄永遠不帶（confirm_matches 的 t11＝0）。
 
 v0.4（2026-10-23）：觀察用（不改行為）：Movement 多 headline；run_once 多 on_overview 回呼，結果多 now_ts／arrivals／in_moves／top。
 v0.3（2026-10-23）：對照真實確認頁與第一步表單修正（✓ 讀原始碼）：
@@ -22,6 +29,7 @@ mode：
 """
 import json
 import re
+import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
@@ -42,7 +50,7 @@ def coords_from_map_id(mid):
 
 
 # 真實概況頁（✓ 10-23 05:47）：同一個「來村軍團」區塊同時有 inReturn（自己的兵歸來）與 inRaid（敵方搶奪），
-# 所以不能用區塊標題判斷來襲，只看 table 的 class。真攻擊（會拆建築）的 class 沒看過（✗，暫猜 inAttack）。
+# 所以不能用區塊標題判斷來襲，只看 table 的 class。真攻擊（會拆建築）class＝inAttack（✓ v2.79：標題「X 攻擊 Y的村莊」）。
 HOSTILE_KINDS = {"inRaid", "inAttack"}
 KNOWN_IN_KINDS = HOSTILE_KINDS | {"inReturn"}
 
@@ -138,6 +146,45 @@ def incoming_arrivals(moves):
 
 # ───────────────────────── 純函式：決策 ─────────────────────────
 
+def attack_total(units, attacks=None):
+    """派出兵力的攻擊力合計。attacks 預設 dispatch.UNIT_ATTACK；沒列的兵種算 0（保守）。"""
+    attacks = attacks if attacks is not None else dispatch.UNIT_ATTACK
+    return sum(attacks.get(u, 0) * n for u, n in units.items() if n)
+
+
+RETURN_BUFFER_S = 3     # 歸來時間之後再等幾秒才重讀（讓兵確實進村）
+
+
+def return_windows(moves, now_ts):
+    """自己的兵（inReturn）歸來後、下一波來襲前的空檔。回傳依歸來時間排序的 list：
+    dict(return_ts, units, attack, next_attack_ts, gap_s)。
+    只列：歸來還沒到（> now）、歸來後還有來襲、兵力欄位都讀得到（不含英雄 t11）。
+    用途：兵歸來的那一刻要有一次 run 把它們再派出去，否則歸來剛好被下一波打（v2.79 ③ 的 12 分 24 秒空檔）。"""
+    hostile = incoming_arrivals(moves)
+    out = []
+    for m in moves:
+        if "inReturn" not in m.kinds or not m.arrival_ts or m.arrival_ts <= now_ts:
+            continue
+        cnt = m.counts[:10]
+        if not cnt or any(c is None for c in cnt):
+            continue
+        units = {f"t{i+1}": n for i, n in enumerate(cnt) if n}
+        nxt = [a for a in hostile if a > m.arrival_ts]
+        if not units or not nxt:
+            continue
+        out.append(dict(return_ts=m.arrival_ts, units=units, attack=attack_total(units),
+                        next_attack_ts=nxt[0], gap_s=nxt[0] - m.arrival_ts))
+    return sorted(out, key=lambda w: w["return_ts"])
+
+
+def fmt_window(w, now_ts):
+    """給 log 用的一行說明（伺服器時區）。"""
+    f = lambda t: datetime.fromtimestamp(t, dispatch.SERVER_TZ).strftime("%H:%M:%S")
+    return (f"歸來 {f(w['return_ts'])}（{w['return_ts'] - now_ts}秒後，攻{w['attack']}）"
+            f"→ 下一波 {f(w['next_attack_ts'])}（空檔 {w['gap_s']}秒）")
+
+
+
 @dataclass
 class Plan:
     action: str                    # skip／wait／go
@@ -145,30 +192,38 @@ class Plan:
     units: dict = field(default_factory=dict)
     scope: list = field(default_factory=list)       # 要撐過的來襲（datetime）
     candidates: list = field(default_factory=list)  # dispatch.plan 的列，依「建議順序」
+    code: str = ""                 # skip／wait 的原因代碼：no_units／unknown_speed／weak／no_future／too_close／no_oasis；wait＝too_far
 
 
 def decide(now, arrivals_ts, units, *, lookahead_min=90, cluster_min=120, margin=30,
            min_lead_s=120, speeds=None, home=dispatch.HOME, oases=None, blocked=None,
-           include_unverified=True):
+           include_unverified=True, min_attack=None, attacks=None):
     """now：datetime（伺服器時區）。arrivals_ts：來襲到達 epoch 清單。units：在家兵力。
     include_unverified 預設 True：候選一律會在發兵前即時驗證，清單的「已驗證」旗標不再當門檻。
     候選順序：先挑「撐過範圍內全部來襲」的（近→遠），再挑「只撐過前幾波」的（撐得多→近）；
-    沒撐過第一波的直接丟掉。"""
+    沒撐過第一波的直接丟掉。
+    min_attack：派出兵力的攻擊力合計必須「嚴格大於」它（v2.79 決定 b：20）；None＝不檢查。
+    attacks：單兵攻擊力表，預設 dispatch.UNIT_ATTACK；沒列的兵種算 0（保守）。"""
     speeds = speeds or dispatch.UNIT_SPEED
     if not units:
-        return Plan("skip", "村裡沒有可派的兵")
+        return Plan("skip", "村裡沒有可派的兵", code="no_units")
     unknown = [u for u in units if u not in speeds]
     if unknown:
-        return Plan("skip", f"兵種速度未知：{','.join(sorted(unknown))}（請先量測或加進 speeds）")
+        return Plan("skip", f"兵種速度未知：{','.join(sorted(unknown))}（請先量測或加進 speeds）", code="unknown_speed")
+    if min_attack is not None:
+        total = attack_total(units, attacks)
+        if total <= min_attack:
+            return Plan("skip", f"攻擊力合計 {total} 不超過 {min_attack}（動物底值 10 的兩倍，派出去可能白送）",
+                        units, code="weak")
     fut = sorted(datetime.fromtimestamp(t, now.tzinfo) for t in arrivals_ts)
     fut = [a for a in fut if a > now]
     if not fut:
-        return Plan("skip", "沒有未來的來襲")
+        return Plan("skip", "沒有未來的來襲", code="no_future")
     lead = (fut[0] - now).total_seconds()
     if lead > lookahead_min * 60:
-        return Plan("wait", f"第一波還有 {lead/60:.0f} 分鐘（> {lookahead_min}）")
+        return Plan("wait", f"第一波還有 {lead/60:.0f} 分鐘（> {lookahead_min}）", code="too_far")
     if lead < min_lead_s:
-        return Plan("skip", f"第一波只剩 {lead:.0f} 秒，來不及兩步驟派兵")
+        return Plan("skip", f"第一波只剩 {lead:.0f} 秒，來不及兩步驟派兵", code="too_close")
     scope = [a for a in fut if a <= fut[0] + timedelta(minutes=cluster_min)]
     speed = min(speeds[u] for u in units)
     rows = dispatch.plan(now, scope, speed, margin, home,
@@ -181,7 +236,7 @@ def decide(now, arrivals_ts, units, *, lookahead_min=90, cluster_min=120, margin
                   key=lambda r: (-len(r["covered"]), r["dist"]))
     cands = full + part
     if not cands:
-        return Plan("skip", "沒有任何綠洲能撐過第一波", units, scope)
+        return Plan("skip", "沒有任何綠洲能撐過第一波", units, scope, code="no_oasis")
     kind = "可一趟撐過範圍內全部來襲" if full else "只能撐過前幾波，返回後需再發第二趟"
     return Plan("go", kind, units, scope, cands)
 
@@ -299,13 +354,17 @@ def _open_confirm(page, base, row, units):
     return page.content()
 
 
-def run_once(page, base, mode="dry", *, speeds=None, max_confirm=4, max_checks=12, on_overview=None, **kw):
+def run_once(page, base, mode="dry", *, speeds=None, max_confirm=4, max_checks=12, on_overview=None,
+             wait_return_max_s=0, sleep_fn=time.sleep, clock=time.monotonic, **kw):
     """一輪：回傳 dict（給 Actions「躲兵」列用）。失敗只回報、不重試。
-    max_confirm：最多開幾次確認頁；max_checks：最多即時驗證幾個綠洲（便宜，不吃確認頁額度）。"""
+    max_confirm：最多開幾次確認頁；max_checks：最多即時驗證幾個綠洲（便宜，不吃確認頁額度）。
+    wait_return_max_s：dry／live 時，現在沒兵可派但自己的兵在這麼多秒內歸來、而且歸來後下一波還來得及 → 等到歸來後重讀一次
+    （0＝不等；plan 模式永遠不等，只在 res['windows'] 回報）。min_attack 等 decide 參數走 **kw。"""
     assert mode in ("plan", "dry", "live")
     res = dict(mode=mode, action="error", reason="", units={}, scope=[], tried=[])
     try:
-        return _run_once(page, base, mode, res, speeds, max_confirm, max_checks, kw, on_overview)
+        return _run_once(page, base, mode, res, speeds, max_confirm, max_checks, kw, on_overview,
+                         wait_return_max_s, sleep_fn, clock)
     except Exception as e:                                  # noqa: BLE001  任何例外都只回報
         res["error"] = repr(e)
         res["result"] = ("已按確認後發生例外，兵可能已送出，請人工確認（不重試）" if res.get("clicked")
@@ -313,7 +372,7 @@ def run_once(page, base, mode="dry", *, speeds=None, max_confirm=4, max_checks=1
         return res
 
 
-def _run_once(page, base, mode, res, speeds, max_confirm, max_checks, kw, on_overview=None):
+def _read_overview(page, base, on_overview, clock):
     page.goto(f"{base}/build.php?gid=16&tt=1")
     html = page.content()
     if on_overview:
@@ -322,10 +381,34 @@ def _run_once(page, base, mode, res, speeds, max_confirm, max_checks, kw, on_ove
         except Exception:                                   # noqa: BLE001
             pass
     ts, moves = parse_overview(html)
+    return ts, moves, clock()
+
+
+def _run_once(page, base, mode, res, speeds, max_confirm, max_checks, kw, on_overview=None,
+              wait_return_max_s=0, sleep_fn=time.sleep, clock=time.monotonic):
+    ts, moves, t_load = _read_overview(page, base, on_overview, clock)
     now = datetime.fromtimestamp(ts, dispatch.SERVER_TZ)
     units = home_units(moves)
     pl = decide(now, incoming_arrivals(moves), units, speeds=speeds, **kw)
-    res.update(action=pl.action, reason=pl.reason, units=units,
+    wins = return_windows(moves, ts)
+    if wins:
+        res["windows"] = [fmt_window(w, ts) for w in wins]
+    # 歸來窗口：現在沒兵（或不夠強）、但兵很快回來、回來後到下一波還來得及 → dry／live 等一下再讀
+    if mode != "plan" and wait_return_max_s and pl.action == "skip" and pl.code in ("no_units", "weak") and wins:
+        w = wins[0]
+        wait = w["return_ts"] + RETURN_BUFFER_S - ts - (clock() - t_load)
+        enough = w["next_attack_ts"] - (w["return_ts"] + RETURN_BUFFER_S) > kw.get("min_lead_s", 120)
+        if 0 < wait <= wait_return_max_s and enough:
+            sleep_fn(wait)
+            res["waited_s"] = round(wait)
+            ts, moves, t_load = _read_overview(page, base, on_overview, clock)
+            now = datetime.fromtimestamp(ts, dispatch.SERVER_TZ)
+            units = home_units(moves)
+            pl = decide(now, incoming_arrivals(moves), units, speeds=speeds, **kw)
+        else:
+            res["window_note"] = (f"有歸來窗口但沒等：等待 {wait:.0f}s（上限 {wait_return_max_s}s）、"
+                                  f"{'空檔夠' if enough else '空檔不夠'}")
+    res.update(action=pl.action, reason=pl.reason, units=units, code=pl.code,
                scope=[a.strftime("%H:%M:%S") for a in pl.scope],
                unknown_in=unknown_in_kinds(moves), now_ts=ts, arrivals=incoming_arrivals(moves),
                in_moves=[f"{m.kinds[0] if m.kinds else '?'}|{m.headline}" for m in moves
