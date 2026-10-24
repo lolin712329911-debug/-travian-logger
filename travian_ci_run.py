@@ -28,6 +28,15 @@ v2.5：躲兵「只觀察」。session 確認有效、確定不是安靜時段�
 模式＝PLAN）。**絕不派兵**。模組載入失敗（例如缺 beautifulsoup4）或執行出錯都只印 log，不影響建城。
 開關在 Sheet 的 Config 分頁：hide_mode（off／observe，預設 observe）。
 
+v2.9：取得 cfg 後 dispatch.configure(tribe="auto")：兵種表（速度／攻擊力／載重）依 Sheet「state」分頁的 tribe 欄（bot 上一輪寫入）決定，
+不再寫死埃及人；讀不到或不認得的族群 → 表清空 → 躲兵因「兵種速度未知」不動（印 log）。
+
+v2.8：每輪最後呼叫 oasis_store.refresh：Sheet「Oases」分頁超過 12 小時才重掃區塊並寫回，其餘輪只讀一次 Sheet；
+有來襲時 hide_observe 讀這份清單套用到 dispatch.OASES／BLOCKED（讀不到就沿用 dispatch.py 內建清單）。
+
+v2.7（v2.82，換伺服器）：家座標與地圖大小改由 Config 的 home_x／home_y／map_size 提供（預設 -28／-72／401），
+取得 cfg 後立刻 dispatch.configure；Config 填壞會用預設，並印出實際採用的值。
+
 v2.6：躲兵接上 dry／live（hide_mode＝observe／dry／live；預設仍是 observe）。HO.observe 多傳 min_attack（Config hide_min_attack，
 預設 20）、wait_max_s（hide_wait_max_s，預設 180）、dry_run（DRY_RUN 測試環境下 live 會降成 dry）。observe 行為不變、仍絕不派兵。
 
@@ -40,6 +49,7 @@ import os
 import sys
 from pathlib import Path
 
+import dispatch
 import runner as R
 import hero_focus as HF
 import transfer_io as TIO
@@ -87,6 +97,13 @@ def main() -> int:
     if cfg is None:
         return code
     dry = os.getenv("DRY_RUN", "1") != "0"
+    dispatch.configure(home=(cfg.get("home_x", dispatch.HOME[0]), cfg.get("home_y", dispatch.HOME[1])))
+    try:
+        dispatch.configure(map_size=cfg.get("map_size", dispatch.MAP_SIZE))
+    except ValueError as e:
+        print(f"[設定] Config 的 map_size 不合法，改用預設 {dispatch.MAP_SIZE}：{e}")
+    print(f"[設定] 家 ({dispatch.HOME[0]}|{dispatch.HOME[1]})、地圖邊長 {dispatch.MAP_SIZE}")
+    dispatch.configure(tribe="auto")      # 讀 Sheet「state」的 tribe 欄決定兵種表；讀不到就清空（躲兵不動，不會用錯表）
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -230,6 +247,14 @@ def main() -> int:
         # 英雄冒險：獨立於建城，失敗只通知（run_hero_cycle 內部已接住例外）；hero_adventure 預設 FALSE
         R.run_hero_cycle(cfg, get=get_html, get_dorf1=lambda: get_html("dorf1.php", raw=True),
                          click_adventure=click_adventure, dry=dry)
+
+        # 綠洲清單：放在建城與英雄之後，不拖慢升級。Sheet「Oases」超過 12 小時才真的去掃（約 25 次唯讀請求），
+        # 其餘輪只讀一次 Sheet；失敗只印 log、不影響結果。有來襲時 hide_observe 會讀這份清單。
+        try:
+            import oasis_store
+            oasis_store.refresh(page, BASE, max_age_h=12, allow_scan=True)
+        except Exception as e:                 # noqa: BLE001
+            print(f"[綠洲掃描] 略過：{e!r}")
 
         # 不管這輪做了什麼，只要一開始 session 是活的，就把最新狀態存回去，
         # 讓下一輪 actions/cache 可以接續使用
