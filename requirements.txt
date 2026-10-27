@@ -1,6 +1,0 @@
-beautifulsoup4
-lxml
-requests
-gspread
-google-auth
-playwright
