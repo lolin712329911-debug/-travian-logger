@@ -1,1 +1,33 @@
+# ===== 僅限測試分支（A1a-1／D-10 import 驗證）。不得合併到 main。 =====
+# 檔名維持 auto_build.yml（A-7：main 上的檔名與 workflow_dispatch 不可改）。
+# 這份是「main 現況版」的精簡替身：不碰 Secrets、不裝 Playwright、不送任何遊戲請求，
+# 只驗證 travian_bot 在 Actions（ubuntu-latest + Python 3.11、repo 根目錄、無 PYTHONPATH）能被 import，
+# 並用 python -m 跑單元測試。Apps Script 的觸發器打的是 main，不會跑到這份。
+name: Travian import check (branch only)
 
+on:
+  workflow_dispatch: {}   # 在 Actions 頁面選「測試分支」後按 Run workflow
+
+concurrency:
+  group: travian-import-check
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # D-10 驗證：只執行 import，無 PYTHONPATH、無 pip install -e
+      - name: import travian_bot（D-10）
+        run: |
+          python -c "import travian_bot, travian_bot.common.constants, travian_bot.common.modes, travian_bot.common.serialize, travian_bot.common.schema; print('import OK', travian_bot.__file__)"
+
+      # 順帶驗證 python -m 形式可用（正式入口 python -m travian_bot.app.main 的同一機制）
+      - name: python -m unittest（單元測試，無網路、無 Secrets）
+        run: python -m unittest discover -s tests -t . -v
