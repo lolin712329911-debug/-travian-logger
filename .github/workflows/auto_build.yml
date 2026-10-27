@@ -26,7 +26,7 @@ jobs:
       # D-10 驗證：只執行 import，無 PYTHONPATH、無 pip install -e
       - name: import travian_bot（D-10）
         run: |
-          #python -c "import travian_bot, travian_bot.common.constants, travian_bot.common.modes, travian_bot.common.serialize, travian_bot.common.schema; print('import OK', travian_bot.__file__)"
+          # python -c "import travian_bot, travian_bot.common.constants, travian_bot.common.modes, travian_bot.common.serialize, travian_bot.common.schema; print('import OK', travian_bot.__file__)"
            python -c "import travian_bot, travian_bot.common.constants, travian_bot.common.modes, travian_bot.common.serialize, travian_bot.common.schema, travian_bot.common.models, travian_bot.common.decisions, travian_bot.common.parsed, travian_bot.common.server_profile; print('import OK', travian_bot.__file__)"
       # 順帶驗證 python -m 形式可用（正式入口 python -m travian_bot.app.main 的同一機制）
       - name: python -m unittest（單元測試，無網路、無 Secrets）
