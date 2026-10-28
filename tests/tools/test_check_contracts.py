@@ -1,7 +1,9 @@
 """test_check_contracts.py  v0.1 (A1a-3)：check_contracts 的測試。
 用真實的 travian_bot.common（A1a-1／2）驗證「現況乾淨」，再用被改壞的規格／範例驗證每條規則真的會報。"""
+import contextlib
 import copy
 import importlib.util
+import io
 import json
 import os
 import shutil
@@ -196,14 +198,30 @@ class FileChecks(unittest.TestCase):
         self.assertEqual(CC.load_cases(doc)[0]["ctx"], {"tribes": {"gaul"}})
 
 
+def run_main(argv):
+    """執行 CC.main 並吞掉 stdout／stderr，回傳 (exit 碼, stdout, stderr)。"""
+    out, err = io.StringIO(), io.StringIO()
+    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+        code = CC.main(argv)
+    return code, out.getvalue(), err.getvalue()
+
+
 class Cli(unittest.TestCase):
     def test_exit_codes(self):
         tmp = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, tmp, True)
-        self.assertEqual(CC.main(["--root", tmp]), 1)                 # 沒有範例檔
-        self.assertEqual(CC.main(["--root", tmp, "--write"]), 0)
-        self.assertEqual(CC.main(["--root", tmp]), 0)
-        self.assertEqual(CC.main(["--bogus"]), 2)
+        code, out, err = run_main(["--root", tmp])                 # 沒有範例檔
+        self.assertEqual(code, 1)
+        self.assertEqual(out.count("VIOLATION｜FILE_MISSING｜"), 2 * len(schema.CONTRACT_SPECS))
+        self.assertIn("失敗", err)
+        code, out, err = run_main(["--root", tmp, "--write"])
+        self.assertEqual((code, out), (0, ""))
+        code, out, err = run_main(["--root", tmp])
+        self.assertEqual((code, out), (0, ""))
+        self.assertIn("通過", err)
+        code, out, err = run_main(["--bogus"])
+        self.assertEqual(code, 2)
+        self.assertIn("unrecognized arguments", err)
 
 
 if __name__ == "__main__":

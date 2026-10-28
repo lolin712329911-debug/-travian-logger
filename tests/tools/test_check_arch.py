@@ -1,5 +1,7 @@
 """test_check_arch.py  v0.1 (A1a-3)：check_arch 的測試，用暫存的合成目錄樹，不依賴真實 repo。"""
+import contextlib
 import importlib.util
+import io
 import os
 import shutil
 import tempfile
@@ -19,6 +21,14 @@ def _load(name):
 CA = _load("check_arch")
 MANIFEST, EXPECTED = CA.load_manifest(os.path.join(_TOOLS, "arch_manifest.py"))
 BY_PATH = {c["path"]: c for c in MANIFEST}
+
+
+def run_main(argv):
+    """執行 CA.main 並吞掉 stdout／stderr（測試時不讓日誌出現假的 VIOLATION／usage），回傳 (exit 碼, stdout, stderr)。"""
+    out, err = io.StringIO(), io.StringIO()
+    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+        code = CA.main(argv)
+    return code, out.getvalue(), err.getvalue()
 
 
 class TreeCase(unittest.TestCase):
@@ -185,11 +195,20 @@ class TreeTests(TreeCase):
         self.put("common/mystery.py")
         f = [x for x in self.run_checks() if x.rule == "UNREGISTERED"][0]
         self.assertTrue(f.text().startswith("VIOLATION｜UNREGISTERED｜travian_bot/common/mystery.py｜"))
-        self.assertEqual(CA.main(["--root", self.root]), 1)
+        code, out, err = run_main(["--root", self.root])
+        self.assertEqual(code, 1)
+        self.assertIn("VIOLATION｜UNREGISTERED｜", out)
+        self.assertIn("失敗", err)
         os.remove(os.path.join(self.root, "travian_bot/common/mystery.py"))
-        self.assertEqual(CA.main(["--root", self.root]), 0)
-        self.assertEqual(CA.main(["--root", os.path.join(self.root, "nope")]), 2)
-        self.assertEqual(CA.main(["--bogus"]), 2)
+        code, out, err = run_main(["--root", self.root])
+        self.assertEqual((code, out), (0, ""))
+        self.assertIn("通過", err)
+        code, out, err = run_main(["--root", os.path.join(self.root, "nope")])
+        self.assertEqual(code, 2)
+        self.assertIn("ERROR｜", err)
+        code, out, err = run_main(["--bogus"])
+        self.assertEqual(code, 2)
+        self.assertIn("unrecognized arguments", err)
 
 
 if __name__ == "__main__":
