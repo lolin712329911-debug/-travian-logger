@@ -1,0 +1,49 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "checked_utc": "2026-11-02T08:15:30Z",
+        "did": 101,
+        "next_seq": 3,
+        "rejected": [],
+        "verdict": "proceed"
+      }
+    },
+    {
+      "ctx": {},
+      "data": {
+        "checked_utc": "2026-11-02T08:15:30Z",
+        "did": 101,
+        "next_seq": 3,
+        "rejected": [
+          {
+            "reason": "主建築等級不足",
+            "rule": "prereq_unmet",
+            "seq": 3
+          }
+        ],
+        "verdict": "hold"
+      }
+    },
+    {
+      "ctx": {},
+      "data": {
+        "checked_utc": "2026-11-02T08:15:30Z",
+        "did": 101,
+        "next_seq": null,
+        "rejected": [
+          {
+            "reason": "沒有 build_order",
+            "rule": "missing_order",
+            "seq": 1
+          }
+        ],
+        "verdict": "hold"
+      }
+    }
+  ],
+  "contract": "PlanVerdict",
+  "kind": "valid",
+  "schema_version": 1
+}

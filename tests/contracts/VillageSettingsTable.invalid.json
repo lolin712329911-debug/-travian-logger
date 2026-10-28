@@ -1,0 +1,85 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": [
+        {
+          "build_order": null,
+          "did": 101,
+          "enabled": true,
+          "fill_mode": null,
+          "guard_mode": null,
+          "hide_mode": null,
+          "is_capital": false,
+          "name": "主村",
+          "note": null,
+          "priority": 100,
+          "queue_slots": 1,
+          "role": "resource"
+        },
+        {
+          "build_order": null,
+          "did": 101,
+          "enabled": true,
+          "fill_mode": null,
+          "guard_mode": null,
+          "hide_mode": null,
+          "is_capital": true,
+          "name": "二村",
+          "note": null,
+          "priority": 100,
+          "queue_slots": 1,
+          "role": "capital"
+        }
+      ],
+      "field": "[1].did",
+      "rule": "duplicate_did"
+    },
+    {
+      "ctx": {},
+      "data": [
+        {
+          "build_order": null,
+          "did": 101,
+          "enabled": true,
+          "fill_mode": null,
+          "guard_mode": null,
+          "hide_mode": null,
+          "is_capital": true,
+          "name": "主村",
+          "note": null,
+          "priority": 100,
+          "queue_slots": 1,
+          "role": "resource"
+        },
+        {
+          "build_order": null,
+          "did": 102,
+          "enabled": true,
+          "fill_mode": null,
+          "guard_mode": null,
+          "hide_mode": null,
+          "is_capital": true,
+          "name": "二村",
+          "note": null,
+          "priority": 100,
+          "queue_slots": 1,
+          "role": "capital"
+        }
+      ],
+      "field": "[1].is_capital",
+      "rule": "multiple_capital"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "not": "a list"
+      },
+      "field": "",
+      "rule": "type"
+    }
+  ],
+  "contract": "VillageSettingsTable",
+  "kind": "invalid",
+  "schema_version": 1
+}

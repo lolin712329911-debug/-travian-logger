@@ -1,0 +1,15 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "reason": "主建築等級不足",
+        "rule": "prereq_unmet",
+        "seq": 3
+      }
+    }
+  ],
+  "contract": "PlanRejection",
+  "kind": "valid",
+  "schema_version": 1
+}

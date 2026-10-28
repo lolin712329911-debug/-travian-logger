@@ -1,0 +1,76 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "blocked": [
+          -1
+        ],
+        "home_x": 0,
+        "home_y": 0,
+        "oases": [
+          {
+            "kind": "wood25",
+            "safe": null,
+            "x": 3,
+            "y": -4
+          }
+        ],
+        "tribe": "gaul"
+      },
+      "field": "blocked[0]",
+      "rule": "min"
+    },
+    {
+      "ctx": {
+        "tribes": [
+          "gaul"
+        ]
+      },
+      "data": {
+        "blocked": [
+          0
+        ],
+        "home_x": 0,
+        "home_y": 0,
+        "oases": [
+          {
+            "kind": "wood25",
+            "safe": null,
+            "x": 3,
+            "y": -4
+          }
+        ],
+        "tribe": "nobody"
+      },
+      "field": "tribe",
+      "rule": "unknown_tribe"
+    },
+    {
+      "ctx": {
+        "map_half": 200
+      },
+      "data": {
+        "blocked": [
+          0
+        ],
+        "home_x": 201,
+        "home_y": 0,
+        "oases": [
+          {
+            "kind": "wood25",
+            "safe": null,
+            "x": 3,
+            "y": -4
+          }
+        ],
+        "tribe": "gaul"
+      },
+      "field": "home_x",
+      "rule": "map_range"
+    }
+  ],
+  "contract": "HideContext",
+  "kind": "invalid",
+  "schema_version": 1
+}

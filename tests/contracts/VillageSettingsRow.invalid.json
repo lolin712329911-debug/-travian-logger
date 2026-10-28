@@ -1,0 +1,83 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "build_order": null,
+        "did": 101,
+        "enabled": true,
+        "fill_mode": null,
+        "guard_mode": null,
+        "hide_mode": null,
+        "is_capital": false,
+        "name": "主村",
+        "note": null,
+        "priority": 0,
+        "queue_slots": 1,
+        "role": "resource"
+      },
+      "field": "priority",
+      "rule": "min"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "build_order": null,
+        "did": 101,
+        "enabled": true,
+        "fill_mode": null,
+        "guard_mode": null,
+        "hide_mode": null,
+        "is_capital": false,
+        "name": "主村",
+        "note": null,
+        "priority": 100,
+        "queue_slots": 1,
+        "role": "boss"
+      },
+      "field": "role",
+      "rule": "enum"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "build_order": null,
+        "did": 101,
+        "enabled": "TRUE",
+        "fill_mode": null,
+        "guard_mode": null,
+        "hide_mode": null,
+        "is_capital": false,
+        "name": "主村",
+        "note": null,
+        "priority": 100,
+        "queue_slots": 1,
+        "role": "resource"
+      },
+      "field": "enabled",
+      "rule": "type"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "build_order": null,
+        "did": 101,
+        "enabled": true,
+        "fill_mode": null,
+        "guard_mode": "maybe",
+        "hide_mode": null,
+        "is_capital": false,
+        "name": "主村",
+        "note": null,
+        "priority": 100,
+        "queue_slots": 1,
+        "role": "resource"
+      },
+      "field": "guard_mode",
+      "rule": "enum"
+    }
+  ],
+  "contract": "VillageSettingsRow",
+  "kind": "invalid",
+  "schema_version": 1
+}

@@ -1,0 +1,21 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "main_did": 101,
+        "main_did_set_utc": "2026-11-02T08:15:30Z"
+      }
+    },
+    {
+      "ctx": {},
+      "data": {
+        "main_did": null,
+        "main_did_set_utc": null
+      }
+    }
+  ],
+  "contract": "VillageLock",
+  "kind": "valid",
+  "schema_version": 1
+}

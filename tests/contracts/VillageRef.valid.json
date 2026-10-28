@@ -1,0 +1,29 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "active": true,
+        "did": 101,
+        "is_capital": null,
+        "name": "主村",
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "ctx": {},
+      "data": {
+        "active": true,
+        "did": 101,
+        "is_capital": true,
+        "name": "主村",
+        "x": 0,
+        "y": 0
+      }
+    }
+  ],
+  "contract": "VillageRef",
+  "kind": "valid",
+  "schema_version": 1
+}

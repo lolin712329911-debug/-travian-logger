@@ -1,0 +1,15 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "build_order": null,
+        "queue_slots": 1,
+        "target_level": 10
+      }
+    }
+  ],
+  "contract": "BuildSettings",
+  "kind": "valid",
+  "schema_version": 1
+}

@@ -1,0 +1,38 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "amount": [
+          100,
+          0,
+          0,
+          0
+        ],
+        "arrive_utc": "2026-11-02 08:15:30",
+        "from_did": 101,
+        "to_did": 102
+      },
+      "field": "arrive_utc",
+      "rule": "utc_format"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "amount": [
+          100,
+          0,
+          0,
+          0
+        ],
+        "arrive_utc": "2026-11-02T08:15:30Z",
+        "from_did": 101
+      },
+      "field": "to_did",
+      "rule": "required"
+    }
+  ],
+  "contract": "Transit",
+  "kind": "invalid",
+  "schema_version": 1
+}

@@ -1,0 +1,16 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "kind": "wood25",
+        "safe": null,
+        "x": 3,
+        "y": -4
+      }
+    }
+  ],
+  "contract": "Oasis",
+  "kind": "valid",
+  "schema_version": 1
+}

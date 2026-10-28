@@ -1,0 +1,37 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "action": "調度資源",
+        "aid": null,
+        "cost": null,
+        "detail": "",
+        "did": 101,
+        "gid": null,
+        "level": null,
+        "mode": "dry",
+        "result": "dry",
+        "ts_utc": "2026-11-02T08:15:30Z"
+      }
+    },
+    {
+      "ctx": {},
+      "data": {
+        "action": "調度資源",
+        "aid": null,
+        "cost": null,
+        "detail": "",
+        "did": 101,
+        "gid": null,
+        "level": null,
+        "mode": "live",
+        "result": "ok",
+        "ts_utc": "2026-11-02T08:15:30Z"
+      }
+    }
+  ],
+  "contract": "ActionRow",
+  "kind": "valid",
+  "schema_version": 1
+}

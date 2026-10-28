@@ -1,0 +1,29 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "kind": "xxxxxxxxxxxxxxxxxxxxx",
+        "safe": null,
+        "x": 3,
+        "y": -4
+      },
+      "field": "kind",
+      "rule": "max_len"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "kind": "wood25",
+        "safe": null,
+        "x": "3",
+        "y": -4
+      },
+      "field": "x",
+      "rule": "type"
+    }
+  ],
+  "contract": "Oasis",
+  "kind": "invalid",
+  "schema_version": 1
+}

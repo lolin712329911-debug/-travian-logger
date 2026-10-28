@@ -1,0 +1,134 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "actions": [
+          {
+            "action": "調度資源",
+            "aid": null,
+            "cost": null,
+            "detail": "",
+            "did": 101,
+            "gid": null,
+            "level": null,
+            "mode": "dry",
+            "result": "dry",
+            "ts_utc": "2026-11-02T08:15:30Z"
+          }
+        ],
+        "elapsed_s": 1.25,
+        "note": "",
+        "requests_used": 3,
+        "snapshot_updates": {
+          "stock": [
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        "status": "failed"
+      },
+      "field": "note",
+      "rule": "note_required_when_failed"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "actions": [
+          {
+            "action": "調度資源",
+            "aid": null,
+            "cost": null,
+            "detail": "",
+            "did": 101,
+            "gid": null,
+            "level": null,
+            "mode": "dry",
+            "result": "dry",
+            "ts_utc": "2026-11-02T08:15:30Z"
+          }
+        ],
+        "elapsed_s": 1.25,
+        "note": "",
+        "requests_used": 3,
+        "snapshot_updates": {
+          "nope": 1
+        },
+        "status": "ok"
+      },
+      "field": "snapshot_updates",
+      "rule": "unknown_snapshot_field"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "actions": [
+          {
+            "action": "調度資源",
+            "aid": null,
+            "cost": null,
+            "detail": "",
+            "did": 101,
+            "gid": null,
+            "level": null,
+            "mode": "dry",
+            "result": "dry",
+            "ts_utc": "2026-11-02T08:15:30Z"
+          }
+        ],
+        "elapsed_s": -1,
+        "note": "",
+        "requests_used": 3,
+        "snapshot_updates": {
+          "stock": [
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        "status": "ok"
+      },
+      "field": "elapsed_s",
+      "rule": "min"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "actions": [
+          {
+            "action": "調度資源",
+            "aid": null,
+            "cost": null,
+            "detail": "",
+            "did": 101,
+            "gid": null,
+            "level": null,
+            "mode": "dry",
+            "result": "weird",
+            "ts_utc": "2026-11-02T08:15:30Z"
+          }
+        ],
+        "elapsed_s": 1.25,
+        "note": "",
+        "requests_used": 3,
+        "snapshot_updates": {
+          "stock": [
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        "status": "ok"
+      },
+      "field": "actions[0].result",
+      "rule": "enum"
+    }
+  ],
+  "contract": "StageResult",
+  "kind": "invalid",
+  "schema_version": 1
+}

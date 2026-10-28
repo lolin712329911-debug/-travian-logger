@@ -1,0 +1,24 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "build_order": null,
+        "did": 101,
+        "enabled": true,
+        "fill_mode": null,
+        "guard_mode": null,
+        "hide_mode": null,
+        "is_capital": false,
+        "name": "主村",
+        "note": null,
+        "priority": 100,
+        "queue_slots": 1,
+        "role": "resource"
+      }
+    }
+  ],
+  "contract": "VillageSettingsRow",
+  "kind": "valid",
+  "schema_version": 1
+}

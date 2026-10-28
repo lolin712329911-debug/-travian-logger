@@ -1,0 +1,26 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "blocked": [
+          0
+        ],
+        "home_x": 0,
+        "home_y": 0,
+        "oases": [
+          {
+            "kind": "wood25",
+            "safe": null,
+            "x": 3,
+            "y": -4
+          }
+        ],
+        "tribe": "gaul"
+      }
+    }
+  ],
+  "contract": "HideContext",
+  "kind": "valid",
+  "schema_version": 1
+}
