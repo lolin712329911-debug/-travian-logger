@@ -1,4 +1,4 @@
-"""test_check_arch.py  v0.1 (A1a-3)：check_arch 的測試，用暫存的合成目錄樹，不依賴真實 repo。"""
+"""test_check_arch.py  v0.1.1 (A1a-3)：check_arch 的測試，用暫存的合成目錄樹，不依賴真實 repo。"""
 import contextlib
 import importlib.util
 import io
@@ -158,6 +158,21 @@ class TreeTests(TreeCase):
         hits = [f for f in self.run_checks() if f.rule == "TRIBE_STRING"]
         self.assertEqual([f.path for f in hits], ["travian_bot/domain/guard.py"])
         self.assertEqual(hits[0].line, 3)
+
+    def test_tribe_string_all_playable_tribes(self):
+        for i, name in enumerate(["gaul", "roman", "teuton", "egyptian", "hun", "spartan", "viking",
+                                  "Spartans", "VIKING", "huns"]):
+            self.put("domain/guard.py", 'def f(t):\n    return t == "%s"\n' % name)
+            hits = [f for f in self.run_checks() if f.rule == "TRIBE_STRING"]
+            self.assertEqual(len(hits), 1, name)
+        # 不是種族名的相似字不誤報
+        self.put("domain/guard.py", 'X = "hundred spartanburg vikingr romance"\n')
+        self.assertEqual([f for f in self.run_checks() if f.rule == "TRIBE_STRING"], [])
+        # 允許位置（tribe_data／config_schema／schema）不報
+        self.put("domain/guard.py", "X = 1\n")
+        for rel in ("common/tribe_data.py", "common/config_schema.py", "common/schema.py"):
+            self.put(rel, 'T = "spartan"\nU = "viking"\n')
+        self.assertEqual([f for f in self.run_checks() if f.rule == "TRIBE_STRING"], [])
 
     def test_format_exit(self):
         code = ("import json\nimport json as j\nfrom json import dumps as d\n"
