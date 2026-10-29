@@ -1,4 +1,4 @@
-"""check_arch.py  v0.1  (A1a-3)
+"""check_arch.py  v0.1.1  (A1a-3；v0.1.1 種族清單補 spartan、viking)
 
 用途：架構檢查（slice §4.1／§4.2 的自動化）。WP 驗收必跑。
 檢查項（規則名稱 → 說明）：
@@ -29,7 +29,7 @@ import os
 import re
 import sys
 
-VERSION = "0.1"
+VERSION = "0.1.1"
 PACKAGE = "travian_bot"
 
 LAYER_OF_PREFIX = {"cm": "common", "ps": "parsers", "dm": "domain",
@@ -53,7 +53,7 @@ IO_ROOTS = {"playwright", "requests", "httpx", "aiohttp", "urllib3", "socket",
             "selenium", "smtplib"}
 IO_DOTTED = {"urllib.request", "http.client"}
 
-TRIBE_RE = re.compile(r"\b(gaul|roman|teuton|egyptian|hun)s?\b")
+TRIBE_RE = re.compile(r"\b(gaul|roman|teuton|egyptian|hun|spartan|viking)s?\b")   # Travian: Legends 全部可玩種族
 TRIBE_ALLOWED_IDS = {"cm-06", "cm-08", "cm-11"}      # tribe_data、config_schema、schema
 FORMAT_ALLOWED_ID = "cm-10"                          # serialize
 GSPREAD_ALLOWED_ID = "if-04"                         # infra/store/gsheets
