@@ -46,4 +46,3 @@ jobs:
 
       - name: check_contracts（契約與範例）
         run: python tools/check_contracts.py
-        run: python tools/check_contracts.py
