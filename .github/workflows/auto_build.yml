@@ -24,16 +24,26 @@ jobs:
           python-version: "3.11"
 
       # D-10 驗證：只執行 import，無 PYTHONPATH、無 pip install -e
-      - name: import travian_bot（D-10）
+      # 自動掃描 travian_bot 底下所有模組，新增模組不必再改這裡
+      - name: import travian_bot（D-10，全部模組）
         run: |
-          python -c "import travian_bot, travian_bot.common.constants, travian_bot.common.modes, travian_bot.common.serialize, travian_bot.common.schema, travian_bot.common.models, travian_bot.common.decisions, travian_bot.common.parsed, travian_bot.common.server_profile; print('import OK', travian_bot.__file__)"
+          python - <<'EOF'
+          import importlib, pkgutil
+          import travian_bot
+          names = sorted(m.name for m in pkgutil.walk_packages(travian_bot.__path__, "travian_bot."))
+          for n in names:
+              importlib.import_module(n)
+          print("import OK", travian_bot.__file__)
+          print(len(names), "modules:", ", ".join(n.rsplit(".", 1)[-1] for n in names))
+          EOF
 
       - name: python -m unittest（單元測試，無網路、無 Secrets）
         run: python -m unittest discover -s tests -t . -v
 
-      # A1a-3 新增：每個 WP 驗收必跑
+      # 每個 WP 驗收必跑；A1b 加進來
       - name: check_arch（依賴方向、單一出口）
-        run: python tools/check_arch.py --expect-wp A1a-1,A1a-2 --strict
+        run: python tools/check_arch.py --expect-wp A1a-1,A1a-2,A1b --strict
 
       - name: check_contracts（契約與範例）
+        run: python tools/check_contracts.py
         run: python tools/check_contracts.py
