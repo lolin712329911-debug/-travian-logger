@@ -14,7 +14,7 @@
   disp  處置：沿用／拆／改寫／新寫（依「舊源→處置」欄最後的粗體字分類；僅供參考，不參與檢查）
 """
 
-SOURCE = 'slice_A1a-3.md v0.25 §4.2'
+SOURCE = 'multi-village-dev-v0_29.md v0.29 §4.2'
 EXPECTED_COUNT = 73
 
 MANIFEST = [
@@ -49,10 +49,10 @@ MANIFEST = [
     {'id': 'cm-02', 'path': 'common/decisions.py', 'layer': 'common', 'deps': ['cm-01'], 'wp': 'A1a-2', 'disp': '新寫'},
     {'id': 'cm-03', 'path': 'common/constants.py', 'layer': 'common', 'deps': [], 'wp': 'A1a-1', 'disp': '沿用'},
     {'id': 'cm-04', 'path': 'common/modes.py', 'layer': 'common', 'deps': [], 'wp': 'A1a-1', 'disp': '沿用'},
-    {'id': 'cm-05', 'path': 'common/clock.py', 'layer': 'common', 'deps': ['cm-13'], 'wp': 'A1b', 'disp': '沿用'},
-    {'id': 'cm-06', 'path': 'common/tribe_data.py', 'layer': 'common', 'deps': [], 'wp': 'A1b', 'disp': '沿用'},
+    {'id': 'cm-05', 'path': 'common/clock.py', 'layer': 'common', 'deps': ['cm-10', 'cm-13'], 'wp': 'A1b', 'disp': '沿用'},
+    {'id': 'cm-06', 'path': 'common/tribe_data.py', 'layer': 'common', 'deps': ['cm-11'], 'wp': 'A1b', 'disp': '沿用'},
     {'id': 'cm-07', 'path': 'common/geo.py', 'layer': 'common', 'deps': [], 'wp': 'A1b', 'disp': '沿用'},
-    {'id': 'cm-08', 'path': 'common/config_schema.py', 'layer': 'common', 'deps': ['cm-01', 'cm-04', 'cm-11', 'cm-13'], 'wp': 'A1b／B2', 'disp': '沿用'},
+    {'id': 'cm-08', 'path': 'common/config_schema.py', 'layer': 'common', 'deps': ['cm-01', 'cm-04', 'cm-06', 'cm-10', 'cm-11', 'cm-12', 'cm-13'], 'wp': 'A1b／B2', 'disp': '沿用'},
     {'id': 'cm-09', 'path': 'common/parsed.py', 'layer': 'common', 'deps': ['cm-01'], 'wp': 'A1a-2', 'disp': '新寫'},
     {'id': 'cm-10', 'path': 'common/serialize.py', 'layer': 'common', 'deps': [], 'wp': 'A1a-1', 'disp': '新寫'},
     {'id': 'cm-11', 'path': 'common/schema.py', 'layer': 'common', 'deps': [], 'wp': 'A1a-1', 'disp': '新寫'},
