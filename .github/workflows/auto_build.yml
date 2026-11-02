@@ -23,11 +23,16 @@ jobs:
         with:
           python-version: "3.11"
 
+      # 第三方套件：parsers 用 beautifulsoup4（A2a-1 起）。不裝專案本身（D-10 禁止 pip install -e），
+      # 也不整份裝 requirements.txt（playwright、gspread 這裡用不到）。
+      - name: 安裝第三方套件（parsers 用 bs4）
+        run: python -m pip install beautifulsoup4
+
       # D-10 驗證：只執行 import，無 PYTHONPATH、無 pip install -e
       # 自動掃描 travian_bot 底下所有模組，新增模組不必再改這裡
       - name: import travian_bot（D-10，全部模組）
         run: |
-          python - <<'EOF'
+          python - <<'PYEOF'
           import importlib, pkgutil
           import travian_bot
           names = sorted(m.name for m in pkgutil.walk_packages(travian_bot.__path__, "travian_bot."))
@@ -35,14 +40,14 @@ jobs:
               importlib.import_module(n)
           print("import OK", travian_bot.__file__)
           print(len(names), "modules:", ", ".join(n.rsplit(".", 1)[-1] for n in names))
-          EOF
+          PYEOF
 
       - name: python -m unittest（單元測試，無網路、無 Secrets）
         run: python -m unittest discover -s tests -t . -v
 
-      # 每個 WP 驗收必跑；A1b 加進來
+      # 每個 WP 驗收必跑；A2a-1 加進來
       - name: check_arch（依賴方向、單一出口）
-        run: python tools/check_arch.py --expect-wp A1a-1,A1a-2,A1b --strict
+        run: python tools/check_arch.py --expect-wp A1a-1,A1a-2,A1b,A2a-1 --strict
 
       - name: check_contracts（契約與範例）
         run: python tools/check_contracts.py
