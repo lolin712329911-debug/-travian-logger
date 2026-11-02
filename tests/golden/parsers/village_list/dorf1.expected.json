@@ -1,0 +1,59 @@
+{
+  "cases": [
+    {
+      "active_did": 10002,
+      "home": [
+        -125,
+        -185
+      ],
+      "map_half": 200,
+      "sample": "S1a",
+      "villages": [
+        {
+          "active": false,
+          "did": 10001,
+          "is_capital": null,
+          "name": "VillageA",
+          "x": -128,
+          "y": -172
+        },
+        {
+          "active": true,
+          "did": 10002,
+          "is_capital": null,
+          "name": "VillageB",
+          "x": -125,
+          "y": -185
+        }
+      ]
+    },
+    {
+      "active_did": 10001,
+      "home": [
+        -128,
+        -172
+      ],
+      "map_half": 200,
+      "sample": "S1b",
+      "villages": [
+        {
+          "active": true,
+          "did": 10001,
+          "is_capital": null,
+          "name": "VillageA",
+          "x": -128,
+          "y": -172
+        },
+        {
+          "active": false,
+          "did": 10002,
+          "is_capital": null,
+          "name": "VillageB",
+          "x": -125,
+          "y": -185
+        }
+      ]
+    }
+  ],
+  "schema_version": 1
+}
