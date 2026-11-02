@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""make_slice.py v0.1 — 從主檔 multi-village-dev-vX.md 產生單一 WP 的切片（只用標準庫）。
+"""make_slice.py v0.2.1 — 從主檔 multi-village-dev-vX.md 產生單一 WP 的切片（只用標準庫）。
 用法：python tools/make_slice.py MASTER WP [-o OUT] [--no-contracts] [--decisions] [--extra cm-05,cm-06]
       python tools/make_slice.py MASTER --check-all     （檢查主檔每個 WP 都能解析出交付卡片）
 切片是唯讀產物，不手改、不保存；主檔才是唯一真相來源（§8.4）。
@@ -85,6 +85,60 @@ def tool_rows(sec42, wp):
     return header, rows
 
 
+def wp_in_cell(text, wp, order):
+    """text 內是否點名 wp（含 A3a～A3c 這類範圍）。"""
+    if re.search(r"(?<![A-Za-z0-9])%s(?![A-Za-z0-9])" % re.escape(wp), text):
+        return True
+    for m in re.finditer(r"([A-Za-z][A-Za-z0-9\-]*)～([A-Za-z][A-Za-z0-9\-]*)", text):
+        a, b = m.group(1), m.group(2)
+        if a in order and b in order and wp in order:
+            if order.index(a) <= order.index(wp) <= order.index(b):
+                return True
+    return False
+
+
+def handoff_parts(s9, wp, order):
+    """§9「交接紀錄」之後的區塊：最新 WP 的整段附上；舊 WP 的「留給後續 WP 的事項」只附點名本 WP 的列。"""
+    start = next((i for i, l in enumerate(s9) if l.startswith("**交接紀錄")), None)
+    if start is None:
+        return []
+    segs, cur = [], None
+    for l in s9[start + 1:]:
+        m = re.match(r"^\*\*(\S+?) (交接區塊|留給後續 WP 的事項)", l)
+        if m:
+            cur = {"wp": m.group(1), "kind": m.group(2), "lines": [l]}
+            segs.append(cur)
+        elif cur is not None:
+            if l.strip() == "---":
+                cur = None
+            else:
+                cur["lines"].append(l)
+    if not segs:
+        return []
+    latest = segs[0]["wp"]
+    for sg in segs:                      # 新的在上面：取檔案中第一個「交接區塊」（v0.2.1；v0.2 取到最後一個＝最舊的）
+        if sg["kind"] == "交接區塊":
+            latest = sg["wp"]
+            break
+    out = []
+    for sg in segs:
+        body = [l for l in sg["lines"][1:] if l.strip()]
+        if sg["wp"] == latest:
+            out += sg["lines"] + [""]
+        elif sg["kind"] == "留給後續 WP 的事項":
+            keep = []
+            for l in body:
+                if l.startswith("|"):
+                    if wp_in_cell(cells(l)[-1], wp, order):
+                        keep.append(l)
+                elif wp_in_cell(l, wp, order):
+                    keep.append(l)
+            if keep:
+                hdr = [l for l in body if l.startswith("|")][:2]
+                out += [sg["lines"][0]] + [""] + (hdr if hdr and keep[0].startswith("|") else []) + keep + [""]
+    return out
+
+
 def build(md, wp, contracts=True, decisions=False, extra=(), all_cards=False):
     lines = md.split("\n")
     ver = re.search(r"本版：(v[\d.]+)", md).group(1)
@@ -143,6 +197,7 @@ def build(md, wp, contracts=True, decisions=False, extra=(), all_cards=False):
         status.append(l)
     parts["§8.2 交接區塊範本"] = sec("### 8.2 ")
     parts["§9"] = status + ["", "**最近交接（共 %d 筆，只列最後 3 筆）**" % len(recs)] + recs[-3:]
+    parts["§9 交接區塊與後續事項"] = handoff_parts(s9, wp, list(rows))
     tail = ["## 10.（節錄）決策與風險", ""]
     tail += sec("### 待決")[0:] + [""] + sec("### 架構與遷移風險")
     if decisions:
