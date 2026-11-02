@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/common/parsed.py（cm-09）
-版本：v0.1（A1a-2）｜草案（✗）：欄位待 A2a／A2b 對照現有 parse_* 回傳值定案
+版本：v0.2（A2a-1）｜PlayerInfo 已定案（✓，A2a-1，依舊服 dorf1 樣本 S1a／S1b）；
+      其餘結構仍為草案（✗）：Dorf1／Dorf2／PageFacts 待 A2a-2，HeroState／Adventure 等待 A2b
 用途：解析結果結構（parsers 的輸出、domain 與 app 的輸入）：Dorf1、Dorf2、PlayerInfo、HeroState、
       Adventure、RallyOverview、MarketState、Oasis、TileSafety、PageFacts（D-18）。
 依賴：cm-01（models；Oasis／Merchants／Transit 直接沿用，不重複定義）。
@@ -85,7 +86,11 @@ class Dorf2:
 # ---------------------------------------------------------------- 玩家／英雄／冒險
 @dataclass(frozen=True)
 class PlayerInfo:
-    """欄位取自 §6.7 state 分頁的鍵（✗：是否都在同一頁、來源頁待 A2b）。"""
+    """玩家資訊（A2a-1 定案 ✓）。來源是頁內 `viewData.ownPlayer`，dorf1、dorf2 皆含（舊服樣本 ✓）。
+    tribe_id＝tribeId；plus_active＝goldFeatures.travianPlus.isActive（人工在遊戲內開關，有開就用；系統不購買）；
+    cp_have／cp_need／cp_per_day／village_slots_used／village_slots_max＝culturalPointsOverview 的
+    cpProducedForNextSlot／cpNeededForNextSlot／cpProductionTotal／usedSlots／maxControllableVillages。
+    讀不到＝None；cp_* 與 village_slots_* 五欄同進同出（任一缺漏，五欄全為 None）。"""
     tribe_id: Optional[int]
     plus_active: Optional[bool]
     cp_have: Optional[int]
