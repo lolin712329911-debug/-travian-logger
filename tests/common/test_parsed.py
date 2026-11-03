@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""tests/common/test_parsed.py（cm-09）v0.1（A1a-2）：草案結構的基本性質與舊 Field／State／Slot 邊界約定。"""
+"""tests/common/test_parsed.py（cm-09）v0.2（A2a-2a 跟進 PageFacts 欄位）：草案結構的基本性質與舊 Field／State／Slot 邊界約定。"""
 import dataclasses
 import unittest
 
@@ -42,9 +42,12 @@ class TestParsed(unittest.TestCase):
         self.assertIsNone(MarketState(None, (), ()).merchants)
 
     def test_page_facts_all_optional(self):
-        f = PageFacts(*([None] * 9))
+        n = len(dataclasses.fields(PageFacts))
+        f = PageFacts(*([None] * n))
         self.assertTrue(all(v is None for v in models.to_plain(f).values()))
-        self.assertEqual(len(dataclasses.fields(PageFacts)), 9)
+        self.assertEqual(
+            [x.name for x in dataclasses.fields(PageFacts)],
+            ["tz_name", "tz_offset_s", "lang", "gpack", "tribe_id", "server_ts", "villages"])
 
 
 if __name__ == "__main__":
