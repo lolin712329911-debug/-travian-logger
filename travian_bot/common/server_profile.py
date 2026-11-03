@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/common/server_profile.py（cm-13）
-版本：v0.1（A1a-2）
+版本：v0.2（A2a-2a 跟進 parsed.py v0.3）
 用途：ServerProfile（C11）的建立、時間換算、倍速換算與頁面核對（D-18）。純函式。
 依賴：cm-01（models）、cm-09（parsed）；標準庫 zoneinfo（只讀系統時區資料庫，不連網）。
 部署狀態：未部署（GA 前不 live）。
@@ -150,7 +150,8 @@ def verify_against_page(profile: ServerProfile, facts: PageFacts, *,
       locale      與 <html lang> 不同（忽略大小寫與 _／-）＝soft（C11：啟動警告）；讀不到＝soft
       version     profile.version 有填才比對 gpack，不同或讀不到＝soft
       tribe       有給 tribe_keys_by_id（tribeId→種族鍵）才比對，不同＝hard；讀不到＝soft
-      map_half    首個 d= 連結座標超出 ±map_half＝hard
+      map_half    villages（viewData.villageList）任一村的 |x| 或 |y| 超出 map_half＝hard（D-18 v0.30，
+                  每個超出的村各回報一筆）；villages 為 None／空、或某村座標讀不到＝soft（不靜默略過）
     """
     out: List[Problem] = []
 
@@ -179,8 +180,18 @@ def verify_against_page(profile: ServerProfile, facts: PageFacts, *,
                 out.append(Problem("hard", "tribe", profile.tribe,
                                    actual if actual is not None else f"tribeId={facts.tribe_id}"))
 
-    for coord in (facts.first_x, facts.first_y):
-        if coord is not None and abs(coord) > profile.map_half:
-            out.append(Problem("hard", "map_half", f"|座標|<={profile.map_half}", str(coord)))
+    villages = facts.villages
+    if not villages:
+        out.append(Problem("soft", "map_half", f"|座標|<={profile.map_half}", None))
+    else:
+        unreadable = False
+        for v in villages:
+            if v.x is None or v.y is None:
+                unreadable = True
+            elif abs(v.x) > profile.map_half or abs(v.y) > profile.map_half:
+                out.append(Problem("hard", "map_half", f"|座標|<={profile.map_half}",
+                                   f"({v.x}|{v.y})"))
+        if unreadable:
+            out.append(Problem("soft", "map_half", f"|座標|<={profile.map_half}", None))
 
     return out
