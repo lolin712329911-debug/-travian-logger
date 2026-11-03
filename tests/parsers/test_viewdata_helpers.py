@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """viewData 讀取函式的共通測試。check_arch 禁止 parsers 互相 import，所以每個 parser 各有一份私有複本
 `_view_data`；這裡用同一批案例對每份複本都跑一遍，改版時漏改任何一份都會失敗。
-A2a-2 新增 parsers/village.py 時，把它加進 MODULES。"""
+parsers/village.py（A2a-2a）已加進 MODULES。"""
 import unittest
 
-from travian_bot.parsers import player, village_list
+from travian_bot.parsers import player, village, village_list
 
 from ._util import SAMPLE_IDS, load_sample
 
-MODULES = {"player": player, "village_list": village_list}
+MODULES = {"player": player, "village_list": village_list, "village": village}
 
 CASES = [
     ("plain object", 'var a = {viewData: {"k": 1}};', {"k": 1}),
