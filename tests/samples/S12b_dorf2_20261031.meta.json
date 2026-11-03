@@ -1,0 +1,10 @@
+{
+ "sample_id": "S12b",
+ "page": "dorf2",
+ "server_id": "Asia 8",
+ "source": "raw",
+ "captured_epoch": 1793407599,
+ "captured_utc": "2026-10-31T00:46:39Z",
+ "scrub": "ad-hoc（A2a-2a，scrub_sample.py v0.2 當時不在手邊）：玩家名、村名、村 id、座標（平移 +19／+41）、checksum、英雄頭像雜湊已替換；建議用 scrub_sample.py 重做後覆蓋",
+ "note": "舊服 Asia 8；S12b 的城牆（aid 40）有 top／bottom 兩個節點"
+}
