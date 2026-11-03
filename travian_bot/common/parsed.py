@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/common/parsed.py（cm-09）
-版本：v0.2（A2a-1）｜PlayerInfo 已定案（✓，A2a-1，依舊服 dorf1 樣本 S1a／S1b）；
-      其餘結構仍為草案（✗）：Dorf1／Dorf2／PageFacts 待 A2a-2，HeroState／Adventure 等待 A2b
+版本：v0.3（A2a-2a）｜PlayerInfo 已定案（✓，A2a-1）；Dorf1／Dorf2／PageFacts 於 A2a-2a 定案
+      （✓ 依舊服樣本 S1a／S1b、S12a／S12b；PageFacts 欄位語意仍待 A2b 對照 S9，見該類說明）；
+      其餘結構仍為草案（✗）：HeroState／Adventure 等待 A2b
 用途：解析結果結構（parsers 的輸出、domain 與 app 的輸入）：Dorf1、Dorf2、PlayerInfo、HeroState、
       Adventure、RallyOverview、MarketState、Oasis、TileSafety、PageFacts（D-18）。
 依賴：cm-01（models；Oasis／Merchants／Transit 直接沿用，不重複定義）。
@@ -17,8 +18,9 @@ travian_bot/common/parsed.py（cm-09）
   舊 State → Dorf1：
     attacks=0 同時代表「沒有」與「不知道」→ incoming_attacks：0＝確定沒有、None＝未知；
     queue（剩餘秒數）＋queue_info（文字）兩個平行 list → QueueItem(remaining_s, info) 一個 tuple；
-    cap 的長度與順序未確認（✗，A2a 讀 parse_dorf1 後定案；此處草案先用 cap_wh／cap_gr 對齊 C2）；
-    attack_eta_s：沒有來襲＝None；movements 的元素結構未確認（✗），先用 Mapping。
+    cap：maxStorage 的 l1～l4＝木／磚／鐵／糧（✓）；木磚鐵共用倉庫容量，三者不相等視為頁面異常（ParseError），
+    所以 Dorf1 只留 cap_wh／cap_gr（對齊 C2）；
+    attack_eta_s：沒有來襲＝None；movements 的元素結構於 A2a-2a 定案（見 Dorf1）。
 讀不到的值用 None，不用 0／-1／"-"（§6.1）；解析失敗由 parsers 丟 ParseError，不回傳預設值。
 
 本檔結構沒有 schema 規格（還不是契約）；測試與 golden 用 models.to_plain() 轉純資料。
@@ -30,7 +32,7 @@ from .models import Merchants, Oasis, Res4, Transit
 
 __all__ = [
     "Oasis", "ResField", "QueueItem", "Dorf1", "BuildingSlot", "Dorf2", "PlayerInfo", "HeroState",
-    "Adventure", "RallyOverview", "MarketState", "TileSafety", "PageFacts",
+    "Adventure", "RallyOverview", "MarketState", "TileSafety", "PageVillage", "PageFacts",
 ]
 
 
@@ -42,30 +44,37 @@ class ResField:
     level: int
     cost: Optional[Res4]                        # 升到下一級；木、磚、鐵、穀
     build_time_s: Optional[int]
-    under_construction: Optional[bool]          # ✗ 選擇器未驗證
-    url: Optional[str]                          # 已知的興建／擴建網址；None＝呼叫端自己找
+    under_construction: Optional[bool]          # ✓ class `underConstruction`（A2a-2a 用 S1b 驗證）；parsers 一律回 bool
+    url: Optional[str]                          # 已知的興建／擴建網址；parse_dorf1 不填（None）：頁面上的連結只是
+                                                # build.php?id=N，升級網址由 ps-03 find_upgrade_url 從建築頁取
 
 
 @dataclass(frozen=True)
 class QueueItem:
     remaining_s: int
-    info: str                                   # 例「農場 等級 1」
+    info: Optional[str]                         # 頁面顯示文字「名稱 等級 N」（只供顯示與記錄，不拿來做判斷）；讀不到＝None
 
 
 @dataclass(frozen=True)
 class Dorf1:
     stock: Res4
     prod: Res4
-    cap_wh: int                                 # ✗ 舊 cap 長度順序待 A2a
-    cap_gr: int
-    free_crop: int
+    cap_wh: int                                 # maxStorage l1～l3（木磚鐵共用，三者須相等）
+    cap_gr: int                                 # maxStorage l4
+    free_crop: int                              # production l5＝可用穀物（l4＝淨產量，見 stock／prod 的第 4 格）
     fields: Tuple[ResField, ...]
     queue: Tuple[QueueItem, ...]
-    incoming_attacks: Optional[int]
-    attack_eta_s: Optional[int]
-    movements: Tuple[Mapping[str, Any], ...]    # ✗ 元素結構待 A2a
-    protection_s: Optional[int]
-    plus_s: Optional[int]
+    incoming_attacks: Optional[int]             # 目前這個村的來襲數（viewData.villageList 中作用中村那筆）；
+                                                # 0＝確定沒有、None＝讀不到。注意：不是帳號全部村的總和
+    attack_eta_s: Optional[int]                 # movements 中 kind＝attack 的最小剩餘秒數；沒有＝None
+    movements: Tuple[Mapping[str, Any], ...]    # 每筆 {kind, count, seconds, label}：
+                                                #   kind：attack（img.att1）／reinforcement（img.def1）／adventure（img.hero_on_adventure）；
+                                                #   其餘未見 class 原樣保留（無 class＝'unknown'）；att1／def1 只憑舊註解，待 S7
+                                                #   count：label 開頭的整數（語意依 kind 而異，adventure 為冒險數）或 None
+                                                #   seconds：span.timer 的 value 或 None；label：頁面文字（只供記錄）
+    protection_s: Optional[int]                 # #sidebarBoxInfobox 的「新手保護」倒數秒數；舊服樣本沒有該區塊＝None
+                                                # （✗ 新手保護字樣待 S9 找結構選擇器，v0.31）
+    plus_s: Optional[int]                       # 同區塊的 Plus 剩餘秒數；舊服樣本 Plus 啟用但無此區塊＝None，行為只依 PlayerInfo.plus_active
 
 
 # ---------------------------------------------------------------- dorf2（村莊中心）
@@ -74,12 +83,14 @@ class BuildingSlot:
     aid: int
     gid: Optional[int]                          # None＝空地（舊 gid=0）
     level: int
-    name: Optional[str]
-    under_construction: Optional[bool]          # ✗ 選擇器未驗證
+    name: Optional[str]                         # data-name（頁面語言的顯示文字，只供記錄；身分以 gid 為準）
+    under_construction: Optional[bool]          # ✓ class `underConstruction`（A2a-2a 用 S12a／S12b 與施工佇列對照驗證）；parsers 一律回 bool
 
 
 @dataclass(frozen=True)
 class Dorf2:
+    """全部建築位（aid 19～40，共 22 個，依 aid 排序）。城牆（aid 40）等級大於 0 時頁面有 top／bottom 兩個節點，
+    parsers 取有 data-building-id 者，所以每個 aid 只出現一次。"""
     slots: Tuple[BuildingSlot, ...]
 
 
@@ -145,15 +156,30 @@ class TileSafety:
 
 # ---------------------------------------------------------------- 頁面事實（D-18）
 @dataclass(frozen=True)
+class PageVillage:
+    """viewData.ownPlayer.villageList 的一筆（只取 id 與座標；名稱不帶，完整清單用 parsers/village_list）。"""
+    did: int
+    x: int
+    y: int
+
+
+@dataclass(frozen=True)
 class PageFacts:
-    """供 server_profile.verify_against_page 與 parsers 用。全部 Optional：頁面讀不到就是 None。
-    欄位語意為草案（✗，A2b 對照 S9 樣本定案；D-18 全文不在本切片內，只照 cm-09 卡片列的項目建）。"""
-    tz_name: Optional[str]                      # Travian.Game.timeZone（IANA）
-    tz_offset_s: Optional[int]                  # 伺服器相對 UTC 的位移秒數（✗ 語意待 A2b）
-    lang: Optional[str]                         # <html lang>
-    gpack: Optional[str]                        # 頁面 gpack 版號，例 '678.2'
+    """供 server_profile.verify_against_page 與 parsers 用。全部 Optional：頁面讀不到就是 None，不丟 ParseError。
+    A2a-2a 定案欄位與來源（✓ 舊服樣本 6 份 dorf1／dorf2）：
+      tz_name＝Travian.Game.timeZone；tz_offset_s＝Travian.Game.timezoneOffsetToUTC 的原值；
+      lang＝<html lang>；gpack＝CDN 路徑 /gpack/<版號>/；tribe_id＝viewData.ownPlayer.tribeId；
+      server_ts＝Travian.Game.timestamp（epoch 秒，頁面產生時間；parsers 不格式化，需要字串由呼叫端經 serialize）；
+      villages＝viewData.ownPlayer.villageList 各村 (did, x, y)，任何一筆讀不到則整個為 None（不給殘缺清單）。
+    變動（相對 v0.2 草案）：server_ts_utc（字串）→ server_ts（epoch 秒；parsers 不得格式化時間）；
+      first_did／first_x／first_y 移除（D-18 v0.30：執行期不讀 karte.php?d=）；新增 villages。
+    ✗ 仍待 A2b 對照 S9：tz_offset_s 的單位（舊服 6 份樣本全為 0，無法判斷是秒還是小時）；hard／soft 分級。
+    ⚠ 舊服 Asia 8 樣本：頁面時區為 Europe/London、offset 0，頁面顯示的完成時間與 UTC 一致（例：timestamp＋580 秒
+      ＝00:48:06 UTC，頁面顯示「完成時間於 00:48」），不是台北時間；新服的 server_tz 以 S8／S9 為準。"""
+    tz_name: Optional[str]
+    tz_offset_s: Optional[int]
+    lang: Optional[str]
+    gpack: Optional[str]
     tribe_id: Optional[int]
-    server_ts_utc: Optional[str]                # 頁面時間戳記，已轉 UTC 字串（C 契約格式）
-    first_did: Optional[int]                    # 首個 d= 連結的村 id
-    first_x: Optional[int]
-    first_y: Optional[int]
+    server_ts: Optional[int]
+    villages: Optional[Tuple[PageVillage, ...]]
