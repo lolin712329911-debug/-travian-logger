@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""tests/common/test_server_profile.py（cm-13）v0.1（A1a-2）"""
+"""tests/common/test_server_profile.py（cm-13）v0.2（A2a-2a 跟進 PageFacts 欄位）"""
+import dataclasses
 import unittest
 from datetime import datetime, timedelta, timezone
 
 from travian_bot.common import server_profile as sp
 from travian_bot.common.models import ServerProfile, ValidationError
-from travian_bot.common.parsed import PageFacts
+from travian_bot.common.parsed import PageFacts, PageVillage
 from travian_bot.common.server_profile import (
     Problem, ServerTimeError, from_utc, profile_from_dict, scale_speed, to_utc, verify_against_page)
 
@@ -18,11 +19,25 @@ def prof(**over):
     return profile_from_dict(dict(BASE, **over))
 
 
+_VILLAGE_DEFAULTS = {"did": 101, "name": "村", "x": 0, "y": 0}
+
+
+def village(x=0, y=0, **over):
+    """依 PageVillage 實際欄位建立（只填 did／name／x／y；其他欄位若為必填請在 over 補）。"""
+    vals = dict(_VILLAGE_DEFAULTS, x=x, y=y, **over)
+    names = {f.name for f in dataclasses.fields(PageVillage)}
+    return PageVillage(**{k: v for k, v in vals.items() if k in names})
+
+
 def facts(**over):
     d = dict(tz_name="Europe/London", tz_offset_s=0, lang="zh-TW", gpack="678.2", tribe_id=3,
-             server_ts_utc="2026-11-02T08:15:30Z", first_did=101, first_x=0, first_y=0)
+             server_ts=1793607330, villages=(village(0, 0),))   # 1793607330 = 2026-11-02T08:15:30Z
     d.update(over)
     return PageFacts(**d)
+
+
+def blank_facts():
+    return PageFacts(*([None] * len(dataclasses.fields(PageFacts))))
 
 
 class TestProfileFromDict(unittest.TestCase):
@@ -207,14 +222,35 @@ class TestVerifyAgainstPage(unittest.TestCase):
         self.assertEqual(self.keys(out), [("soft", "tribe")])
 
     def test_coordinates_out_of_map(self):
-        out = verify_against_page(prof(), facts(first_x=201, first_y=-250))
-        self.assertEqual(self.keys(out), [("hard", "map_half"), ("hard", "map_half")])
-        self.assertEqual(verify_against_page(prof(), facts(first_x=200, first_y=-200)), [])
+        out = verify_against_page(prof(), facts(villages=(village(201, 0), village(0, -250))))
+        self.assertEqual(out, [Problem("hard", "map_half", "|座標|<=200", "(201|0)"),
+                               Problem("hard", "map_half", "|座標|<=200", "(0|-250)")])
+        self.assertEqual(verify_against_page(prof(), facts(villages=(village(200, -200),))), [])
+
+    def test_any_village_out_of_map_is_caught(self):
+        vs = (village(0, 0), village(-25, -85), village(0, 201, did=102))
+        out = verify_against_page(prof(), facts(villages=vs))
+        self.assertEqual(out, [Problem("hard", "map_half", "|座標|<=200", "(0|201)")])
+
+    def test_map_half_follows_profile(self):
+        vs = (village(300, 0),)
+        self.assertEqual(self.keys(verify_against_page(prof(), facts(villages=vs))), [("hard", "map_half")])
+        self.assertEqual(verify_against_page(prof(map_half=400), facts(villages=vs)), [])
+
+    def test_villages_unreadable_is_soft(self):
+        for vs in (None, ()):
+            with self.subTest(villages=vs):
+                out = verify_against_page(prof(), facts(villages=vs))
+                self.assertEqual(out, [Problem("soft", "map_half", "|座標|<=200", None)])
+
+    def test_village_with_missing_coordinate_is_soft(self):
+        vs = (village(0, 0), village(None, 5))
+        out = verify_against_page(prof(), facts(villages=vs))
+        self.assertEqual(out, [Problem("soft", "map_half", "|座標|<=200", None)])
 
     def test_unreadable_facts_are_reported_not_ignored(self):
-        blank = PageFacts(None, None, None, None, None, None, None, None, None)
-        out = verify_against_page(prof(), blank)
-        self.assertEqual(self.keys(out), [("soft", "server_tz"), ("soft", "locale")])
+        out = verify_against_page(prof(), blank_facts())
+        self.assertEqual(self.keys(out), [("soft", "server_tz"), ("soft", "locale"), ("soft", "map_half")])
 
     def test_problem_severity_validated(self):
         with self.assertRaises(ValueError):
