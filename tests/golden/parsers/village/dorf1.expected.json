@@ -1,0 +1,586 @@
+{
+ "cases": [
+  {
+   "attack_eta_s": null,
+   "cap_gr": 6300,
+   "cap_wh": 6300,
+   "fields": [
+    {
+     "aid": 1,
+     "build_time_s": 3530,
+     "cost": [
+      910,
+      1170,
+      910,
+      260
+     ],
+     "gid": 4,
+     "level": 5,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 2,
+     "build_time_s": 3530,
+     "cost": [
+      910,
+      1170,
+      910,
+      260
+     ],
+     "gid": 4,
+     "level": 5,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 3,
+     "build_time_s": 4390,
+     "cost": [
+      520,
+      1300,
+      650,
+      780
+     ],
+     "gid": 1,
+     "level": 5,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 4,
+     "build_time_s": 3530,
+     "cost": [
+      910,
+      1170,
+      910,
+      260
+     ],
+     "gid": 4,
+     "level": 5,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 5,
+     "build_time_s": 3530,
+     "cost": [
+      910,
+      1170,
+      910,
+      260
+     ],
+     "gid": 4,
+     "level": 5,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 6,
+     "build_time_s": 4080,
+     "cost": [
+      1040,
+      520,
+      1040,
+      650
+     ],
+     "gid": 2,
+     "level": 5,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 7,
+     "build_time_s": 5880,
+     "cost": [
+      1300,
+      1040,
+      390,
+      780
+     ],
+     "gid": 3,
+     "level": 5,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 8,
+     "build_time_s": 3530,
+     "cost": [
+      910,
+      1170,
+      910,
+      260
+     ],
+     "gid": 4,
+     "level": 5,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 9,
+     "build_time_s": 3530,
+     "cost": [
+      910,
+      1170,
+      910,
+      260
+     ],
+     "gid": 4,
+     "level": 5,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 10,
+     "build_time_s": 5880,
+     "cost": [
+      1300,
+      1040,
+      390,
+      780
+     ],
+     "gid": 3,
+     "level": 5,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 11,
+     "build_time_s": 5880,
+     "cost": [
+      1300,
+      1040,
+      390,
+      780
+     ],
+     "gid": 3,
+     "level": 5,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 12,
+     "build_time_s": 3530,
+     "cost": [
+      910,
+      1170,
+      910,
+      260
+     ],
+     "gid": 4,
+     "level": 5,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 13,
+     "build_time_s": 3530,
+     "cost": [
+      910,
+      1170,
+      910,
+      260
+     ],
+     "gid": 4,
+     "level": 5,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 14,
+     "build_time_s": 4390,
+     "cost": [
+      520,
+      1300,
+      650,
+      780
+     ],
+     "gid": 1,
+     "level": 5,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 15,
+     "build_time_s": 3530,
+     "cost": [
+      910,
+      1170,
+      910,
+      260
+     ],
+     "gid": 4,
+     "level": 5,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 16,
+     "build_time_s": 4080,
+     "cost": [
+      1040,
+      520,
+      1040,
+      650
+     ],
+     "gid": 2,
+     "level": 5,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 17,
+     "build_time_s": 4390,
+     "cost": [
+      520,
+      1300,
+      650,
+      780
+     ],
+     "gid": 1,
+     "level": 5,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 18,
+     "build_time_s": 4080,
+     "cost": [
+      1040,
+      520,
+      1040,
+      650
+     ],
+     "gid": 2,
+     "level": 5,
+     "under_construction": false,
+     "url": null
+    }
+   ],
+   "free_crop": 292,
+   "id": "ts1793407106",
+   "incoming_attacks": 0,
+   "movements": [
+    {
+     "count": 1,
+     "kind": "adventure",
+     "label": "1 冒險",
+     "seconds": 334
+    }
+   ],
+   "plus_s": null,
+   "prod": [
+    138,
+    1578,
+    138,
+    196
+   ],
+   "protection_s": null,
+   "queue": [
+    {
+     "info": "村莊大樓 等級 10",
+     "remaining_s": 580
+    },
+    {
+     "info": "穀倉 等級 8",
+     "remaining_s": 6510
+    }
+   ],
+   "stock": [
+    3611,
+    3430,
+    4909,
+    5780
+   ]
+  },
+  {
+   "attack_eta_s": null,
+   "cap_gr": 7800,
+   "cap_wh": 21400,
+   "fields": [
+    {
+     "aid": 1,
+     "build_time_s": 17430,
+     "cost": [
+      2420,
+      6050,
+      3025,
+      3630
+     ],
+     "gid": 1,
+     "level": 8,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 2,
+     "build_time_s": 14160,
+     "cost": [
+      4235,
+      5445,
+      4235,
+      1210
+     ],
+     "gid": 4,
+     "level": 8,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 3,
+     "build_time_s": 17430,
+     "cost": [
+      2420,
+      6050,
+      3025,
+      3630
+     ],
+     "gid": 1,
+     "level": 8,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 4,
+     "build_time_s": 14340,
+     "cost": [
+      3625,
+      2900,
+      1085,
+      2175
+     ],
+     "gid": 3,
+     "level": 7,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 5,
+     "build_time_s": 16240,
+     "cost": [
+      4840,
+      2420,
+      4840,
+      3025
+     ],
+     "gid": 2,
+     "level": 8,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 6,
+     "build_time_s": 16240,
+     "cost": [
+      4840,
+      2420,
+      4840,
+      3025
+     ],
+     "gid": 2,
+     "level": 8,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 7,
+     "build_time_s": 14340,
+     "cost": [
+      3625,
+      2900,
+      1085,
+      2175
+     ],
+     "gid": 3,
+     "level": 7,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 8,
+     "build_time_s": 8760,
+     "cost": [
+      2535,
+      3260,
+      2535,
+      725
+     ],
+     "gid": 4,
+     "level": 7,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 9,
+     "build_time_s": 14160,
+     "cost": [
+      4235,
+      5445,
+      4235,
+      1210
+     ],
+     "gid": 4,
+     "level": 8,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 10,
+     "build_time_s": 14340,
+     "cost": [
+      3625,
+      2900,
+      1085,
+      2175
+     ],
+     "gid": 3,
+     "level": 7,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 11,
+     "build_time_s": 23090,
+     "cost": [
+      6050,
+      4840,
+      1815,
+      3630
+     ],
+     "gid": 3,
+     "level": 7,
+     "under_construction": true,
+     "url": null
+    },
+    {
+     "aid": 12,
+     "build_time_s": 8760,
+     "cost": [
+      2535,
+      3260,
+      2535,
+      725
+     ],
+     "gid": 4,
+     "level": 7,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 13,
+     "build_time_s": 14160,
+     "cost": [
+      4235,
+      5445,
+      4235,
+      1210
+     ],
+     "gid": 4,
+     "level": 8,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 14,
+     "build_time_s": 17430,
+     "cost": [
+      2420,
+      6050,
+      3025,
+      3630
+     ],
+     "gid": 1,
+     "level": 8,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 15,
+     "build_time_s": 14160,
+     "cost": [
+      4235,
+      5445,
+      4235,
+      1210
+     ],
+     "gid": 4,
+     "level": 8,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 16,
+     "build_time_s": 16240,
+     "cost": [
+      4840,
+      2420,
+      4840,
+      3025
+     ],
+     "gid": 2,
+     "level": 8,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 17,
+     "build_time_s": 17430,
+     "cost": [
+      2420,
+      6050,
+      3025,
+      3630
+     ],
+     "gid": 1,
+     "level": 8,
+     "under_construction": false,
+     "url": null
+    },
+    {
+     "aid": 18,
+     "build_time_s": 16240,
+     "cost": [
+      4840,
+      2420,
+      4840,
+      3025
+     ],
+     "gid": 2,
+     "level": 8,
+     "under_construction": false,
+     "url": null
+    }
+   ],
+   "free_crop": 460,
+   "id": "ts1793407632",
+   "incoming_attacks": 0,
+   "movements": [],
+   "plus_s": null,
+   "prod": [
+    560,
+    560,
+    392,
+    382
+   ],
+   "protection_s": null,
+   "queue": [
+    {
+     "info": "鐵礦場 等級 8",
+     "remaining_s": 11758
+    },
+    {
+     "info": "研究院 等級 10",
+     "remaining_s": 20668
+    }
+   ],
+   "stock": [
+    428,
+    376,
+    2069,
+    1443
+   ]
+  }
+ ],
+ "schema_version": 1
+}
