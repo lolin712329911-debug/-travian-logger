@@ -45,9 +45,9 @@ jobs:
       - name: python -m unittest（單元測試，無網路、無 Secrets）
         run: python -m unittest discover -s tests -t . -v
 
-      # 每個 WP 驗收必跑；A2a-1 加進來
+      # 每個 WP 驗收必跑；A2a-2a 加進來
       - name: check_arch（依賴方向、單一出口）
-        run: python tools/check_arch.py --expect-wp A1a-1,A1a-2,A1b,A2a-1 --strict
+        run: python tools/check_arch.py --expect-wp A1a-1,A1a-2,A1b,A2a-1,A2a-2a --strict
 
       - name: check_contracts（契約與範例）
         run: python tools/check_contracts.py
