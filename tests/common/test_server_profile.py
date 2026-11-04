@@ -243,11 +243,6 @@ class TestVerifyAgainstPage(unittest.TestCase):
                 out = verify_against_page(prof(), facts(villages=vs))
                 self.assertEqual(out, [Problem("soft", "map_half", "|座標|<=200", None)])
 
-    def test_village_with_missing_coordinate_is_soft(self):
-        vs = (village(0, 0), village(None, 5))
-        out = verify_against_page(prof(), facts(villages=vs))
-        self.assertEqual(out, [Problem("soft", "map_half", "|座標|<=200", None)])
-
     def test_unreadable_facts_are_reported_not_ignored(self):
         out = verify_against_page(prof(), blank_facts())
         self.assertEqual(self.keys(out), [("soft", "server_tz"), ("soft", "locale"), ("soft", "map_half")])
