@@ -1,11 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""scrub_sample.py v0.2（一次性工具，放在 repo 外；樣本脫敏）
+"""scrub_sample.py v0.3（一次性工具，放在 repo 外；樣本脫敏）
 
 用法：
   python scrub_sample.py SRC DST          脫敏 SRC 寫到 DST，並自動驗證（有問題 exit 1）
   python scrub_sample.py --verify FILE    只驗證已脫敏的檔案
   python scrub_sample.py --selftest       內建案例（含集結點概覽的 d=／他人村莊／俘虜）
+
+v0.2 → v0.3 的變動（A2a-2b 前置；測試帳號 International 11 的樣本沒有寫死的名字可用）：
+  1. 自動讀出自己的玩家名、村莊（id＋名稱）、玩家 uid、聯盟名：來源是頁內 viewData 的 ownPlayer／villageList、
+     英雄頭像檔名的 uid、`allianceBanner` 旁的聯盟名；讀不到玩家名或村莊時退回 v0.2 寫死的舊服常數
+     （所以 --selftest 與舊服樣本的輸出與 v0.2 相同，唯獨多替換聯盟名）。
+  2. 村名連同 JSON 的 \\uXXXX 跳脫形式一併替換；聯盟名一律替換成 ALLIANCE。
+  3. verify() 另外把頁面內容做 HTML 實體解碼與 \\uXXXX 解碼後再搜一次禁用字串（實體或跳脫形式的名字不會漏）。
+  4. 自動讀到的名字在每次 scrub() 開始時重置禁用字串清單；--verify 單獨驗證時只能用 v0.2 的舊服常數，
+     新樣本請以「脫敏當下」的輸出為準（或自行搜尋玩家名）。
 
 v0.1 → v0.2 的變動（v0.1 對 S6 集結點頁會 KeyError，且 `karte.php?d=` 會洩漏真實座標）：
   1. 座標改為通用平移（每軸 SHIFT），在地圖範圍內環繞（寬 401），不再查表；平移與環繞都保持兩點距離。
@@ -17,6 +26,8 @@ v0.1 → v0.2 的變動（v0.1 對 S6 集結點頁會 KeyError，且 `karte.php?
   4. 新增 verify()：座標與 d 都在範圍內；每個 troop_details 表格的 d 與座標吻合；不含禁用字串。
 替換：玩家名、聯盟名、村名、did、checksum、取消建設 event id、英雄頭像雜湊、座標、d=。
 不動：class／data-* 屬性名、數字（數量／時間）、viewData 結構。"""
+import html as _html
+import json as _json
 import re
 import sys
 
@@ -29,6 +40,8 @@ DID = {"29786": "10001", "34593": "10002"}     # 自己的兩個村
 NAME = {"29786": "VillageA", "34593": "VillageB"}
 OWN_UID = {"2713": "1000"}
 FORBIDDEN = ["doga", "29786", "34593", "ROHIRRIM", "2713"]   # verify 時不得出現；他人名稱由 scrub 動態加入
+LEGACY_FORBIDDEN = list(FORBIDDEN)
+LEGACY_VILLAGES = [("29786", "doga的村莊", "VillageA"), ("34593", "doga2", "VillageB")]
 
 POSITIVE_COORD_NOTE = []     # 平移後出現非負座標時記錄（HTML 格式未用樣本驗證）
 
@@ -50,25 +63,69 @@ def _numstr(v):
     return str(v)
 
 
+def detect_own(h):
+    """從頁面讀自己的資訊；讀不到的項目回 None／空 list。"""
+    out = {"player": None, "villages": [], "uid": None, "alliance": None}
+    m = re.search(r'"ownPlayer":\{"name":"((?:[^"\\]|\\.)*)"', h)
+    if m:
+        try:
+            out["player"] = _json.loads('"%s"' % m.group(1))
+        except ValueError:
+            pass
+    m = re.search(r'"villageList":\[(.*?)\]\}', h, re.S)
+    if m:
+        for vid, vname in re.findall(r'\{"id":(\d+),"name":"((?:[^"\\]|\\.)*)"', m.group(1)):
+            try:
+                out["villages"].append((vid, _json.loads('"%s"' % vname)))
+            except ValueError:
+                pass
+    m = re.search(r"/heroV2/head/[0-9a-f]+\.(\d+)\.\d+\.png", h)
+    if m:
+        out["uid"] = m.group(1)
+    m = re.search(r'allianceBanner"\s*/>\s*<div class="name">([^<]+)</div>', h)
+    if m:
+        out["alliance"] = _html.unescape(m.group(1)).strip()
+    return out
+
+
 def scrub(h):
+    # ---- 自己：自動偵測，失敗退回舊服常數 ----
+    own = detect_own(h)
+    if own["player"] and own["villages"]:
+        own_player = own["player"]
+        own_villages = [(vid, vname, "Village" + chr(65 + i)) for i, (vid, vname) in enumerate(own["villages"])]
+        own_did = {vid: str(10001 + i) for i, (vid, _n, _l) in enumerate(own_villages)}
+        own_uid = {own["uid"]: "1000"} if own["uid"] else {}
+        forbidden = [own_player] + [vid for vid, _n, _l in own_villages] + [n for _v, n, _l in own_villages] \
+            + list(own_uid) + ["ROHIRRIM"]
+    else:
+        own_player, own_villages, own_did, own_uid = OWN_PLAYER, LEGACY_VILLAGES, dict(DID), dict(OWN_UID)
+        forbidden = list(LEGACY_FORBIDDEN)
+    alliance = own["alliance"]
+    if alliance:
+        forbidden.append(alliance)
+    FORBIDDEN[:] = forbidden
+
     # ---- 蒐集他人（先於任何替換，避免被自己的替換干擾）----
-    others_players = [p for p in dict.fromkeys(re.findall(r'data-player-name="([^"]+)"', h)) if p != OWN_PLAYER]
-    others_uids = [u for u in dict.fromkeys(re.findall(r"/profile/(\d+)", h)) if u not in OWN_UID]
+    others_players = [p for p in dict.fromkeys(re.findall(r'data-player-name="([^"]+)"', h)) if p != own_player]
+    others_uids = [u for u in dict.fromkeys(re.findall(r"/profile/(\d+)", h)) if u not in own_uid]
     did_pat = [r'data-did="(\d+)"', r"newdid=(\d+)", r"[?&;]at=(\d+)", r"[?&;]from=(\d+)", r"release=(\d+)"]
     other_dids = []
     for pat in did_pat:
         for d in re.findall(pat, h):
-            if d not in DID and d not in other_dids:
+            if d not in own_did and d not in other_dids:
                 other_dids.append(d)
     other_villages = []
     for d, text in re.findall(r'karte\.php\?d=(\d+)">\s*([^<\s][^<]*?)\s*</a>', h):
-        if d != "0" and text not in other_villages and text not in ("doga2", "doga的村莊"):
+        if d != "0" and text not in other_villages and text not in [n for _v, n, _l in own_villages]:
             other_villages.append(text)
 
-    # ---- 自己：村名、玩家名、聯盟 ----
-    h = h.replace("doga\\u7684\\u6751\\u838a", NAME["29786"]).replace("doga的村莊", NAME["29786"])
-    h = h.replace("doga2", NAME["34593"])
-    h = re.sub(r"\bdoga\b", "PLAYER", h)
+    # ---- 自己：村名（含 JSON 跳脫形式，長的先換）、玩家名、聯盟 ----
+    for _vid, vname, label in sorted(own_villages, key=lambda t: -len(t[1])):
+        h = h.replace(_json.dumps(vname)[1:-1], label).replace(vname, label)
+    h = re.sub(r"(?<!\w)" + re.escape(own_player) + r"(?!\w)", "PLAYER", h)
+    if alliance:
+        h = h.replace(alliance, "ALLIANCE")
     h = h.replace("ROHIRRIM" + "KNIGHTS", "ALLIANCE")
     h = re.sub(r"/alliance/banner/\d+/[0-9A-Za-z]+\.svg", "/alliance/banner/0/000000000000.svg", h)
     h = re.sub(r"/heroV2/head/[0-9a-f]+\.\d+\.\d+\.png",
@@ -82,14 +139,14 @@ def scrub(h):
     for i, name in enumerate(others_players, 1):
         FORBIDDEN.append(name)
         h = h.replace(name, "OtherPlayer%d" % i)
-    for old, new in OWN_UID.items():
+    for old, new in own_uid.items():
         h = h.replace("/profile/%s" % old, "/profile/%s" % new)
     for i, u in enumerate(others_uids, 1):
         FORBIDDEN.append(u)
         h = h.replace("/profile/%s" % u, "/profile/%d" % (2000 + i))
 
     # ---- did（自己與他人）----
-    mapping = dict(DID)
+    mapping = dict(own_did)
     for i, d in enumerate(other_dids, 1):
         mapping[d] = str(20000 + i)
         FORBIDDEN.append(d)
@@ -117,27 +174,32 @@ def scrub(h):
         return '"x":%d,"y":%d' % (shift(int(m.group(1)), 0), shift(int(m.group(2)), 1))
     h = re.sub(r'"x":(-?\d+),"y":(-?\d+)', jx, h)
 
-    # ---- 座標：HTML coordinateX／coordinateY（保持負數格式；非負時用推測格式並記錄）----
+    # ---- 座標：HTML coordinateX／coordinateY ----
+    # 格式（✓ 舊服與測試帳號樣本）：負數＝`&minus;&#x202d;數字&#x202c;&#x202c;`（兩個 PDF），
+    # 正數＝`&#x202d;數字&#x202c;`（一個 PDF；Y 軸正數已在測試帳號樣本見到，X 軸正數依對稱推定、未見樣本）。
+    # 平移可能讓正負號改變，所以負→正時少一個 PDF、正→負時補一個。
     def side(m):
         axis = 0 if m.group(2) == "X" else 1
         v = -int(m.group(4)) if m.group(3) else int(m.group(4))
         nv = shift(v, axis)
         if nv < 0:
-            body = "&minus;&#x202d;%d" % -nv
-        else:
-            body = "%d" % nv
+            return m.group(1) + "&minus;&#x202d;%d&#x202c;&#x202c;" % -nv
+        if m.group(3) or nv >= 0:
             POSITIVE_COORD_NOTE.append((m.group(2), nv))
-        return m.group(1) + body + m.group(5)
-    h = re.sub(r'(class="coordinate([XY])">\(?&#x202d;)(&minus;&#x202d;)?(\d+)(&#x202c;)', side, h)
+        return m.group(1) + "%d&#x202c;" % nv
+    h = re.sub(r'(class="coordinate([XY])">\(?&#x202d;)(&minus;&#x202d;)?(\d+)&#x202c;(?:&#x202c;)?', side, h)
     return h
 
 
 def verify(h):
     """回傳問題清單；空＝通過。"""
     bad = []
+    decoded = _html.unescape(re.sub(r"\\u([0-9a-fA-F]{4})", lambda m: chr(int(m.group(1), 16)), h))
     for s in FORBIDDEN:
         if s and s in h:
             bad.append("殘留禁用字串：%s" % s)
+        elif s and s in decoded:
+            bad.append("殘留禁用字串（實體或 \\u 跳脫形式）：%s" % s)
     for m in re.finditer(r'"x":(-?\d+),"y":(-?\d+)', h):
         x, y = int(m.group(1)), int(m.group(2))
         if abs(x) > MAP_HALF or abs(y) > MAP_HALF:
@@ -229,7 +291,7 @@ if __name__ == "__main__":
     open(dst, "w", encoding="utf-8", newline="").write(out)
     issues = verify(out)
     if POSITIVE_COORD_NOTE:
-        sys.stderr.write("注意：%d 個座標平移後為非負，HTML 格式為推測（未用樣本驗證）：%s\n"
+        sys.stderr.write("注意：%d 個座標平移後為非負，X 軸正數的 HTML 格式依對稱推定（未見樣本）：%s\n"
                          % (len(POSITIVE_COORD_NOTE), POSITIVE_COORD_NOTE[:5]))
     if issues:
         sys.stderr.write("\n".join(issues) + "\n")
