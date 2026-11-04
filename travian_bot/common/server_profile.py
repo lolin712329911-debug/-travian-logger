@@ -151,7 +151,8 @@ def verify_against_page(profile: ServerProfile, facts: PageFacts, *,
       version     profile.version 有填才比對 gpack，不同或讀不到＝soft
       tribe       有給 tribe_keys_by_id（tribeId→種族鍵）才比對，不同＝hard；讀不到＝soft
       map_half    villages（viewData.villageList）任一村的 |x| 或 |y| 超出 map_half＝hard（D-18 v0.30，
-                  每個超出的村各回報一筆）；villages 為 None／空、或某村座標讀不到＝soft（不靜默略過）
+                  每個超出的村各回報一筆）；villages 為 None／空＝soft（不靜默略過；parsed 規定任一村讀不到則整個為 None，
+                  所以不會有座標缺值的單一村）
     """
     out: List[Problem] = []
 
@@ -184,14 +185,9 @@ def verify_against_page(profile: ServerProfile, facts: PageFacts, *,
     if not villages:
         out.append(Problem("soft", "map_half", f"|座標|<={profile.map_half}", None))
     else:
-        unreadable = False
         for v in villages:
-            if v.x is None or v.y is None:
-                unreadable = True
-            elif abs(v.x) > profile.map_half or abs(v.y) > profile.map_half:
+            if abs(v.x) > profile.map_half or abs(v.y) > profile.map_half:
                 out.append(Problem("hard", "map_half", f"|座標|<={profile.map_half}",
                                    f"({v.x}|{v.y})"))
-        if unreadable:
-            out.append(Problem("soft", "map_half", f"|座標|<={profile.map_half}", None))
 
     return out
