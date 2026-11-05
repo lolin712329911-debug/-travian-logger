@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """tests/parsers/test_buildings.py（ps-03）v0.1（A2a-2b）
 樣本：S10a（測試帳號 International 11，埃及，空地建造頁，gid0）、S11a～d（舊服 Asia 8，既有建築頁，佇列滿）。
-樣本是從原始頁抽出的 #build 區塊（去 script／svg／說明文字，遮罩 did／checksum／按鈕 id），見各 .meta.json。
+樣本是以 scrub_sample.py v0.3 脫敏的原始整頁（checksum 一律 000000），見各 .meta.json。
 golden：tests/golden/parsers/buildings/build_pages.expected.json；`UPDATE_GOLDEN=1` 會改寫，更新要在交接區塊說明原因。"""
 import json
 import os
@@ -120,7 +120,7 @@ class TestBuildOptions(unittest.TestCase):
         ok = [o for o in self.opts if o.buildable]
         self.assertEqual([o.gid for o in ok], [23, 11, 18, 25])
         for o in ok:
-            self.assertEqual(o.url, f"/dorf2.php?id=21&gid={o.gid}&action=build&checksum=abcdef")
+            self.assertEqual(o.url, f"/dorf2.php?id=21&gid={o.gid}&action=build&checksum=000000")
         self.assertTrue(all(o.url is None for o in self.opts if not o.buildable))
 
     def test_disabled_green_contractlink_is_not_buildable(self):
