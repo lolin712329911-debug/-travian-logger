@@ -1,0 +1,13 @@
+{
+  "captured_utc": "2026-11-04T12:57:05Z",
+  "did": 10001,
+  "kind": "dorf1",
+  "note": "舊服 Asia 8 的資源田 dorf1（2 個村，作用中的村＝脫敏後 did 10001）；建造佇列有 2 筆（盔甲廠 等級 5、馬廄 等級 10），沒有資源田在施工；頁面含聯盟名（已替換為 ALLIANCE）。captured_utc 取自頁面 Travian.Game.timestamp；server_id 取自頁面標題；path_only 依 body 的 data-village-perspective=perspectiveResources 推定、未經確認；source=raw 為依屬性大小寫、無 data-value 等特徵判斷，未經取得方式確認（A-10）。樣本編號為暫定。",
+  "path_only": "/dorf1.php",
+  "sample_id": "S10b",
+  "schema_version": 1,
+  "scrub_tool": "scrub_sample.py v0.3",
+  "scrubbed": true,
+  "server_id": "Asia 8",
+  "source": "raw"
+}

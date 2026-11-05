@@ -1,0 +1,13 @@
+{
+  "captured_utc": "2026-11-04T10:17:39Z",
+  "did": 10001,
+  "kind": "dorf2",
+  "note": "測試帳號 International 11（埃及、單村）的村莊中心 dorf2，只當頁面結構樣本、不進舊服 golden；可建築空地 aid 20、21；建造佇列有 2 筆（鐵礦場 ×2），沒有建築位在施工；incomingAttacksAmount 為 3（該帳號頁面原值）。captured_utc 取自頁面 Travian.Game.timestamp；server_id 取自頁面標題；path_only 依 body 的 data-village-perspective=perspectiveBuildings 推定、未經確認；source=raw 為依屬性大小寫、無 data-value 等特徵判斷，未經取得方式確認（A-10）。樣本編號為暫定。",
+  "path_only": "/dorf2.php",
+  "sample_id": "S10a",
+  "schema_version": 1,
+  "scrub_tool": "scrub_sample.py v0.3",
+  "scrubbed": true,
+  "server_id": "International 11",
+  "source": "raw"
+}
