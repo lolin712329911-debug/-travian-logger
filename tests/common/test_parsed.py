@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""tests/common/test_parsed.py（cm-09）v0.2（A2a-2a 跟進 PageFacts 欄位）：草案結構的基本性質與舊 Field／State／Slot 邊界約定。"""
+"""tests/common/test_parsed.py（cm-09）v0.3（A2a-2b 加建築頁結構）：草案結構的基本性質與舊 Field／State／Slot 邊界約定。"""
 import dataclasses
 import unittest
 
 from travian_bot.common import models, parsed
 from travian_bot.common.parsed import (
-    BuildingSlot, Dorf1, Dorf2, MarketState, PageFacts, QueueItem, ResField)
+    BuildCondition, BuildingSlot, BuildOption, Dorf1, Dorf2, MarketState, PageFacts, QueueItem, ResField,
+    UpgradeCost)
 
 
 class TestParsed(unittest.TestCase):
@@ -48,6 +49,28 @@ class TestParsed(unittest.TestCase):
         self.assertEqual(
             [x.name for x in dataclasses.fields(PageFacts)],
             ["tz_name", "tz_offset_s", "lang", "gpack", "tribe_id", "server_ts", "villages"])
+
+    def test_build_option_unknowns_are_none_not_zero(self):
+        c = BuildCondition(gid=25, name="行宮", level=None, met=True, current=None, forbidden=True)
+        o = BuildOption(gid=26, name="皇宮", cost=None, build_time_s=None, buildable=False, url=None,
+                        resource_short=False, exchange_disabled=None, afford_in_s=None, conditions=(c,))
+        plain = models.to_plain(o)
+        self.assertIsNone(plain["build_time_s"])          # 舊 secs=0 → None
+        self.assertIsNone(plain["exchange_disabled"])     # 沒有「交換資源」按鈕 ≠ 沒 disabled
+        self.assertIsNone(plain["conditions"][0]["level"])
+        self.assertTrue(plain["conditions"][0]["forbidden"])
+
+    def test_build_option_fields_renamed(self):
+        names = [f.name for f in dataclasses.fields(BuildOption)]
+        self.assertIn("exchange_disabled", names)
+        self.assertIn("afford_in_s", names)
+        self.assertNotIn("exceeds_storage", names)
+        self.assertNotIn("secs", names)
+
+    def test_upgrade_cost_plain(self):
+        u = UpgradeCost(cost=(1, 2, 3, 4), build_time_s=60, resource_short=True, exchange_disabled=True,
+                        afford_in_s=10)
+        self.assertEqual(models.to_plain(u)["cost"], [1, 2, 3, 4])
 
 
 if __name__ == "__main__":
