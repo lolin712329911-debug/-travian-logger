@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/common/parsed.py（cm-09）
-版本：v0.3（A2a-2a）｜PlayerInfo 已定案（✓，A2a-1）；Dorf1／Dorf2／PageFacts 於 A2a-2a 定案
+版本：v0.4（A2a-2b）｜BuildCondition／BuildOption／UpgradeCost 於 A2a-2b 定案（✓ 依 S10 一份、S11 四份樣本，見各類說明）；
+      v0.3（A2a-2a）：PlayerInfo 已定案（✓，A2a-1）；Dorf1／Dorf2／PageFacts 於 A2a-2a 定案
       （✓ 依舊服樣本 S1a／S1b、S12a／S12b；PageFacts 欄位語意仍待 A2b 對照 S9，見該類說明）；
       其餘結構仍為草案（✗）：HeroState／Adventure 等待 A2b
 用途：解析結果結構（parsers 的輸出、domain 與 app 的輸入）：Dorf1、Dorf2、PlayerInfo、HeroState、
@@ -32,7 +33,7 @@ from .models import Merchants, Oasis, Res4, Transit
 
 __all__ = [
     "Oasis", "ResField", "QueueItem", "Dorf1", "BuildingSlot", "Dorf2", "PlayerInfo", "HeroState",
-    "Adventure", "RallyOverview", "MarketState", "TileSafety", "PageVillage", "PageFacts",
+    "Adventure", "BuildCondition", "BuildOption", "UpgradeCost", "RallyOverview", "MarketState", "TileSafety", "PageVillage", "PageFacts",
 ]
 
 
@@ -128,6 +129,59 @@ class Adventure:
     y: Optional[int]
     danger: Optional[str]
     duration_s: Optional[int]
+
+
+# ---------------------------------------------------------------- 建築頁（build.php）
+@dataclass(frozen=True)
+class BuildCondition:
+    """空地建造頁（gid0）上一棟建築的前置條件（✓ S10：`span.buildingCondition`）。
+    gid＝onclick 的 `open('building', N)`；level＝要求等級（取 span 內數字；被劃掉的禁止項沒有等級＝None）；
+    met＝class 沒有 `error`；current＝未達成時 title 內的目前等級（取數字，達成時 title 沒有數字＝None）；
+    forbidden＝名稱被 line-through（「不能已經有這棟」，例：蓋皇宮前不能有行宮）。
+    name 是頁面語言的顯示文字，只供記錄；判斷用 gid。"""
+    gid: Optional[int]
+    name: Optional[str]
+    level: Optional[int]
+    met: bool
+    current: Optional[int]
+    forbidden: bool
+
+
+@dataclass(frozen=True)
+class BuildOption:
+    """空地建造頁的一棟可（或不可）蓋的建築（舊 `parse_build_options` 的 dict 的結構化版）。
+    cost＝木、磚、鐵、穀（讀不全四格＝None，不給縮水清單）；穀物消耗（cropConsumptionBig）不算。
+    build_time_s＝`div.section1` 的一般工期（section2＝看廣告加速，不取）；頁面沒顯示＝None（舊版是 0）。
+    buildable＝有綠色、未 disabled、網址通過白名單的興建按鈕；url＝該網址，否則 None。
+      佇列是否已滿無法從本頁判斷（✗，S10 沒有同時刻 dorf1；佇列滿時綠色按鈕消失只在 S11 的既有建築頁見過），
+      所以 buildable＝False 不等於資源或條件不足：原因要看 resource_short／afford_in_s／conditions，都沒有＝未知。
+    resource_short＝`.upgradeBlocked` 內有「交換資源」按鈕（資源不足的頁面表現）。
+    exchange_disabled＝該按鈕是否 disabled；沒有按鈕＝None。（舊名 exceeds_storage 取消：S10／S11 中 disabled 與
+      「成本合計大於庫存合計」吻合，與「成本超過容量」不符，那是推測。）
+    afford_in_s＝`div.errorMessage` 內 `span.timer` 的 value（資源預計湊齊的剩餘秒數）；沒有＝None。
+    conditions＝前置條件（只出現在還不能蓋的建築上）。"""
+    gid: int
+    name: Optional[str]
+    cost: Optional[Res4]
+    build_time_s: Optional[int]
+    buildable: bool
+    url: Optional[str]
+    resource_short: bool
+    exchange_disabled: Optional[bool]
+    afford_in_s: Optional[int]
+    conditions: Tuple[BuildCondition, ...]
+
+
+@dataclass(frozen=True)
+class UpgradeCost:
+    """既有建築頁（build.php?id=<aid>，村莊中心建築）的升級成本（舊 `parse_building_cost` 的 (cost, secs)）。
+    只讀 `div.upgradeBuilding` 區塊（研究院頁還有各兵種研究成本，標記相同，不能掃整頁）。
+    欄位語意同 BuildOption 的同名欄位。cost 讀不全＝解析失敗，由 parsers 丟 ParseError（不回傳空 list）。"""
+    cost: Res4
+    build_time_s: Optional[int]
+    resource_short: bool
+    exchange_disabled: Optional[bool]
+    afford_in_s: Optional[int]
 
 
 # ---------------------------------------------------------------- 集結點／市場／地圖
