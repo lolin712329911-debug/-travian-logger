@@ -14,7 +14,7 @@
   disp  處置：沿用／拆／改寫／新寫（依「舊源→處置」欄最後的粗體字分類；僅供參考，不參與檢查）
 """
 
-SOURCE = 'multi-village-dev-v0_39.md v0.39 §4.2'
+SOURCE = 'multi-village-dev-v0_41.md v0.41 §4.2'
 EXPECTED_COUNT = 73
 
 MANIFEST = [
@@ -84,7 +84,7 @@ MANIFEST = [
     {'id': 'if-12', 'path': 'infra/store/plan_repo.py', 'layer': 'infra', 'deps': ['if-04', 'cm-01', 'cm-11'], 'wp': 'A4b', 'disp': '新寫'},
     {'id': 'ps-01', 'path': 'parsers/village.py', 'layer': 'parsers', 'deps': ['cm-09', 'cm-03', 'cm-11'], 'wp': 'A2a-2a', 'disp': '沿用'},
     {'id': 'ps-02', 'path': 'parsers/village_list.py', 'layer': 'parsers', 'deps': ['cm-01', 'cm-03', 'cm-11'], 'wp': 'A2a-1／B1', 'disp': '沿用'},
-    {'id': 'ps-03', 'path': 'parsers/buildings.py', 'layer': 'parsers', 'deps': ['cm-09', 'cm-03'], 'wp': 'A2a-2b', 'disp': '沿用'},
+    {'id': 'ps-03', 'path': 'parsers/buildings.py', 'layer': 'parsers', 'deps': ['cm-09', 'cm-03', 'cm-11'], 'wp': 'A2a-2b', 'disp': '沿用'},
     {'id': 'ps-04', 'path': 'parsers/player.py', 'layer': 'parsers', 'deps': ['cm-09', 'cm-11'], 'wp': 'A2a-1', 'disp': '沿用'},
     {'id': 'ps-05', 'path': 'parsers/hero.py', 'layer': 'parsers', 'deps': ['cm-09'], 'wp': 'A2b', 'disp': '拆'},
     {'id': 'ps-06', 'path': 'parsers/rally.py', 'layer': 'parsers', 'deps': ['cm-09', 'cm-03'], 'wp': 'A2b／D1', 'disp': '拆'},
