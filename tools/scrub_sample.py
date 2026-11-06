@@ -1,11 +1,27 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""scrub_sample.py v0.3（一次性工具，放在 repo 外；樣本脫敏）
+"""scrub_sample.py v0.4（一次性工具，放在 repo 外；樣本脫敏）
 
 用法：
   python scrub_sample.py SRC DST          脫敏 SRC 寫到 DST，並自動驗證（有問題 exit 1）
   python scrub_sample.py --verify FILE    只驗證已脫敏的檔案
-  python scrub_sample.py --selftest       內建案例（含集結點概覽的 d=／他人村莊／俘虜）
+  python scrub_sample.py --tiles SRC DST  脫敏區塊 JSON（`{"tiles":[…]}`，S16）：自動辨識 UTF-8／UTF-8-BOM／Big5(cp950)，一律輸出 UTF-8
+  python scrub_sample.py --verify-tiles FILE   只驗證已脫敏的區塊 JSON
+  python scrub_sample.py --selftest       內建案例（含集結點概覽的 d=／他人村莊／俘虜／攻擊者標題／區塊 JSON）
+
+v0.3 → v0.4 的變動（International 11、Asia 8 集結點樣本與 S16 區塊 JSON；v0.3 對攻擊者名字與短名字有漏洞）：
+  1. 攻擊者／來襲者玩家名：`troopHeadline` 連結文字是「<名字> <動詞> <自己的村名>」（動詞語言相依，如「搶奪」「攻擊」），
+     v0.3 只認 `data-player-name`，來襲表的名字全部漏掉而 verify 仍顯示 OK。現在以「<名字> <單一詞> <自己的村名>」辨識（名字可含空格），
+     與 `data-player-name`、`/profile/N` 連結文字一併編成 OtherPlayerN。
+  2. 攻擊標記 id：`markAttackSymbol(N)`／`markSymbol_N` 的 N 依出現順序換成 900000001…（同一個 N 全頁一致）。
+  3. 玩家名替換與 verify 都改成「字詞邊界」比對（名字全是 ASCII 字母數字或底線時）：短名字（例如 rat）不再誤傷 `TownHallCelebration`
+     這類字串，也不再誤報。含非 ASCII 字元的名字仍用子字串比對。
+  4. 新增 `--tiles`：S16 區塊 JSON 的脫敏。逐格處理：`position` 平移（與頁面相同的 SHIFT 與環繞）、`text` 內嵌的座標 HTML 平移、
+     `{k.dt} 村名` → `{k.dt} VillageN`（`{k.dt} Natars x|y` 只平移座標）、`{k.spieler} 名` → `PlayerN`、`{k.allianz} 名` → `AllianceN`、
+     `uid`／`aid`／`did`（正數）→ 流水號；`did`=-1 等非正數不動。同一個名字或 id 全檔一致。輸出 UTF-8（`ensure_ascii=False`、縮排 4、LF）。
+  5. 編碼：區塊 JSON 以 Big5 存檔時（Windows cp950 另存）會被轉成 UTF-8；Big5 無法表示的字元在存檔當時已變成 `?`，無法還原
+     （都在玩家名／村名裡，會被替換，不影響 golden）。
+
 
 v0.2 → v0.3 的變動（A2a-2b 前置；測試帳號 International 11 的樣本沒有寫死的名字可用）：
   1. 自動讀出自己的玩家名、村莊（id＋名稱）、玩家 uid、聯盟名：來源是頁內 viewData 的 ownPlayer／villageList、
@@ -44,6 +60,17 @@ LEGACY_FORBIDDEN = list(FORBIDDEN)
 LEGACY_VILLAGES = [("29786", "doga的村莊", "VillageA"), ("34593", "doga2", "VillageB")]
 
 POSITIVE_COORD_NOTE = []     # 平移後出現非負座標時記錄（HTML 格式未用樣本驗證）
+
+
+def _name_re(name):
+    """名字全是 ASCII 字母數字／底線 → 字詞邊界；否則（含中文等）→ 子字串。"""
+    if re.fullmatch(r"[A-Za-z0-9_]+", name):
+        return re.compile(r"(?<![A-Za-z0-9_])" + re.escape(name) + r"(?![A-Za-z0-9_])")
+    return re.compile(re.escape(name))
+
+
+def _has(text, name):
+    return bool(_name_re(name).search(text))
 
 
 def shift(v, axis):
@@ -108,6 +135,10 @@ def scrub(h):
 
     # ---- 蒐集他人（先於任何替換，避免被自己的替換干擾）----
     others_players = [p for p in dict.fromkeys(re.findall(r'data-player-name="([^"]+)"', h)) if p != own_player]
+    for _vid, vname, _l in own_villages:   # 來襲表標題「<名字> <動詞> <自己的村名>」（v0.4）
+        for nm, _verb in re.findall(r'<a href="/karte\.php\?d=\d+">\s*([^<>]+?) (\S+) %s\s*</a>' % re.escape(vname), h):
+            if nm != own_player and nm not in others_players:
+                others_players.append(nm)
     others_uids = [u for u in dict.fromkeys(re.findall(r"/profile/(\d+)", h)) if u not in own_uid]
     did_pat = [r'data-did="(\d+)"', r"newdid=(\d+)", r"[?&;]at=(\d+)", r"[?&;]from=(\d+)", r"release=(\d+)"]
     other_dids = []
@@ -138,12 +169,17 @@ def scrub(h):
         h = h.replace('">%s</a>' % text, '">OtherVillage%d</a>' % i)
     for i, name in enumerate(others_players, 1):
         FORBIDDEN.append(name)
-        h = h.replace(name, "OtherPlayer%d" % i)
+        h = _name_re(name).sub("OtherPlayer%d" % i, h)
     for old, new in own_uid.items():
         h = h.replace("/profile/%s" % old, "/profile/%s" % new)
     for i, u in enumerate(others_uids, 1):
         FORBIDDEN.append(u)
         h = h.replace("/profile/%s" % u, "/profile/%d" % (2000 + i))
+
+    # ---- 攻擊標記 id（v0.4）----
+    for i, a in enumerate(dict.fromkeys(re.findall(r"markAttackSymbol\((\d+)\)", h)), 1):
+        FORBIDDEN.append(a)
+        h = re.sub(r"(?<!\d)" + a + r"(?!\d)", str(900000000 + i), h)
 
     # ---- did（自己與他人）----
     mapping = dict(own_did)
@@ -196,9 +232,9 @@ def verify(h):
     bad = []
     decoded = _html.unescape(re.sub(r"\\u([0-9a-fA-F]{4})", lambda m: chr(int(m.group(1), 16)), h))
     for s in FORBIDDEN:
-        if s and s in h:
+        if s and _has(h, s):
             bad.append("殘留禁用字串：%s" % s)
-        elif s and s in decoded:
+        elif s and _has(decoded, s):
             bad.append("殘留禁用字串（實體或 \\u 跳脫形式）：%s" % s)
     for m in re.finditer(r'"x":(-?\d+),"y":(-?\d+)', h):
         x, y = int(m.group(1)), int(m.group(2))
@@ -218,6 +254,120 @@ def verify(h):
             y = -int(cy.group(2)) if cy.group(1) else int(cy.group(2))
             if xy_to_d(x, y) != int(dm.group(1)):
                 bad.append("表格內 d=%s 與座標 (%d,%d) 不吻合（應為 %d）" % (dm.group(1), x, y, xy_to_d(x, y)))
+    return bad
+
+
+
+# ---------------------------------------------------------------------------
+# 區塊 JSON（S16）
+# ---------------------------------------------------------------------------
+TILES_FORBIDDEN = []
+
+
+def read_text_auto(path):
+    """UTF-8（含 BOM）優先；失敗再試 Big5(cp950)。回 (text, encoding)。"""
+    raw = open(path, "rb").read()
+    for enc in ("utf-8-sig", "cp950"):
+        try:
+            return raw.decode(enc), enc
+        except UnicodeDecodeError:
+            continue
+    raise SystemExit("無法以 UTF-8 或 Big5 解碼：%s" % path)
+
+
+def _shift_coord_html(h):
+    def side(m):
+        axis = 0 if m.group(2) == "X" else 1
+        v = -int(m.group(4)) if m.group(3) else int(m.group(4))
+        nv = shift(v, axis)
+        if nv < 0:
+            return m.group(1) + "&minus;&#x202d;%d&#x202c;&#x202c;" % -nv
+        return m.group(1) + "%d&#x202c;" % nv
+    return re.sub(r'(class="coordinate([XY])">\(?&#x202d;)(&minus;&#x202d;)?(\d+)&#x202c;(?:&#x202c;)?', side, h)
+
+
+def scrub_tiles(data):
+    """data：已解析的 {"tiles":[…]}（就地不改，回新物件）。回 (新資料, 對照表)。"""
+    import copy
+    out = copy.deepcopy(data)
+    players, alliances, villages = {}, {}, {}
+    uids, aids, dids = {}, {}, {}
+    TILES_FORBIDDEN[:] = []
+
+    def code(table, key, fmt, start=1):
+        if key not in table:
+            n = start + len(table)
+            table[key] = fmt % n if "%" in fmt and "d" in fmt[-2:] and fmt != "%d" else (n if fmt == "%d" else fmt % n)
+        return table[key]
+
+    for t in out["tiles"]:
+        pos = t.get("position") or {}
+        if "x" in pos and "y" in pos:
+            pos["x"], pos["y"] = shift(pos["x"], 0), shift(pos["y"], 1)
+        title = t.get("title", "")
+        if title.startswith("{k.dt} "):
+            rest = title[len("{k.dt} "):]
+            m = re.fullmatch(r"Natars (-?\d+)\|(-?\d+)", rest)
+            if m:
+                t["title"] = "{k.dt} Natars %d|%d" % (shift(int(m.group(1)), 0), shift(int(m.group(2)), 1))
+            else:
+                TILES_FORBIDDEN.append(rest)
+                t["title"] = "{k.dt} " + code(villages, rest, "Village%d")
+        text = t.get("text", "")
+
+        def sp(m):
+            if m.group(1) == "Natars":           # 遊戲內建帳號，不是個資；uid=1 也保留
+                return m.group(0)
+            TILES_FORBIDDEN.append(m.group(1))
+            return "{k.spieler} " + code(players, m.group(1), "Player%d")
+
+        def al(m):
+            if not m.group(1):
+                return m.group(0)
+            TILES_FORBIDDEN.append(m.group(1))
+            return "{k.allianz} " + code(alliances, m.group(1), "Alliance%d")
+        text = re.sub(r"\{k\.spieler\} ([^<]*)", sp, text)
+        text = re.sub(r"\{k\.allianz\} ([^<]*)", al, text)
+        t["text"] = _shift_coord_html(text)
+        if isinstance(t.get("uid"), int) and t["uid"] > 1:
+            t["uid"] = code(uids, t["uid"], "%d", 2001)
+        if isinstance(t.get("aid"), int) and t["aid"] > 0:
+            t["aid"] = code(aids, t["aid"], "%d", 3001)
+        if isinstance(t.get("did"), int) and t["did"] > 0:
+            t["did"] = code(dids, t["did"], "%d", 20001)
+    return out, {"players": len(players), "alliances": len(alliances), "villages": len(villages),
+                 "uid": len(uids), "aid": len(aids), "did": len(dids)}
+
+
+def verify_tiles(out_text, src_data=None):
+    """回傳問題清單；空＝通過。src_data 給定時另檢查格數不變、禁用字串不殘留。"""
+    bad = []
+    try:
+        d = _json.loads(out_text)
+    except ValueError as e:
+        return ["不是合法 JSON：%s" % e]
+    tiles = d.get("tiles")
+    if not isinstance(tiles, list):
+        return ["缺少 tiles 陣列"]
+    seen = set()
+    for t in tiles:
+        p = t.get("position", {})
+        k = (p.get("x"), p.get("y"))
+        if k in seen:
+            bad.append("座標重複：%s" % (k,))
+        seen.add(k)
+        if abs(p.get("x", 0)) > MAP_HALF or abs(p.get("y", 0)) > MAP_HALF:
+            bad.append("座標超出範圍：%s" % (k,))
+    if src_data is not None and len(tiles) != len(src_data["tiles"]):
+        bad.append("格數改變：%d → %d" % (len(src_data["tiles"]), len(tiles)))
+    if src_data is not None:
+        for i, (a, b) in enumerate(zip(src_data["tiles"], tiles)):
+            for f in ("uid", "aid", "did"):
+                if isinstance(a.get(f), int) and a[f] > 1 and a[f] == b.get(f):
+                    bad.append("第 %d 格 %s 未替換：%s" % (i, f, a[f]))
+    for s_ in TILES_FORBIDDEN:
+        if s_ and _has(out_text, s_):
+            bad.append("殘留禁用字串：%s" % s_)
     return bad
 
 
@@ -269,6 +419,45 @@ def selftest():
         ("兩村距離不變", abs(shift(-28, 0) - shift(-25, 0)) == 3 and abs(shift(-72, 1) - shift(-85, 1)) == 13),
         ("verify 無問題", not problems),
     ]
+    # v0.4：攻擊者標題、攻擊標記 id、短名字邊界
+    src4 = (
+        '<script>Travian.AttackSymbol.markAttackSymbol(194976507);</script><img id="markSymbol_194976507" />'
+        '<table class="troop_details inRaid"><thead><tr><td class="role"><a href="/karte.php?d=3623">Hideout</a></td>'
+        '<td class="troopHeadline"><a href="/karte.php?d=114461">rat 搶奪 doga2</a></td></tr></thead></table>'
+        '<table class="troop_details inRaid"><thead><tr><td class="role"><a href="/karte.php?d=3624">Camp</a></td>'
+        '<td class="troopHeadline"><a href="/karte.php?d=114461">Big Wolf 攻擊 doga2</a></td></tr></thead></table>'
+        '{"type":"TownHallCelebration"}'
+    )
+    FORBIDDEN[:] = ["doga", "29786", "34593", "ROHIRRIM", "2713"]
+    out4 = scrub(src4)
+    p4 = verify(out4)
+    checks += [
+        ("攻擊者名字（短名）已替換", "rat 搶奪" not in out4 and "OtherPlayer1 搶奪" in out4),
+        ("攻擊者名字（含空格）已替換", "Big Wolf" not in out4 and "OtherPlayer2 攻擊" in out4),
+        ("短名字不誤傷 TownHallCelebration", "TownHallCelebration" in out4),
+        ("攻擊標記 id 已替換且前後一致", "markAttackSymbol(900000001)" in out4 and "markSymbol_900000001" in out4 and "194976507" not in out4),
+        ("verify（v0.4 樣本）無問題", not p4),
+    ]
+    # 區塊 JSON
+    tiles_src = {"tiles": [
+        {"position": {"x": -20, "y": -90}, "did": -1, "title": "{k.fo}", "text": "x"},
+        {"position": {"x": -19, "y": -90}, "uid": 41, "aid": 17, "did": 777, "title": "{k.bt}",
+         "text": "{k.spieler} Dodo<br />{k.allianz} Zeta<br />&#x202d;<span class=\"coordinates\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;19&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;90&#x202c;&#x202c;)</span></span>"},
+        {"position": {"x": -18, "y": -90}, "uid": 41, "aid": 0, "did": 778, "title": "{k.dt} Dodo`s village", "text": "{k.spieler} Dodo<br />{k.allianz} "},
+        {"position": {"x": -17, "y": -81}, "uid": 1, "aid": 0, "did": 1, "title": "{k.dt} Natars -17|-81", "text": "{k.spieler} Natars"},
+    ]}
+    tout, cnt = scrub_tiles(tiles_src)
+    ttext = _json.dumps(tout, ensure_ascii=False)
+    checks += [
+        ("區塊：座標平移", tout["tiles"][0]["position"] == {"x": -120, "y": -190}),
+        ("區塊：玩家名／聯盟名編號", "Player1" in ttext and "Alliance1" in ttext and "Dodo" not in ttext and "Zeta" not in ttext),
+        ("區塊：同一玩家同一代號", ttext.count("Player1") == 2 and cnt["players"] == 1 and "Natars" in ttext),
+        ("區塊：uid／aid／did 換成流水號", tout["tiles"][1]["uid"] == 2001 and tout["tiles"][1]["aid"] == 3001 and tout["tiles"][1]["did"] == 20001),
+        ("區塊：did=-1 與 aid=0 不動", tout["tiles"][0]["did"] == -1 and tout["tiles"][2]["aid"] == 0),
+        ("區塊：Natars 標題座標平移", tout["tiles"][3]["title"] == "{k.dt} Natars -117|-181"),
+        ("區塊：text 內座標平移", "&minus;&#x202d;119&#x202c;" in ttext and "&minus;&#x202d;190&#x202c;" in ttext),
+        ("區塊：verify 無問題", not verify_tiles(ttext, tiles_src)),
+    ]
     bad = [name for name, ok in checks if not ok]
     for name, ok in checks:
         print(("✓ " if ok else "✗ ") + name)
@@ -280,6 +469,24 @@ def selftest():
 if __name__ == "__main__":
     if len(sys.argv) == 2 and sys.argv[1] == "--selftest":
         sys.exit(0 if selftest() else 1)
+    if len(sys.argv) == 4 and sys.argv[1] == "--tiles":
+        text, enc = read_text_auto(sys.argv[2])
+        data = _json.loads(text)
+        out, cnt = scrub_tiles(data)
+        out_text = _json.dumps(out, ensure_ascii=False, indent=4)
+        open(sys.argv[3], "w", encoding="utf-8", newline="\n").write(out_text + "\n")
+        issues = verify_tiles(out_text, data)
+        print("來源編碼：%s｜%d 格｜%s" % (enc, len(out["tiles"]), cnt))
+        if issues:
+            sys.stderr.write("\n".join(issues) + "\n")
+            sys.exit(1)
+        print("OK：%s → %s" % (sys.argv[2], sys.argv[3]))
+        sys.exit(0)
+    if len(sys.argv) == 3 and sys.argv[1] == "--verify-tiles":
+        text, _enc = read_text_auto(sys.argv[2])
+        issues = verify_tiles(text)
+        print("\n".join(issues) if issues else "OK（只檢查結構；名字殘留要在脫敏當下驗證）")
+        sys.exit(1 if issues else 0)
     if len(sys.argv) == 3 and sys.argv[1] == "--verify":
         issues = verify(open(sys.argv[2], encoding="utf-8", newline="").read())
         print("\n".join(issues) if issues else "OK")
