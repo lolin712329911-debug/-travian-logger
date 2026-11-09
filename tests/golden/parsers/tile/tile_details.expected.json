@@ -1,0 +1,97 @@
+{
+ "cases": [
+  {
+   "id": "S15a",
+   "tile": {
+    "alliance_id": null,
+    "animals": {},
+    "bonuses": [
+     [
+      1,
+      25
+     ],
+     [
+      3,
+      25
+     ]
+    ],
+    "distance": 6.71,
+    "map_id": 115670,
+    "oasis_type": 7,
+    "occupied": false,
+    "occupy_events": [
+     "昨天, 15:39",
+     "2 日前, 19:28",
+     "03.11.26, 07:35"
+    ],
+    "owner_uid": null,
+    "owner_village": null,
+    "safe": true,
+    "x": -19,
+    "y": -88
+   }
+  },
+  {
+   "id": "S15b",
+   "tile": {
+    "alliance_id": null,
+    "animals": {
+     "35": 5,
+     "36": 4,
+     "37": 3
+    },
+    "bonuses": [
+     [
+      0,
+      25
+     ]
+    ],
+    "distance": 1.0,
+    "map_id": 114460,
+    "oasis_type": 2,
+    "occupied": false,
+    "occupy_events": [
+     "03.11.26, 18:38"
+    ],
+    "owner_uid": null,
+    "owner_village": null,
+    "safe": false,
+    "x": -26,
+    "y": -85
+   }
+  },
+  {
+   "id": "S15c",
+   "tile": {
+    "alliance_id": 44,
+    "animals": null,
+    "bonuses": [
+     [
+      1,
+      25
+     ],
+     [
+      3,
+      25
+     ]
+    ],
+    "distance": 9.9,
+    "map_id": 111661,
+    "oasis_type": 7,
+    "occupied": true,
+    "occupy_events": [
+     "今天, 00:25"
+    ],
+    "owner_uid": 2702,
+    "owner_village": [
+     -15,
+     -76
+    ],
+    "safe": false,
+    "x": -18,
+    "y": -78
+   }
+  }
+ ],
+ "schema_version": 1
+}

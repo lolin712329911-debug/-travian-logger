@@ -1,0 +1,659 @@
+{
+ "cases": [
+  {
+   "id": "S16",
+   "oases": [
+    {
+     "animals": [],
+     "bonuses": [
+      [
+       1,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -11,
+     "y": -79
+    },
+    {
+     "animals": [],
+     "bonuses": [
+      [
+       0,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -17,
+     "y": -80
+    },
+    {
+     "animals": [],
+     "bonuses": [
+      [
+       1,
+       25
+      ]
+     ],
+     "owner": "Dadada",
+     "taken": true,
+     "x": -11,
+     "y": -80
+    },
+    {
+     "animals": [],
+     "bonuses": [
+      [
+       1,
+       25
+      ],
+      [
+       3,
+       25
+      ]
+     ],
+     "owner": "Dadada",
+     "taken": true,
+     "x": -10,
+     "y": -80
+    },
+    {
+     "animals": [],
+     "bonuses": [
+      [
+       0,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -9,
+     "y": -82
+    },
+    {
+     "animals": [
+      [
+       35,
+       1
+      ],
+      [
+       36,
+       1
+      ],
+      [
+       37,
+       1
+      ]
+     ],
+     "bonuses": [
+      [
+       0,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -14,
+     "y": -83
+    },
+    {
+     "animals": [
+      [
+       35,
+       10
+      ],
+      [
+       36,
+       10
+      ],
+      [
+       37,
+       4
+      ]
+     ],
+     "bonuses": [
+      [
+       0,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -16,
+     "y": -84
+    },
+    {
+     "animals": [],
+     "bonuses": [
+      [
+       0,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -13,
+     "y": -84
+    },
+    {
+     "animals": [],
+     "bonuses": [
+      [
+       0,
+       25
+      ],
+      [
+       3,
+       25
+      ]
+     ],
+     "owner": "Kapi",
+     "taken": true,
+     "x": -8,
+     "y": -85
+    },
+    {
+     "animals": [
+      [
+       35,
+       5
+      ],
+      [
+       36,
+       3
+      ]
+     ],
+     "bonuses": [
+      [
+       0,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -15,
+     "y": -86
+    },
+    {
+     "animals": [],
+     "bonuses": [
+      [
+       0,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -10,
+     "y": -86
+    },
+    {
+     "animals": [
+      [
+       31,
+       10
+      ],
+      [
+       32,
+       4
+      ],
+      [
+       34,
+       3
+      ]
+     ],
+     "bonuses": [
+      [
+       2,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -9,
+     "y": -86
+    },
+    {
+     "animals": [
+      [
+       31,
+       7
+      ],
+      [
+       32,
+       5
+      ],
+      [
+       35,
+       2
+      ]
+     ],
+     "bonuses": [
+      [
+       1,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -14,
+     "y": -87
+    },
+    {
+     "animals": [],
+     "bonuses": [
+      [
+       0,
+       25
+      ],
+      [
+       3,
+       25
+      ]
+     ],
+     "owner": "Kapi",
+     "taken": true,
+     "x": -13,
+     "y": -87
+    },
+    {
+     "animals": [],
+     "bonuses": [
+      [
+       1,
+       25
+      ],
+      [
+       3,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -19,
+     "y": -88
+    },
+    {
+     "animals": [
+      [
+       31,
+       18
+      ],
+      [
+       32,
+       18
+      ],
+      [
+       35,
+       1
+      ]
+     ],
+     "bonuses": [
+      [
+       1,
+       25
+      ],
+      [
+       3,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -18,
+     "y": -88
+    },
+    {
+     "animals": [
+      [
+       35,
+       9
+      ],
+      [
+       36,
+       5
+      ]
+     ],
+     "bonuses": [
+      [
+       0,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -10,
+     "y": -88
+    },
+    {
+     "animals": [
+      [
+       31,
+       1
+      ],
+      [
+       32,
+       1
+      ]
+     ],
+     "bonuses": [
+      [
+       1,
+       25
+      ],
+      [
+       3,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -18,
+     "y": -89
+    },
+    {
+     "animals": [
+      [
+       31,
+       2
+      ],
+      [
+       32,
+       2
+      ],
+      [
+       35,
+       1
+      ]
+     ],
+     "bonuses": [
+      [
+       1,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -23,
+     "y": -90
+    },
+    {
+     "animals": [],
+     "bonuses": [
+      [
+       3,
+       50
+      ]
+     ],
+     "owner": "GOLD",
+     "taken": true,
+     "x": -13,
+     "y": -90
+    },
+    {
+     "animals": [
+      [
+       31,
+       8
+      ],
+      [
+       32,
+       5
+      ],
+      [
+       35,
+       2
+      ]
+     ],
+     "bonuses": [
+      [
+       1,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -23,
+     "y": -91
+    },
+    {
+     "animals": [],
+     "bonuses": [
+      [
+       2,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -11,
+     "y": -91
+    },
+    {
+     "animals": [],
+     "bonuses": [
+      [
+       2,
+       25
+      ],
+      [
+       3,
+       25
+      ]
+     ],
+     "owner": "mamaloreng",
+     "taken": true,
+     "x": -10,
+     "y": -91
+    },
+    {
+     "animals": [
+      [
+       31,
+       9
+      ],
+      [
+       32,
+       6
+      ],
+      [
+       34,
+       1
+      ]
+     ],
+     "bonuses": [
+      [
+       2,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -9,
+     "y": -91
+    },
+    {
+     "animals": [
+      [
+       35,
+       27
+      ],
+      [
+       36,
+       26
+      ],
+      [
+       37,
+       13
+      ]
+     ],
+     "bonuses": [
+      [
+       0,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -27,
+     "y": -92
+    },
+    {
+     "animals": [],
+     "bonuses": [
+      [
+       1,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -26,
+     "y": -92
+    },
+    {
+     "animals": [
+      [
+       38,
+       1
+      ]
+     ],
+     "bonuses": [
+      [
+       1,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -25,
+     "y": -92
+    },
+    {
+     "animals": [
+      [
+       35,
+       2
+      ],
+      [
+       36,
+       2
+      ],
+      [
+       37,
+       1
+      ]
+     ],
+     "bonuses": [
+      [
+       0,
+       25
+      ],
+      [
+       3,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -15,
+     "y": -92
+    },
+    {
+     "animals": [
+      [
+       35,
+       4
+      ]
+     ],
+     "bonuses": [
+      [
+       1,
+       25
+      ],
+      [
+       3,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -26,
+     "y": -93
+    },
+    {
+     "animals": [
+      [
+       35,
+       1
+      ],
+      [
+       36,
+       1
+      ]
+     ],
+     "bonuses": [
+      [
+       0,
+       25
+      ],
+      [
+       3,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -13,
+     "y": -93
+    },
+    {
+     "animals": [
+      [
+       35,
+       39
+      ],
+      [
+       36,
+       35
+      ],
+      [
+       37,
+       20
+      ]
+     ],
+     "bonuses": [
+      [
+       0,
+       25
+      ],
+      [
+       3,
+       25
+      ]
+     ],
+     "owner": null,
+     "taken": false,
+     "x": -22,
+     "y": -94
+    },
+    {
+     "animals": [],
+     "bonuses": [
+      [
+       1,
+       25
+      ]
+     ],
+     "owner": "mamaloreng",
+     "taken": true,
+     "x": -9,
+     "y": -94
+    }
+   ]
+  }
+ ],
+ "schema_version": 1
+}

@@ -1,0 +1,2120 @@
+{
+    "tiles": [
+        {
+            "position": {
+                "x": -18,
+                "y": -79
+            },
+            "title": "{k.vt} {k.f11}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;18&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;79&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -17,
+                "y": -79
+            },
+            "title": "{k.vt} {k.f7}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;17&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;79&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -16,
+                "y": -79
+            },
+            "title": "{k.vt} {k.f10}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;16&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;79&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -15,
+                "y": -79
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;15&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;79&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -14,
+                "y": -79
+            },
+            "title": "{k.vt} {k.f4}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;14&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;79&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -13,
+                "y": -79
+            },
+            "title": "{k.vt} {k.f8}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;13&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;79&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -12,
+                "y": -79
+            },
+            "title": "{k.vt} {k.f9}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;12&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;79&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -11,
+                "y": -79
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;11&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;79&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r2} {a.r2} 25%"
+        },
+        {
+            "position": {
+                "x": -10,
+                "y": -79
+            },
+            "title": "{k.vt} {k.f8}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;10&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;79&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -9,
+                "y": -79
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;9&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;79&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -8,
+                "y": -79
+            },
+            "title": "{k.vt} {k.f5}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;8&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;79&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -18,
+                "y": -80
+            },
+            "uid": 3038,
+            "did": 30622,
+            "title": "{k.dt} armstrong`s village",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;18&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;80&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} armstrong<br />{k.einwohner} 14<br />{k.allianz} <br />{k.volk} {a.v1}"
+        },
+        {
+            "position": {
+                "x": -17,
+                "y": -80
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;17&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;80&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r1} {a.r1} 25%"
+        },
+        {
+            "position": {
+                "x": -16,
+                "y": -80
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;16&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;80&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -15,
+                "y": -80
+            },
+            "uid": 2978,
+            "did": 30483,
+            "title": "{k.dt} ???? mohammed_misura",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;15&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;80&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} mohammed_misura<br />{k.einwohner} 77<br />{k.allianz} <br />{k.volk} {a.v3}"
+        },
+        {
+            "position": {
+                "x": -14,
+                "y": -80
+            },
+            "title": "{k.vt} {k.f4}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;14&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;80&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -13,
+                "y": -80
+            },
+            "title": "{k.vt} {k.f2}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;13&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;80&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -12,
+                "y": -80
+            },
+            "title": "{k.vt} {k.f2}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;12&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;80&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -11,
+                "y": -80
+            },
+            "uid": 2627,
+            "aid": 23,
+            "did": -1,
+            "title": "{k.bt}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;11&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;80&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r2} {a.r2} 25%<br />{k.spieler} Dadada<br />{k.allianz} FALLK<br />{k.volk} {a.v3}"
+        },
+        {
+            "position": {
+                "x": -10,
+                "y": -80
+            },
+            "uid": 2627,
+            "aid": 23,
+            "did": -1,
+            "title": "{k.bt}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;10&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;80&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r2} {a.r2} 25%<br />{a:r4} {a.r4} 25%<br />{k.spieler} Dadada<br />{k.allianz} FALLK<br />{k.volk} {a.v3}"
+        },
+        {
+            "position": {
+                "x": -9,
+                "y": -80
+            },
+            "title": "{k.vt} {k.f8}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;9&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;80&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -8,
+                "y": -80
+            },
+            "uid": 2627,
+            "aid": 23,
+            "did": 33153,
+            "title": "{k.dt} Dadada 3",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;8&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;80&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} Dadada<br />{k.einwohner} 579<br />{k.allianz} FALLK<br />{k.volk} {a.v3}"
+        },
+        {
+            "position": {
+                "x": -18,
+                "y": -81
+            },
+            "title": "{k.vt} {k.f11}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;18&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;81&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -17,
+                "y": -81
+            },
+            "uid": 1,
+            "did": 30940,
+            "title": "{k.dt} Natars -17|-81",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;17&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;81&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} Natars<br />{k.einwohner} 32<br />{k.allianz} <br />{k.volk} {a.v5}"
+        },
+        {
+            "position": {
+                "x": -16,
+                "y": -81
+            },
+            "title": "{k.vt} {k.f11}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;16&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;81&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -15,
+                "y": -81
+            },
+            "title": "{k.vt} {k.f2}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;15&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;81&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -14,
+                "y": -81
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;14&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;81&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -13,
+                "y": -81
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;13&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;81&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -12,
+                "y": -81
+            },
+            "title": "{k.vt} {k.f10}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;12&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;81&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -11,
+                "y": -81
+            },
+            "title": "{k.vt} {k.f11}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;11&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;81&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -10,
+                "y": -81
+            },
+            "title": "{k.vt} {k.f12}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;10&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;81&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -9,
+                "y": -81
+            },
+            "title": "{k.vt} {k.f7}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;9&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;81&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -8,
+                "y": -81
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;8&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;81&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -18,
+                "y": -82
+            },
+            "title": "{k.vt} {k.f1}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;18&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;82&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -17,
+                "y": -82
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;17&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;82&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -16,
+                "y": -82
+            },
+            "title": "{k.vt} {k.f4}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;16&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;82&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -15,
+                "y": -82
+            },
+            "uid": 3194,
+            "did": 30935,
+            "title": "{k.dt} Vibu`s village",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;15&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;82&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} Vibu<br />{k.einwohner} 12<br />{k.allianz} <br />{k.volk} {a.v1}"
+        },
+        {
+            "position": {
+                "x": -14,
+                "y": -82
+            },
+            "title": "{k.vt} {k.f5}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;14&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;82&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -13,
+                "y": -82
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;13&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;82&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -12,
+                "y": -82
+            },
+            "uid": 1,
+            "did": 30939,
+            "title": "{k.dt} Natars -12|-82",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;12&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;82&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} Natars<br />{k.einwohner} 230<br />{k.allianz} <br />{k.volk} {a.v5}"
+        },
+        {
+            "position": {
+                "x": -11,
+                "y": -82
+            },
+            "title": "{k.vt} {k.f4}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;11&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;82&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -10,
+                "y": -82
+            },
+            "title": "{k.vt} {k.f11}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;10&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;82&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -9,
+                "y": -82
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;9&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;82&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r1} {a.r1} 25%"
+        },
+        {
+            "position": {
+                "x": -8,
+                "y": -82
+            },
+            "title": "{k.vt} {k.f9}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;8&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;82&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -18,
+                "y": -83
+            },
+            "title": "{k.vt} {k.f1}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;18&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;83&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -17,
+                "y": -83
+            },
+            "title": "{k.vt} {k.f10}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;17&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;83&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -16,
+                "y": -83
+            },
+            "title": "{k.vt} {k.f12}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;16&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;83&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -15,
+                "y": -83
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;15&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;83&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -14,
+                "y": -83
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;14&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;83&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r1} {a.r1} 25%<br />{k.animals}<br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u35\"></i><span class=\"value \">1</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u36\"></i><span class=\"value \">1</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u37\"></i><span class=\"value \">1</span></div>"
+        },
+        {
+            "position": {
+                "x": -13,
+                "y": -83
+            },
+            "title": "{k.vt} {k.f7}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;13&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;83&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -12,
+                "y": -83
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;12&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;83&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -11,
+                "y": -83
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;11&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;83&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -10,
+                "y": -83
+            },
+            "uid": 3229,
+            "aid": 23,
+            "did": 31008,
+            "title": "{k.dt} Kapi kyl?",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;10&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;83&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} Kapi<br />{k.einwohner} 550<br />{k.allianz} FALLK<br />{k.volk} {a.v2}"
+        },
+        {
+            "position": {
+                "x": -9,
+                "y": -83
+            },
+            "title": "{k.vt} {k.f9}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;9&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;83&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -8,
+                "y": -83
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;8&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;83&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -18,
+                "y": -84
+            },
+            "title": "{k.vt} {k.f10}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;18&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;84&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -17,
+                "y": -84
+            },
+            "title": "{k.vt} {k.f1}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;17&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;84&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -16,
+                "y": -84
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;16&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;84&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r1} {a.r1} 25%<br />{k.animals}<br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u35\"></i><span class=\"value \">10</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u36\"></i><span class=\"value \">10</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u37\"></i><span class=\"value \">4</span></div>"
+        },
+        {
+            "position": {
+                "x": -15,
+                "y": -84
+            },
+            "title": "{k.vt} {k.f2}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;15&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;84&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -14,
+                "y": -84
+            },
+            "uid": 3321,
+            "did": 31173,
+            "title": "{k.dt} ???? WarWarrior",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;14&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;84&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} WarWarrior<br />{k.einwohner} 70<br />{k.allianz} <br />{k.volk} {a.v3}"
+        },
+        {
+            "position": {
+                "x": -13,
+                "y": -84
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;13&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;84&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r1} {a.r1} 25%"
+        },
+        {
+            "position": {
+                "x": -12,
+                "y": -84
+            },
+            "title": "{k.vt} {k.f11}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;12&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;84&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -11,
+                "y": -84
+            },
+            "uid": 3229,
+            "aid": 23,
+            "did": 32535,
+            "title": "{k.dt} Uusi kyl?",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;11&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;84&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} Kapi<br />{k.einwohner} 343<br />{k.allianz} FALLK<br />{k.volk} {a.v2}"
+        },
+        {
+            "position": {
+                "x": -10,
+                "y": -84
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;10&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;84&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -9,
+                "y": -84
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;9&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;84&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -8,
+                "y": -84
+            },
+            "title": "{k.vt} {k.f10}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;8&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;84&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -18,
+                "y": -85
+            },
+            "title": "{k.vt} {k.f2}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;18&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;85&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -17,
+                "y": -85
+            },
+            "title": "{k.vt} {k.f1}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;17&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;85&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -16,
+                "y": -85
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;16&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;85&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -15,
+                "y": -85
+            },
+            "title": "{k.vt} {k.f4}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;15&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;85&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -14,
+                "y": -85
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;14&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;85&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -13,
+                "y": -85
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;13&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;85&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -12,
+                "y": -85
+            },
+            "uid": 3442,
+            "did": 31407,
+            "title": "{k.dt} o1942的村莊",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;12&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;85&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} o1942<br />{k.einwohner} 18<br />{k.allianz} <br />{k.volk} {a.v3}"
+        },
+        {
+            "position": {
+                "x": -11,
+                "y": -85
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;11&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;85&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -10,
+                "y": -85
+            },
+            "uid": 3441,
+            "did": 31405,
+            "title": "{k.dt} Renais`s village",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;10&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;85&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} Renais<br />{k.einwohner} 14<br />{k.allianz} <br />{k.volk} {a.v3}"
+        },
+        {
+            "position": {
+                "x": -9,
+                "y": -85
+            },
+            "title": "{k.vt} {k.f7}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;9&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;85&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -8,
+                "y": -85
+            },
+            "uid": 3229,
+            "aid": 23,
+            "did": -1,
+            "title": "{k.bt}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;8&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;85&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r1} {a.r1} 25%<br />{a:r4} {a.r4} 25%<br />{k.spieler} Kapi<br />{k.allianz} FALLK<br />{k.volk} {a.v2}"
+        },
+        {
+            "position": {
+                "x": -18,
+                "y": -86
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;18&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;86&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -17,
+                "y": -86
+            },
+            "uid": 3620,
+            "did": 31728,
+            "title": "{k.dt} saeid`s village",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;17&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;86&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} saeid<br />{k.einwohner} 13<br />{k.allianz} <br />{k.volk} {a.v3}"
+        },
+        {
+            "position": {
+                "x": -16,
+                "y": -86
+            },
+            "title": "{k.vt} {k.f8}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;16&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;86&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -15,
+                "y": -86
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;15&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;86&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r1} {a.r1} 25%<br />{k.animals}<br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u35\"></i><span class=\"value \">5</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u36\"></i><span class=\"value \">3</span></div>"
+        },
+        {
+            "position": {
+                "x": -14,
+                "y": -86
+            },
+            "title": "{k.vt} {k.f8}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;14&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;86&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -13,
+                "y": -86
+            },
+            "title": "山",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;13&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;86&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -12,
+                "y": -86
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;12&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;86&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -11,
+                "y": -86
+            },
+            "uid": 3229,
+            "aid": 23,
+            "did": 34810,
+            "title": "{k.dt} Uusi kyl?",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;11&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;86&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} Kapi<br />{k.einwohner} 127<br />{k.allianz} FALLK<br />{k.volk} {a.v2}"
+        },
+        {
+            "position": {
+                "x": -10,
+                "y": -86
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;10&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;86&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r1} {a.r1} 25%"
+        },
+        {
+            "position": {
+                "x": -9,
+                "y": -86
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;9&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;86&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r3} {a.r3} 25%<br />{k.animals}<br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u31\"></i><span class=\"value \">10</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u32\"></i><span class=\"value \">4</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u34\"></i><span class=\"value \">3</span></div>"
+        },
+        {
+            "position": {
+                "x": -8,
+                "y": -86
+            },
+            "title": "{k.vt} {k.f4}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;8&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;86&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -18,
+                "y": -87
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;18&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;87&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -17,
+                "y": -87
+            },
+            "title": "{k.vt} {k.f5}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;17&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;87&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -16,
+                "y": -87
+            },
+            "uid": 3613,
+            "aid": 34,
+            "did": 31718,
+            "title": "{k.dt} 01",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;16&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;87&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} BudakNoob<br />{k.einwohner} 677<br />{k.allianz} 東?KE2<br />{k.volk} {a.v3}"
+        },
+        {
+            "position": {
+                "x": -15,
+                "y": -87
+            },
+            "title": "泥地",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;15&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;87&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -14,
+                "y": -87
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;14&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;87&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r2} {a.r2} 25%<br />{k.animals}<br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u31\"></i><span class=\"value \">7</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u32\"></i><span class=\"value \">5</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u35\"></i><span class=\"value \">2</span></div>"
+        },
+        {
+            "position": {
+                "x": -13,
+                "y": -87
+            },
+            "uid": 3229,
+            "aid": 23,
+            "did": -1,
+            "title": "{k.bt}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;13&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;87&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r1} {a.r1} 25%<br />{a:r4} {a.r4} 25%<br />{k.spieler} Kapi<br />{k.allianz} FALLK<br />{k.volk} {a.v2}"
+        },
+        {
+            "position": {
+                "x": -12,
+                "y": -87
+            },
+            "title": "{k.vt} {k.f11}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;12&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;87&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -11,
+                "y": -87
+            },
+            "uid": 1338,
+            "aid": 48,
+            "did": 34686,
+            "title": "{k.dt} ????????????",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;11&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;87&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} GOLD<br />{k.einwohner} 79<br />{k.allianz} RK3<br />{k.volk} {a.v3}"
+        },
+        {
+            "position": {
+                "x": -10,
+                "y": -87
+            },
+            "uid": 1338,
+            "aid": 48,
+            "did": 30847,
+            "title": "{k.dt} Copper",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;10&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;87&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} GOLD<br />{k.einwohner} 648<br />{k.allianz} RK3<br />{k.volk} {a.v3}"
+        },
+        {
+            "position": {
+                "x": -9,
+                "y": -87
+            },
+            "title": "{k.vt} {k.f10}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;9&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;87&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -8,
+                "y": -87
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;8&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;87&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -19,
+                "y": -88
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;19&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;88&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r2} {a.r2} 25%<br />{a:r4} {a.r4} 25%"
+        },
+        {
+            "position": {
+                "x": -18,
+                "y": -88
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;18&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;88&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r2} {a.r2} 25%<br />{a:r4} {a.r4} 25%<br />{k.animals}<br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u31\"></i><span class=\"value \">18</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u32\"></i><span class=\"value \">18</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u35\"></i><span class=\"value \">1</span></div>"
+        },
+        {
+            "position": {
+                "x": -17,
+                "y": -88
+            },
+            "title": "{k.vt} {k.f12}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;17&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;88&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -16,
+                "y": -88
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;16&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;88&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -15,
+                "y": -88
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;15&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;88&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -14,
+                "y": -88
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;14&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;88&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -13,
+                "y": -88
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;13&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;88&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -12,
+                "y": -88
+            },
+            "title": "山",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;12&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;88&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -11,
+                "y": -88
+            },
+            "title": "{k.vt} {k.f11}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;11&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;88&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -10,
+                "y": -88
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;10&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;88&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r1} {a.r1} 25%<br />{k.animals}<br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u35\"></i><span class=\"value \">9</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u36\"></i><span class=\"value \">5</span></div>"
+        },
+        {
+            "position": {
+                "x": -9,
+                "y": -88
+            },
+            "title": "{k.vt} {k.f2}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;9&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;88&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -8,
+                "y": -88
+            },
+            "title": "{k.vt} {k.f12}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;8&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;88&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -19,
+                "y": -89
+            },
+            "title": "{k.vt} {k.f4}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;19&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;89&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -18,
+                "y": -89
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;18&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;89&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r2} {a.r2} 25%<br />{a:r4} {a.r4} 25%<br />{k.animals}<br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u31\"></i><span class=\"value \">1</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u32\"></i><span class=\"value \">1</span></div>"
+        },
+        {
+            "position": {
+                "x": -17,
+                "y": -89
+            },
+            "uid": 3900,
+            "did": 32201,
+            "title": "{k.dt} a7557733的村莊",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;17&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;89&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} a7557733<br />{k.einwohner} 12<br />{k.allianz} <br />{k.volk} {a.v3}"
+        },
+        {
+            "position": {
+                "x": -16,
+                "y": -89
+            },
+            "title": "{k.vt} {k.f10}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;16&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;89&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -15,
+                "y": -89
+            },
+            "title": "{k.vt} {k.f12}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;15&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;89&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -14,
+                "y": -89
+            },
+            "title": "{k.vt} {k.f12}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;14&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;89&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -13,
+                "y": -89
+            },
+            "title": "{k.vt} {k.f7}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;13&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;89&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -12,
+                "y": -89
+            },
+            "title": "{k.vt} {k.f11}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;12&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;89&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -11,
+                "y": -89
+            },
+            "title": "泥地",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;11&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;89&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -10,
+                "y": -89
+            },
+            "title": "泥地",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;10&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;89&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -9,
+                "y": -89
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;9&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;89&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -8,
+                "y": -89
+            },
+            "title": "{k.vt} {k.f12}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;8&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;89&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -28,
+                "y": -90
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;28&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;90&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -27,
+                "y": -90
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;27&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;90&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -26,
+                "y": -90
+            },
+            "uid": 1,
+            "did": 32684,
+            "title": "{k.dt} Natars -26|-90",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;26&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;90&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} Natars<br />{k.einwohner} 68<br />{k.allianz} <br />{k.volk} {a.v5}"
+        },
+        {
+            "position": {
+                "x": -25,
+                "y": -90
+            },
+            "title": "{k.vt} {k.f11}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;25&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;90&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -24,
+                "y": -90
+            },
+            "title": "{k.vt} {k.f9}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;24&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;90&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -23,
+                "y": -90
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;23&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;90&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r2} {a.r2} 25%<br />{k.animals}<br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u31\"></i><span class=\"value \">2</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u32\"></i><span class=\"value \">2</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u35\"></i><span class=\"value \">1</span></div>"
+        },
+        {
+            "position": {
+                "x": -22,
+                "y": -90
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;22&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;90&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -21,
+                "y": -90
+            },
+            "title": "{k.vt} {k.f11}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;21&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;90&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -20,
+                "y": -90
+            },
+            "uid": 3958,
+            "did": 32327,
+            "title": "{k.dt} Johnthor`s village",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;20&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;90&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} Johnthor<br />{k.einwohner} 115<br />{k.allianz} <br />{k.volk} {a.v2}"
+        },
+        {
+            "position": {
+                "x": -19,
+                "y": -90
+            },
+            "title": "{k.vt} {k.f9}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;19&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;90&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -18,
+                "y": -90
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;18&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;90&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -17,
+                "y": -90
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;17&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;90&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -16,
+                "y": -90
+            },
+            "title": "{k.vt} {k.f7}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;16&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;90&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -15,
+                "y": -90
+            },
+            "title": "{k.vt} {k.f4}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;15&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;90&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -14,
+                "y": -90
+            },
+            "title": "{k.vt} {k.f4}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;14&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;90&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -13,
+                "y": -90
+            },
+            "uid": 1338,
+            "aid": 48,
+            "did": -1,
+            "title": "{k.bt}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;13&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;90&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r4} {a.r4} 50%<br />{k.spieler} GOLD<br />{k.allianz} RK3<br />{k.volk} {a.v3}"
+        },
+        {
+            "position": {
+                "x": -12,
+                "y": -90
+            },
+            "uid": 3896,
+            "did": 32192,
+            "title": "{k.dt} Obelix`s village",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;12&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;90&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} Obelix<br />{k.einwohner} 25<br />{k.allianz} <br />{k.volk} {a.v1}"
+        },
+        {
+            "position": {
+                "x": -11,
+                "y": -90
+            },
+            "title": "泥地",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;11&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;90&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -10,
+                "y": -90
+            },
+            "title": "山",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;10&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;90&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -9,
+                "y": -90
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;9&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;90&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -8,
+                "y": -90
+            },
+            "title": "{k.vt} {k.f2}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;8&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;90&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -28,
+                "y": -91
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;28&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;91&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -27,
+                "y": -91
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;27&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;91&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -26,
+                "y": -91
+            },
+            "title": "{k.vt} {k.f12}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;26&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;91&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -25,
+                "y": -91
+            },
+            "title": "{k.vt} {k.f5}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;25&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;91&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -24,
+                "y": -91
+            },
+            "title": "{k.vt} {k.f10}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;24&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;91&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -23,
+                "y": -91
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;23&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;91&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r2} {a.r2} 25%<br />{k.animals}<br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u31\"></i><span class=\"value \">8</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u32\"></i><span class=\"value \">5</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u35\"></i><span class=\"value \">2</span></div>"
+        },
+        {
+            "position": {
+                "x": -22,
+                "y": -91
+            },
+            "title": "{k.vt} {k.f2}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;22&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;91&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -21,
+                "y": -91
+            },
+            "title": "{k.vt} {k.f9}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;21&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;91&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -20,
+                "y": -91
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;20&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;91&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -19,
+                "y": -91
+            },
+            "title": "{k.vt} {k.f10}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;19&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;91&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -18,
+                "y": -91
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;18&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;91&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -17,
+                "y": -91
+            },
+            "title": "{k.vt} {k.f10}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;17&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;91&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -16,
+                "y": -91
+            },
+            "title": "{k.vt} {k.f5}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;16&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;91&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -15,
+                "y": -91
+            },
+            "title": "{k.vt} {k.f12}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;15&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;91&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -14,
+                "y": -91
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;14&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;91&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -13,
+                "y": -91
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;13&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;91&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -12,
+                "y": -91
+            },
+            "title": "山",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;12&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;91&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -11,
+                "y": -91
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;11&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;91&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r3} {a.r3} 25%"
+        },
+        {
+            "position": {
+                "x": -10,
+                "y": -91
+            },
+            "uid": 3607,
+            "aid": 10,
+            "did": -1,
+            "title": "{k.bt}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;10&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;91&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r3} {a.r3} 25%<br />{a:r4} {a.r4} 25%<br />{k.spieler} mamaloreng<br />{k.allianz} FALKh<br />{k.volk} {a.v2}"
+        },
+        {
+            "position": {
+                "x": -9,
+                "y": -91
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;9&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;91&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r3} {a.r3} 25%<br />{k.animals}<br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u31\"></i><span class=\"value \">9</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u32\"></i><span class=\"value \">6</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u34\"></i><span class=\"value \">1</span></div>"
+        },
+        {
+            "position": {
+                "x": -8,
+                "y": -91
+            },
+            "uid": 3607,
+            "aid": 10,
+            "did": 34175,
+            "title": "{k.dt} New village",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;8&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;91&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} mamaloreng<br />{k.einwohner} 334<br />{k.allianz} FALKh<br />{k.volk} {a.v2}"
+        },
+        {
+            "position": {
+                "x": -28,
+                "y": -92
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;28&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;92&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -27,
+                "y": -92
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;27&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;92&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r1} {a.r1} 25%<br />{k.animals}<br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u35\"></i><span class=\"value \">27</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u36\"></i><span class=\"value \">26</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u37\"></i><span class=\"value \">13</span></div>"
+        },
+        {
+            "position": {
+                "x": -26,
+                "y": -92
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;26&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;92&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r2} {a.r2} 25%"
+        },
+        {
+            "position": {
+                "x": -25,
+                "y": -92
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;25&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;92&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r2} {a.r2} 25%<br />{k.animals}<br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u38\"></i><span class=\"value \">1</span></div>"
+        },
+        {
+            "position": {
+                "x": -24,
+                "y": -92
+            },
+            "title": "{k.vt} {k.f5}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;24&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;92&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -23,
+                "y": -92
+            },
+            "uid": 1,
+            "did": 32970,
+            "title": "{k.dt} Natars -23|-92",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;23&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;92&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} Natars<br />{k.einwohner} 41<br />{k.allianz} <br />{k.volk} {a.v5}"
+        },
+        {
+            "position": {
+                "x": -22,
+                "y": -92
+            },
+            "title": "{k.vt} {k.f8}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;22&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;92&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -21,
+                "y": -92
+            },
+            "title": "{k.vt} {k.f10}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;21&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;92&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -20,
+                "y": -92
+            },
+            "title": "{k.vt} {k.f10}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;20&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;92&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -19,
+                "y": -92
+            },
+            "uid": 4122,
+            "did": 32673,
+            "title": "{k.dt} kingtarianhs80`s village",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;19&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;92&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} kingtarianhs80<br />{k.einwohner} 55<br />{k.allianz} <br />{k.volk} {a.v1}"
+        },
+        {
+            "position": {
+                "x": -18,
+                "y": -92
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;18&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;92&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -17,
+                "y": -92
+            },
+            "title": "{k.vt} {k.f4}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;17&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;92&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -16,
+                "y": -92
+            },
+            "uid": 1,
+            "did": 32570,
+            "title": "{k.dt} Natars -16|-92",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;16&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;92&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} Natars<br />{k.einwohner} 59<br />{k.allianz} <br />{k.volk} {a.v5}"
+        },
+        {
+            "position": {
+                "x": -15,
+                "y": -92
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;15&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;92&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r1} {a.r1} 25%<br />{a:r4} {a.r4} 25%<br />{k.animals}<br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u35\"></i><span class=\"value \">2</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u36\"></i><span class=\"value \">2</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u37\"></i><span class=\"value \">1</span></div>"
+        },
+        {
+            "position": {
+                "x": -14,
+                "y": -92
+            },
+            "title": "{k.vt} {k.f12}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;14&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;92&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -13,
+                "y": -92
+            },
+            "uid": 1338,
+            "aid": 48,
+            "did": 32960,
+            "title": "{k.dt} Iron",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;13&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;92&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} GOLD<br />{k.einwohner} 298<br />{k.allianz} RK3<br />{k.volk} {a.v3}"
+        },
+        {
+            "position": {
+                "x": -12,
+                "y": -92
+            },
+            "uid": 4075,
+            "did": 32565,
+            "title": "{k.dt} Desa SNOP_DOY",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;12&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;92&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} SNOP_DOY<br />{k.einwohner} 12<br />{k.allianz} <br />{k.volk} {a.v3}"
+        },
+        {
+            "position": {
+                "x": -11,
+                "y": -92
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;11&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;92&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -10,
+                "y": -92
+            },
+            "uid": 1,
+            "did": 32517,
+            "title": "{k.dt} Natars -10|-92",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;10&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;92&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} Natars<br />{k.einwohner} 37<br />{k.allianz} <br />{k.volk} {a.v5}"
+        },
+        {
+            "position": {
+                "x": -9,
+                "y": -92
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;9&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;92&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -8,
+                "y": -92
+            },
+            "uid": 1,
+            "did": 32311,
+            "title": "{k.dt} Natars -8|-92",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;8&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;92&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} Natars<br />{k.einwohner} 93<br />{k.allianz} <br />{k.volk} {a.v5}"
+        },
+        {
+            "position": {
+                "x": -28,
+                "y": -93
+            },
+            "title": "{k.vt} {k.f5}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;28&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;93&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -27,
+                "y": -93
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;27&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;93&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -26,
+                "y": -93
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;26&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;93&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r2} {a.r2} 25%<br />{a:r4} {a.r4} 25%<br />{k.animals}<br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u35\"></i><span class=\"value \">4</span></div>"
+        },
+        {
+            "position": {
+                "x": -25,
+                "y": -93
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;25&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;93&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -24,
+                "y": -93
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;24&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;93&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -23,
+                "y": -93
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;23&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;93&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -22,
+                "y": -93
+            },
+            "title": "{k.vt} {k.f8}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;22&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;93&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -21,
+                "y": -93
+            },
+            "uid": 1,
+            "did": 32965,
+            "title": "{k.dt} Natars -21|-93",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;21&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;93&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} Natars<br />{k.einwohner} 56<br />{k.allianz} <br />{k.volk} {a.v5}"
+        },
+        {
+            "position": {
+                "x": -20,
+                "y": -93
+            },
+            "title": "{k.vt} {k.f2}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;20&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;93&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -19,
+                "y": -93
+            },
+            "title": "{k.vt} {k.f11}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;19&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;93&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -18,
+                "y": -93
+            },
+            "title": "{k.vt} {k.f12}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;18&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;93&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -17,
+                "y": -93
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;17&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;93&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -16,
+                "y": -93
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;16&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;93&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -15,
+                "y": -93
+            },
+            "title": "{k.vt} {k.f5}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;15&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;93&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -14,
+                "y": -93
+            },
+            "title": "{k.vt} {k.f4}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;14&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;93&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -13,
+                "y": -93
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;13&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;93&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r1} {a.r1} 25%<br />{a:r4} {a.r4} 25%<br />{k.animals}<br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u35\"></i><span class=\"value \">1</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u36\"></i><span class=\"value \">1</span></div>"
+        },
+        {
+            "position": {
+                "x": -12,
+                "y": -93
+            },
+            "title": "{k.vt} {k.f7}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;12&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;93&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -11,
+                "y": -93
+            },
+            "title": "{k.vt} {k.f2}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;11&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;93&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -10,
+                "y": -93
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;10&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;93&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -9,
+                "y": -93
+            },
+            "uid": 3607,
+            "aid": 10,
+            "did": 35025,
+            "title": "{k.dt} New village",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;9&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;93&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} mamaloreng<br />{k.einwohner} 164<br />{k.allianz} FALKh<br />{k.volk} {a.v2}"
+        },
+        {
+            "position": {
+                "x": -8,
+                "y": -93
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;8&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;93&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -28,
+                "y": -94
+            },
+            "title": "{k.vt} {k.f7}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;28&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;94&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -27,
+                "y": -94
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;27&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;94&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -26,
+                "y": -94
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;26&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;94&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -25,
+                "y": -94
+            },
+            "title": "{k.vt} {k.f12}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;25&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;94&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -24,
+                "y": -94
+            },
+            "title": "{k.vt} {k.f12}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;24&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;94&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -23,
+                "y": -94
+            },
+            "title": "{k.vt} {k.f4}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;23&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;94&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -22,
+                "y": -94
+            },
+            "did": -1,
+            "title": "{k.fo}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;22&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;94&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r1} {a.r1} 25%<br />{a:r4} {a.r4} 25%<br />{k.animals}<br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u35\"></i><span class=\"value \">39</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u36\"></i><span class=\"value \">35</span></div><br /><div class=\"inlineIcon tooltipUnit\" title=\"\"><i class=\"unit u37\"></i><span class=\"value \">20</span></div>"
+        },
+        {
+            "position": {
+                "x": -21,
+                "y": -94
+            },
+            "title": "{k.vt} {k.f9}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;21&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;94&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -20,
+                "y": -94
+            },
+            "title": "{k.vt} {k.f11}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;20&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;94&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -19,
+                "y": -94
+            },
+            "uid": 4316,
+            "did": 33116,
+            "title": "{k.dt} EpicBear`s village",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;19&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;94&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} EpicBear<br />{k.einwohner} 15<br />{k.allianz} <br />{k.volk} {a.v3}"
+        },
+        {
+            "position": {
+                "x": -18,
+                "y": -94
+            },
+            "title": "山",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;18&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;94&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -17,
+                "y": -94
+            },
+            "title": "山",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;17&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;94&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -16,
+                "y": -94
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;16&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;94&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -15,
+                "y": -94
+            },
+            "uid": 4242,
+            "did": 32957,
+            "title": "{k.dt} MrAlidina3`s village",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;15&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;94&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} MrAlidina3<br />{k.einwohner} 62<br />{k.allianz} <br />{k.volk} {a.v1}"
+        },
+        {
+            "position": {
+                "x": -14,
+                "y": -94
+            },
+            "title": "{k.vt} {k.f8}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;14&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;94&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -13,
+                "y": -94
+            },
+            "title": "{k.vt} {k.f9}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;13&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;94&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -12,
+                "y": -94
+            },
+            "title": "{k.vt} {k.f12}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;12&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;94&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -11,
+                "y": -94
+            },
+            "uid": 4241,
+            "did": 32956,
+            "title": "{k.dt} MrAlidina2`s village",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;11&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;94&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} MrAlidina2<br />{k.einwohner} 67<br />{k.allianz} <br />{k.volk} {a.v3}"
+        },
+        {
+            "position": {
+                "x": -10,
+                "y": -94
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;10&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;94&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -9,
+                "y": -94
+            },
+            "uid": 3607,
+            "aid": 10,
+            "did": -1,
+            "title": "{k.bt}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;9&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;94&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{a:r2} {a.r2} 25%<br />{k.spieler} mamaloreng<br />{k.allianz} FALKh<br />{k.volk} {a.v2}"
+        },
+        {
+            "position": {
+                "x": -8,
+                "y": -94
+            },
+            "title": "{k.vt} {k.f11}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;8&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;94&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -28,
+                "y": -95
+            },
+            "title": "泥地",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;28&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;95&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -27,
+                "y": -95
+            },
+            "title": "泥地",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;27&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;95&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -26,
+                "y": -95
+            },
+            "title": "泥地",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;26&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;95&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -25,
+                "y": -95
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;25&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;95&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -24,
+                "y": -95
+            },
+            "title": "{k.vt} {k.f8}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;24&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;95&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -23,
+                "y": -95
+            },
+            "title": "{k.vt} {k.f9}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;23&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;95&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -22,
+                "y": -95
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;22&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;95&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -21,
+                "y": -95
+            },
+            "title": "{k.vt} {k.f5}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;21&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;95&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -20,
+                "y": -95
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;20&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;95&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -19,
+                "y": -95
+            },
+            "title": "{k.vt} {k.f5}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;19&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;95&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -18,
+                "y": -95
+            },
+            "title": "山",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;18&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;95&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -17,
+                "y": -95
+            },
+            "title": "山",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;17&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;95&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -16,
+                "y": -95
+            },
+            "title": "{k.vt} {k.f5}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;16&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;95&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -15,
+                "y": -95
+            },
+            "title": "{k.vt} {k.f11}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;15&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;95&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -14,
+                "y": -95
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;14&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;95&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -13,
+                "y": -95
+            },
+            "title": "{k.vt} {k.f8}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;13&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;95&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -12,
+                "y": -95
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;12&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;95&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -11,
+                "y": -95
+            },
+            "title": "{k.vt} {k.f3}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;11&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;95&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -10,
+                "y": -95
+            },
+            "title": "{k.vt} {k.f11}",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;10&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;95&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -9,
+                "y": -95
+            },
+            "title": "森林",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;9&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;95&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span>"
+        },
+        {
+            "position": {
+                "x": -8,
+                "y": -95
+            },
+            "uid": 4240,
+            "did": 32955,
+            "title": "{k.dt} MrAlidina`s village",
+            "text": "&#x202d;<span class=\"coordinates coordinatesWrapper\"><span class=\"coordinateX\">(&#x202d;&minus;&#x202d;8&#x202c;&#x202c;</span><span class=\"coordinatePipe\">|</span><span class=\"coordinateY\">&#x202d;&minus;&#x202d;95&#x202c;&#x202c;)</span></span>&#x202c;<span class=\"tileDistance\">{k.distance} [[DISTANCE]]</span><br />{k.spieler} MrAlidina<br />{k.einwohner} 81<br />{k.allianz} <br />{k.volk} {a.v3}"
+        }
+    ]
+}
