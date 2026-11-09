@@ -2,12 +2,15 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/common/parsed.py（cm-09）
-版本：v0.4（A2a-2b）｜BuildCondition／BuildOption／UpgradeCost 於 A2a-2b 定案（✓ 依 S10 一份、S11 四份樣本，見各類說明）；
+版本：v0.5（A2b）｜HeroState／Adventure／RallyOverview／TileSafety 改寫定案，新增 RallyMovement／SendConfirm／BlockOasis
+      （✓ 依 A2b 樣本：冒險頁原始 HTML 3 份＋渲染後 DOM 片段 1 份、集結點概況 6 份、確認頁 4 份、S16 區塊 JSON 1 份、S15 tile-details 3 份；
+      TileSafety 依 S15a～c 三份，ps-09 已交付）；
+      v0.4（A2a-2b）｜BuildCondition／BuildOption／UpgradeCost 於 A2a-2b 定案（✓ 依 S10 一份、S11 四份樣本，見各類說明）；
       v0.3（A2a-2a）：PlayerInfo 已定案（✓，A2a-1）；Dorf1／Dorf2／PageFacts 於 A2a-2a 定案
       （✓ 依舊服樣本 S1a／S1b、S12a／S12b；PageFacts 欄位語意仍待 A2b 對照 S9，見該類說明）；
-      其餘結構仍為草案（✗）：HeroState／Adventure 等待 A2b
+      其餘結構仍為草案（✗）：MarketState 等待 C1
 用途：解析結果結構（parsers 的輸出、domain 與 app 的輸入）：Dorf1、Dorf2、PlayerInfo、HeroState、
-      Adventure、RallyOverview、MarketState、Oasis、TileSafety、PageFacts（D-18）。
+      Adventure、RallyMovement、RallyOverview、SendConfirm、BlockOasis、MarketState、Oasis、TileSafety、PageFacts（D-18）。
 依賴：cm-01（models；Oasis／Merchants／Transit 直接沿用，不重複定義）。
 部署狀態：未部署（GA 前不 live）。
 
@@ -33,7 +36,8 @@ from .models import Merchants, Oasis, Res4, Transit
 
 __all__ = [
     "Oasis", "ResField", "QueueItem", "Dorf1", "BuildingSlot", "Dorf2", "PlayerInfo", "HeroState",
-    "Adventure", "BuildCondition", "BuildOption", "UpgradeCost", "RallyOverview", "MarketState", "TileSafety", "PageVillage", "PageFacts",
+    "Adventure", "BuildCondition", "BuildOption", "UpgradeCost", "RallyMovement", "RallyOverview", "SendConfirm",
+    "BlockOasis", "MarketState", "TileSafety", "PageVillage", "PageFacts",
 ]
 
 
@@ -114,21 +118,48 @@ class PlayerInfo:
 
 @dataclass(frozen=True)
 class HeroState:
-    """✗ travian_hero.py 尚未讀（△），欄位為最小猜想，A2b／A3c 定案。"""
-    alive: Optional[bool]
-    health_pct: Optional[int]
-    home_did: Optional[int]
+    """英雄狀態（A2b 定案 ✓，ps-05 `parse_hero_status`）。HUD（`#topBarHero`，任何頁都有）與冒險頁 `viewData` 的英雄 JSON
+    合併；讀不到的欄位 None（HUD 與 JSON 都找不到由 parsers 丟 ParseError）。
+    status＝`hero.status.status` 原樣整數，意義用 constants.HERO_STATUS（樣本實證 9 返回、50 冒險去程）。
+    at_home／health_pct／exp_pct／adventures_count 來自 HUD（at_home＝`i.heroHome`／`i.heroRunning` 圖示，只分在家與在外）；
+    其餘來自 JSON：regenerating＝isRegenerating；home_did＝homeVillage.id；in_village_did＝status.inVillage 的村 id
+    （✗ 兩份樣本都是 null，在家樣本的 JSON 結構未見，認 dict 的 id 或整數，否則 None）；adventure_no＝status.adventure.number
+    （只有 status 50 有）；arrival_in_s＝arrivalIn、arrival_at＝arrivalAt（epoch 秒，＝頁面時間戳＋arrival_in_s ✓ 三份樣本）；
+    difficulty_bonus＝adventureDifficultyBonus；duration_bonus＝adventureDurationBonus 不是 null。
+    status 50 時 `onWayTo` 是 null（冒險地點要用 adventure_no 對 Adventure 清單）；status 9 的 `onWayTo` 是本村，本類不收。"""
+    status: Optional[int]
     at_home: Optional[bool]
+    health_pct: Optional[int]
+    exp_pct: Optional[int]
+    adventures_count: Optional[int]
+    regenerating: Optional[bool]
+    home_did: Optional[int]
+    in_village_did: Optional[int]
+    adventure_no: Optional[int]
+    arrival_in_s: Optional[int]
+    arrival_at: Optional[int]
+    difficulty_bonus: Optional[bool]
+    duration_bonus: Optional[bool]
 
 
 @dataclass(frozen=True)
 class Adventure:
-    """✗ 同上。"""
-    adv_id: Optional[int]
+    """冒險頁 `viewData` 的一筆冒險（A2b 定案 ✓，ps-05 `parse_adventures`）。
+    distance＝JSON 原值（不取整）；place＝JSON 地形名（例 grassland、natar_village、lake）；difficulty＝JSON 整數（樣本 1～3）；
+    hard＝（difficulty＝0）（§10 v0.43；樣本沒有 0，困難圖示未見）；duration_s＝travelingDuration（去程秒數）；
+    x／y＝JSON 的座標，樣本全為 null＝None。icon／clickable 只有頁面已渲染出 `table.adventureList` 時才有（否則 None）：
+    icon＝`i.difficulty_hard`→"hard"、`i.difficulty_normal`→"normal"、都沒有→None（樣本 18 列全是 normal，
+    JSON difficulty 為 1／2／3，與「1～3＝普通」相容）；clickable＝按鈕存在且沒有 disabled（英雄在路上時全部 disabled）。"""
+    number: int
+    distance: float
+    place: str
+    difficulty: int
+    hard: bool
+    duration_s: int
     x: Optional[int]
     y: Optional[int]
-    danger: Optional[str]
-    duration_s: Optional[int]
+    icon: Optional[str]
+    clickable: Optional[bool]
 
 
 # ---------------------------------------------------------------- 建築頁（build.php）
@@ -186,11 +217,85 @@ class UpgradeCost:
 
 # ---------------------------------------------------------------- 集結點／市場／地圖
 @dataclass(frozen=True)
+class RallyMovement:
+    """集結點概況的一張移動表（`table.troop_details` 且有至少一個種類 class；A2b 定案 ✓，ps-06）。
+    沒有種類 class 的表（本村在家、別村駐守本村、我方駐守他村、俘虜）不輸出；本村在家兵力走 RallyOverview.units_home。
+    kinds＝除 troop_details 以外的 class（已見：inRaid、inAttack、inReturn、outRaid、outHero、outSupply）；未見過的 class 原樣保留。
+    hostile＝kinds 含 inRaid 或 inAttack（只有這兩種算來襲；自己歸來 inReturn 不算）。
+    own_home＝表的 data-did 與 data-ort 相同（本村在家表的特徵）；種類表樣本全為 False（A2b 不輸出無 class 的表）。
+    arrive_ts＝server_ts＋`tbody.infos span.timer` 的 value（epoch 秒）；沒有計時器 None。
+    units＝鍵 u1～u10／hero，**零省略**；頁面顯示「?」（敵方兵力）＝該鍵值 None（不是 0、也不是省略）；鍵依欄位順序（第 1～10 欄＝u1～u10、第 11 欄＝hero）。
+    role_did／head_did／link_did＝頁內 `karte.php?d=` 的 d（地圖格編號 map id，與 geo.map_id 公式一致；名稱沿用卡片）：
+      role＝td.role 連結（來襲＝來源村，出擊／歸來＝本村）；head＝td.troopHeadline 連結（出擊＝目的地；歸來＝綠洲或 0；來襲＝本村）；
+      link＝出擊（kinds 含 out*）取 head、其餘取 role。讀不到＝None（`d=0` 原樣為 0，例：冒險的標題連結）。
+    recall_id＝`div.abort` 按鈕 onclick 的 `recall=`（outHero 冒險中沒有撤回鈕＝None；已到達的駐守也沒有）。
+    section＝前一個 `h4.spacer` 的文字、headline＝td.troopHeadline 的文字，都只供記錄。"""
+    kinds: Tuple[str, ...]
+    hostile: bool
+    own_home: bool
+    arrive_ts: Optional[int]
+    units: Dict[str, Optional[int]]
+    role_did: Optional[int]
+    head_did: Optional[int]
+    link_did: Optional[int]
+    recall_id: Optional[int]
+    section: str
+    headline: str
+
+
+@dataclass(frozen=True)
 class RallyOverview:
-    units_home: Optional[Dict[str, int]]        # 兵種鍵待 D-21（✗）
+    """集結點概況頁（`build.php?gid=16&tt=1`；A2b 定案 ✓，ps-06 `parse_overview`）。
+    server_ts＝Travian.Game.timestamp（epoch 秒）；movements＝有種類 class 的表（頁面順序）；
+    units_home＝本村在家表（data-did＝data-ort）的兵力，鍵 u1～u10／hero、**零省略**（與 C2 的 min 1 相容）：
+      有表即 dict（全 0＝{}；英雄出門且無部隊時表仍在，樣本 ✓），沒有該表＝None；
+    units_away＝A2b 固定 None（D1 擴充 parse_troops_away）；
+    incoming_attacks＝movements 中 hostile 的張數（與側欄 incomingAttacksAmount 是否一致由 domain 核對）。"""
+    server_ts: int
+    movements: Tuple[RallyMovement, ...]
+    units_home: Optional[Dict[str, int]]
     units_away: Optional[Dict[str, int]]
-    incoming_attacks: Optional[int]
-    movements: Tuple[Mapping[str, Any], ...]    # ✗
+    incoming_attacks: int
+
+
+@dataclass(frozen=True)
+class SendConfirm:
+    """送兵第二步確認頁（`form#troopSendForm`；A2b 定案 ✓，ps-06 `parse_send_confirm`；樣本：增援／正常攻擊／搶奪各 1、英雄單獨搶奪綠洲 1）。
+    epoch＝`span#at` 的 value（若此刻按確認的預計到達 epoch 秒，會隨頁面停留往後走，真正送出才定）；
+    trip_s＝epoch−hidden `action`（`troopsSend/<did>/<ts>`）第三段（頁面產生時間戳）＝單程秒數（✓ 與 `div#in` 的剩餘時間一致，四組樣本）；
+    village_did＝`troops[0][villageId]`（與 action 第二段不一致→ParseError）；event_type＝`eventType`（3 正常攻擊、4 搶奪、5 增援；
+    類型只認這個欄位，不認標題文字）；x／y＝目標座標（hidden）；villagename＝目標村名，空（目標是綠洲）＝None；
+    checksum＝`button#confirmSendTroops` 的 onclick 裡的值（hidden 的 checksum 是空的；缺＝ParseError；**是 token，進 log／Sheet 前要 redact**）；
+    scout_target／catapult_target1／catapult_target2＝`troops[0][…]` 同名 hidden，空＝None（有值的樣子 ✗ 未見，原樣字串）；
+    units＝`troops[0][t1]`～`[t11]` 按名稱對應 u1～u10／hero，**11 個鍵全留、零不省略**（核對要明確的 0，尤其 hero）；
+    kind_text＝td.troopHeadline 文字（只供記錄）；has_confirm＝有確認鈕（解析成功時恆為 True）。"""
+    epoch: int
+    trip_s: int
+    village_did: int
+    event_type: int
+    x: int
+    y: int
+    villagename: Optional[str]
+    checksum: str
+    scout_target: Optional[str]
+    catapult_target1: Optional[str]
+    catapult_target2: Optional[str]
+    units: Dict[str, int]
+    kind_text: str
+    has_confirm: bool
+
+
+@dataclass(frozen=True)
+class BlockOasis:
+    """區塊 JSON（地圖區塊回傳 `{"tiles": […]}`）裡的一個綠洲格（A2b 定案 ✓，ps-08 `parse_block_json`；樣本 S16：249 格中 32 個綠洲）。
+    taken＝`{k.bt}`（已佔領）或有 uid；bonuses＝(資源索引 0～3＝木磚鐵穀, 百分比)，頁面順序；animals＝(單位 id, 數量)，頁面順序，
+    沒有 `{k.animals}`＝空 tuple；owner＝`{k.spieler}` 後的玩家名（已清 BIDI），沒有＝None。村莊、Natars 與地形格不輸出。"""
+    x: int
+    y: int
+    taken: bool
+    bonuses: Tuple[Tuple[int, int], ...]
+    animals: Tuple[Tuple[int, int], ...]
+    owner: Optional[str]
 
 
 @dataclass(frozen=True)
@@ -202,10 +307,26 @@ class MarketState:
 
 @dataclass(frozen=True)
 class TileSafety:
+    """綠洲格詳情（tile-details 回傳的 html 欄；v0.46 依 S15a～c 定案結構，A2b 的 ps-09 `parse_tile_details` ✓ 用同三份樣本做 golden）。
+    只放事實與保守的 safe，近期佔領判斷留 domain。
+    x／y／map_id＝座標與地圖格編號（呼叫端用 geo.map_id 核對一致）；occupied＝有 `#village_info`；
+    owner_uid／alliance_id／owner_village＝已佔領才有（owner_village＝(x, y)）；animals＝{單位 id: 數量}｜None
+    （有表沒有 img.unit＝{}；沒有該表＝None；已佔領格沒有軍隊區塊＝None，動物未知≠無動物）；bonuses＝(資源索引, 百分比)；
+    distance＝float｜None；oasis_type＝根節點 class `oasis-N` 的 N｜None；occupy_events＝`#surrounding_info` 事件原文；
+    safe＝未佔領且 animals＝＝{}；已佔領或 animals 為 None 一律 False。"""
     x: int
     y: int
-    safe: Optional[bool]                        # 未驗證 None
-    reason: Optional[str]
+    map_id: int
+    occupied: bool
+    owner_uid: Optional[int]
+    alliance_id: Optional[int]
+    owner_village: Optional[Tuple[int, int]]
+    animals: Optional[Dict[int, int]]
+    bonuses: Tuple[Tuple[int, int], ...]
+    distance: Optional[float]
+    oasis_type: Optional[int]
+    occupy_events: Tuple[str, ...]
+    safe: bool
 
 
 # ---------------------------------------------------------------- 頁面事實（D-18）

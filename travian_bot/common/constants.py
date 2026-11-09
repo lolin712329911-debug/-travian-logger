@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/common/constants.py（cm-03）
-版本：v0.1（A1a-1）
+版本：v0.2（A2b：補 HERO_STATUS）｜v0.1（A1a-1）
 用途：不會在執行時被改動的常數與純查表函式。不放邏輯、不 import 專案其他模組。
 依賴：無（只用標準庫 re）。
 部署狀態：未部署（GA 前不 live）。
@@ -78,6 +78,29 @@ BUILD_CATEGORIES = {1: "基礎", 2: "軍事", 3: "資源"}
 PATH_DORF1 = "/dorf1.php"
 PATH_DORF2 = "/dorf2.php"
 PATH_BUILD = "/build.php"
+
+# ---------------- 英雄狀態碼（v0.2，A2b；§11.6-F 的舊服 Variables.js 與 A2b 樣本）----------------
+# 冒險頁 viewData 的 hero.status.status 原樣整數。純常數、不含邏輯。
+# 樣本實證 ✓：9（返回，Asia 8 兩份）、50（去冒險，Intl 11 一份）；
+# 其餘來自舊服 Variables.js（§11.6-F），沒有頁面樣本佐證 ✗，使用前先對樣本。
+HERO_STATUS_OUT_ATTACK = 3     # ✗ 出擊（攻擊）
+HERO_STATUS_OUT_RAID = 4       # ✗ 出擊（搶奪）
+HERO_STATUS_OUT_SUPPLY = 5     # ✗ 出擊（增援）
+HERO_STATUS_RETURNING = 9      # ✓ 返回（冒險返回；A2b 樣本）
+HERO_STATUS_HIDING = 40        # ✗ 躲避
+HERO_STATUS_ADVENTURE = 50     # ✓ 冒險（去程；A2b 樣本）
+HERO_STATUS_HOME = 100         # ✗ 在村
+HERO_STATUS_DEAD = 101         # ✗ 死亡
+HERO_STATUS_CAPTIVE = 102      # ✗ 被俘
+HERO_STATUS_STATIONED = 103    # ✗ 駐守他村
+
+HERO_STATUS = {
+    HERO_STATUS_OUT_ATTACK: "out_attack", HERO_STATUS_OUT_RAID: "out_raid",
+    HERO_STATUS_OUT_SUPPLY: "out_supply", HERO_STATUS_RETURNING: "returning",
+    HERO_STATUS_HIDING: "hiding", HERO_STATUS_ADVENTURE: "adventure",
+    HERO_STATUS_HOME: "home", HERO_STATUS_DEAD: "dead",
+    HERO_STATUS_CAPTIVE: "captive", HERO_STATUS_STATIONED: "stationed",
+}
 
 # ---------------- 動作名稱常數（Actions.action，C5：str ≤ 40）----------------
 # 只收卡片與契約明列的三個；建造／躲兵等既有動作名稱待 A4b 讀 log_action 回填（✗）。

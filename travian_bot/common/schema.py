@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/common/schema.py（cm-11）
-版本：v0.1（A1a-1）｜對應契約 C-v0.5（全部 ✗ 草案，待 B1／B6 用真實樣本修正）
+版本：v0.2（A2b）｜對應契約 C-v0.6（全部 ✗ 草案，待 B1／B6 用真實樣本修正）
+      v0.2 唯一變動：C2 VillageSnapshot 的 units_home／units_away 鍵改為 u1～u10 或 hero（D-21②；與 TroopMovePlan.units 同一格式）；
+      v0.1（A1a-1）｜C-v0.5
 用途：機器可讀的契約規格（CONTRACT_SPECS，來源 §6.1／§6.2）與唯一的驗證入口。
 依賴：無（只用標準庫；與 serialize 互不依賴，UTC 格式在此自行檢查）。
 部署狀態：未部署（GA 前不 live）。
@@ -283,8 +285,8 @@ CONTRACT_SPECS: Dict[str, Dict[str, Any]] = {
         "merchants": _struct("Merchants", null=True),
         "incoming_res": _list(_struct("Transit")), "outgoing_res": _list(_struct("Transit")),
         "incoming_attacks": _int(0, null=True),
-        "units_home": _dict(_int(1), key_pattern=r"^.+$", null=True),     # 兵種鍵待 D-21（✗）
-        "units_away": _dict(_int(1), key_pattern=r"^.+$", null=True)}, "rules": []},
+        "units_home": _dict(_int(1), key_pattern=r"^(u([1-9]|10)|hero)$", null=True),   # C-v0.6：鍵 u1～u10／hero（D-21②）
+        "units_away": _dict(_int(1), key_pattern=r"^(u([1-9]|10)|hero)$", null=True)}, "rules": []},
     # ---- C3 ----
     "TransferPlan": {"fields": {
         "plan_id": _str(pattern=r"^T\d{12}-\d+-\d+$"), "from_did": _int(1), "to_did": _int(1),
