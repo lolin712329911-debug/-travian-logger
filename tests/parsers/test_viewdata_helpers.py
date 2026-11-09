@@ -4,11 +4,11 @@
 parsers/village.py（A2a-2a）已加進 MODULES。"""
 import unittest
 
-from travian_bot.parsers import player, village, village_list
+from travian_bot.parsers import hero, player, village, village_list
 
 from ._util import SAMPLE_IDS, load_sample
 
-MODULES = {"player": player, "village_list": village_list, "village": village}
+MODULES = {"player": player, "village_list": village_list, "village": village, "hero": hero}
 
 CASES = [
     ("plain object", 'var a = {viewData: {"k": 1}};', {"k": 1}),
