@@ -1,4 +1,4 @@
-"""make_manifest.py  v0.1  (A1a-3 後續)
+"""make_manifest.py  v0.1.1  (A1a-3 後續)
 
 用途：從主檔（或切片檔）的 §4.2 檔案卡片表，轉出 tools/arch_manifest.py。§4.2 變動後重跑一次，
       不要手改 arch_manifest.py。與 compress_cards.py 同源（同一張卡片表）。
@@ -20,13 +20,13 @@ import os
 import re
 import sys
 
-VERSION = "0.1"
+VERSION = "0.1.1"
 LAYER_OF_PREFIX = {"cm": "common", "ps": "parsers", "dm": "domain",
                    "if": "infra", "ac": "actions", "ap": "app"}
 ROW_RE = re.compile(r"^\| ((?:cm|ps|dm|if|ac|ap)-\d+) \|")
 ID_RE = re.compile(r"\b(?:cm|ps|dm|if|ac|ap)-\d+\b")
 DISP_KEYWORDS = ("新寫", "改寫", "拆", "沿用")
-SEC_START, SEC_END = "### 4.2 檔案卡片", "#### tools/、tests/、其他"
+SEC_START, SEC_END = "### 4.2 ", "#### tools/、tests/、其他"
 
 
 class SourceError(ValueError):
