@@ -24,16 +24,20 @@ from .models import BuildTarget
 from .parsed import BuildOption, Dorf2, UpgradeCost
 
 __all__ = [
-    "BUILD_KINDS", "FACTS_KINDS", "BuildTarget", "FactsNeed", "BuildFacts", "BuildDecision", "FillCandidate", "GuardDecision", "FillInDecision",
+    "BUILD_KINDS", "BuildTarget", "FactsNeed", "BuildFacts", "BuildDecision", "FillCandidate", "GuardDecision", "FillInDecision",
     "FocusDecision", "ItemTransferDecision", "AdventureDecision", "HideCandidate",
     "HideDecision", "ExecResult",
 ]
 
 BUILD_KINDS = ("build", "wait_resources", "wait_queue", "storage_too_small",
-               "plan_stuck", "no_free_slot", "done",
-               "no_affordable",     # v0.2：plan(affordable_only=True) 沒有付得起的候選（舊 ("no_affordable",)）
-               "need_facts")        # v0.2：純函式缺頁面資料，要呼叫端抓完再呼叫（見 FactsNeed）
-FACTS_KINDS = ("dorf2", "upgrade_cost", "build_options")
+               "plan_stuck", "no_free_slot", "done")     # §6.7 的 7 個舊標籤（tests/common/test_decisions 釘住，不增減）
+
+# v0.2（A3a）新增值，另放以免動到 BUILD_KINDS；這三個與 FACTS_KINDS 是 tuple，不放進 __all__
+# （test_decisions 要求 __all__ 只有 frozen dataclass，BUILD_KINDS 例外），用 from … import 名稱取用。
+BUILD_EXTRA_KINDS = ("no_affordable",   # plan(affordable_only=True) 沒有付得起的候選（舊 ("no_affordable",)）
+                     "need_facts")      # 純函式缺頁面資料，要呼叫端抓完再呼叫（見 FactsNeed）
+BUILD_DECISION_KINDS = BUILD_KINDS + BUILD_EXTRA_KINDS   # BuildDecision.kind 的完整值域（planner 實際回傳）
+FACTS_KINDS = ("dorf2", "upgrade_cost", "build_options")  # FactsNeed.kind 的值域
 
 
 @dataclass(frozen=True)
@@ -59,7 +63,7 @@ class BuildFacts:
 
 @dataclass(frozen=True)
 class BuildDecision:
-    kind: str                                   # BUILD_KINDS 之一；只有 build 會有動作
+    kind: str                                   # BUILD_DECISION_KINDS 之一；只有 build 會有動作
     target: Optional[BuildTarget]
     reason: str
     wait_s: Optional[int] = None                # wait_* 時預計還要等幾秒（未知 None）
