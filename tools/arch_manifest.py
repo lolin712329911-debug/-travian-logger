@@ -14,7 +14,7 @@
   disp  處置：沿用／拆／改寫／新寫（依「舊源→處置」欄最後的粗體字分類；僅供參考，不參與檢查）
 """
 
-SOURCE = 'multi-village-dev-v0_55.md v0.55 §4.2'
+SOURCE = 'multi-village-dev-v0_56.md v0.56 §4.2'
 EXPECTED_COUNT = 73
 
 MANIFEST = [
