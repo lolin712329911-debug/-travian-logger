@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/common/decisions.py（cm-02）
-版本：v0.1（A1a-2）｜草案（✗）：欄位待 A3a～A3c 讀現有函式回傳值後定案
+版本：v0.2（A3a：BuildDecision／GuardDecision／FillInDecision 定案；其餘仍為草案 ✗，待 A3b／A3c）｜v0.1（A1a-2）
 用途：各 domain 決策的回傳結構（domain 回傳、actions 吃進去、app/stages 串接，§4.1 補充規則 1）：
       BuildTarget、BuildDecision、GuardDecision、FillInDecision、FocusDecision、
       ItemTransferDecision、AdventureDecision、HideCandidate、HideDecision、ExecResult。
-依賴：cm-01（models；BuildTarget 直接沿用，不重複定義）。
+依賴：cm-01（models；BuildTarget 直接沿用，不重複定義）、cm-09（parsed；BuildFacts 的欄位型別）。
 部署狀態：未部署（GA 前不 live）。
 
 來源（△ 都還沒讀，欄位是依 §6.7 舊動作與決策標籤做的最小猜想）：
@@ -18,18 +18,43 @@ travian_bot/common/decisions.py（cm-02）
 決策物件都是 frozen；reason 為給人看的短文字（寫入 Actions.detail 前先 models.clip_text）。
 """
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Mapping, Optional, Tuple
 
 from .models import BuildTarget
+from .parsed import BuildOption, Dorf2, UpgradeCost
 
 __all__ = [
-    "BUILD_KINDS", "BuildTarget", "BuildDecision", "GuardDecision", "FillInDecision",
+    "BUILD_KINDS", "FACTS_KINDS", "BuildTarget", "FactsNeed", "BuildFacts", "BuildDecision", "FillCandidate", "GuardDecision", "FillInDecision",
     "FocusDecision", "ItemTransferDecision", "AdventureDecision", "HideCandidate",
     "HideDecision", "ExecResult",
 ]
 
 BUILD_KINDS = ("build", "wait_resources", "wait_queue", "storage_too_small",
-               "plan_stuck", "no_free_slot", "done")
+               "plan_stuck", "no_free_slot", "done",
+               "no_affordable",     # v0.2：plan(affordable_only=True) 沒有付得起的候選（舊 ("no_affordable",)）
+               "need_facts")        # v0.2：純函式缺頁面資料，要呼叫端抓完再呼叫（見 FactsNeed）
+FACTS_KINDS = ("dorf2", "upgrade_cost", "build_options")
+
+
+@dataclass(frozen=True)
+class FactsNeed:
+    """build_planner／plan_validate 缺的頁面資料。kind：dorf2（村莊中心）、upgrade_cost（aid 的建築頁）、
+    build_options（aid 空地的建造清單）。取代舊 plan_with_order 的 get(path)（domain 不碰網路）。"""
+    kind: str
+    aid: Optional[int] = None
+
+
+@dataclass(frozen=True)
+class BuildFacts:
+    """呼叫端已抓到的頁面資料（唯讀）。upgrade_costs[aid]＝None 表示頁面讀過但沒有升級成本（例：已達最高等級）；
+    沒有該鍵＝還沒抓。options[aid]＝該空地建造頁的清單（讀失敗給空 tuple）。"""
+    dorf2: Optional[Dorf2] = None
+    upgrade_costs: Optional[Mapping[int, Optional[UpgradeCost]]] = None
+    options: Optional[Mapping[int, Tuple[BuildOption, ...]]] = None
+
+    def __post_init__(self):
+        object.__setattr__(self, "upgrade_costs", dict(self.upgrade_costs or {}))
+        object.__setattr__(self, "options", dict(self.options or {}))
 
 
 @dataclass(frozen=True)
@@ -38,14 +63,25 @@ class BuildDecision:
     target: Optional[BuildTarget]
     reason: str
     wait_s: Optional[int] = None                # wait_* 時預計還要等幾秒（未知 None）
+    build_time_s: Optional[int] = None          # v0.2：target 的工期（秒；插隊要用；BuildTarget 沒有此欄）
+    need: Optional[FactsNeed] = None            # v0.2：kind＝need_facts 時要補什麼
+
+
+@dataclass(frozen=True)
+class FillCandidate:
+    """v0.2：插隊候選（後面付得起的目標）。"""
+    target: BuildTarget
+    build_time_s: Optional[int]
 
 
 @dataclass(frozen=True)
 class GuardDecision:
-    """防搶加成（stock_guard）。"""
+    """防搶加成（stock_guard）。act＝True 時 focus 是要切到的英雄產量加成類型
+    （hero.productionType：0 平均、1 木、2 磚、3 鐵、4 穀；v0.2）。"""
     act: bool
     reason: str
     exposure: Optional[str] = None              # incoming／always（承接 guard_exposure）
+    focus: Optional[int] = None
 
 
 @dataclass(frozen=True)
