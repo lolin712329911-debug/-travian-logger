@@ -1,4 +1,4 @@
-"""tests/common/test_constants.py — cm-03（v0.1，A1a-1）"""
+"""tests/common/test_constants.py — cm-03（v0.2：v0.65／v0.66 名稱表更新；v0.1，A1a-1）"""
 import unittest
 
 from travian_bot.common import constants as C
@@ -13,13 +13,14 @@ class ConstantsTest(unittest.TestCase):
     def test_gid_names_cover_card_requirements(self):
         for gid in (16, 17, 36, 29, 30, 44, 48):
             self.assertIn(gid, C.GID_NAMES)
-        self.assertEqual(C.GID_NAMES[36], "陷阱")
+        self.assertEqual(C.GID_NAMES[36], "陷阱機")      # v0.65：語言包全名；v0.1 的「陷阱」取自卡片
         self.assertEqual(C.GID_NAMES[17], "市場")
         self.assertEqual(C.GID_NAMES[16], "集結點")
 
     def test_old_table_preserved(self):
-        # travian_const.py 原有 gid 名稱一個都不能變
-        old = {1: "伐木場", 2: "泥坑", 3: "鐵礦場", 4: "農場", 10: "倉庫", 11: "糧倉", 15: "村莊大樓",
+        # travian_const.py 原有 gid 名稱不能變；唯一例外 11：舊「糧倉」→遊戲翻譯「穀倉」（v0.66，使用者確認），
+        # 所以下表的 11 已改成「穀倉」
+        old = {1: "伐木場", 2: "泥坑", 3: "鐵礦場", 4: "農場", 10: "倉庫", 11: "穀倉", 15: "村莊大樓",
                16: "集結點", 17: "市場", 18: "大使館", 20: "馬廄", 22: "研究院", 23: "山洞",
                24: "城鎮廳", 25: "行宮", 26: "皇宮", 27: "寶物庫", 28: "交易所", 34: "石匠鋪",
                37: "英雄宅", 45: "供水系統", 5: "鋸木廠", 6: "磚廠", 7: "鋼鐵鑄造廠", 8: "麵粉廠",
@@ -36,7 +37,7 @@ class ConstantsTest(unittest.TestCase):
         self.assertEqual(C.gid_name(999), "建築(gid 999)")
 
     def test_old_misc_constants_preserved(self):
-        self.assertEqual(C.BUILDING_GIDS, {10: "倉庫", 11: "糧倉"})
+        self.assertEqual(C.BUILDING_GIDS, {10: "倉庫", 11: "穀倉"})
         self.assertEqual(C.BUILD_CATEGORIES, {1: "基礎", 2: "軍事", 3: "資源"})
         self.assertEqual(C.FREE_SLOT_RANGE, (19, 38))
         self.assertEqual(C.BIDI.sub("", "‪12‬"), "12")
