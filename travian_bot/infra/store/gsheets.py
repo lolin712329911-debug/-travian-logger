@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/infra/store/gsheets.py（if-04）
-版本：v0.1（A4a）
+版本：v0.2（A4b-1 追加 get_worksheet／ensure_worksheet；v0.1＝A4a）
 用途：Google Sheet 的連線與批次寫入。全 repo 只有這裡 import gspread（§4.1 補充規則 7）。
       不認得任何分頁格式（那是 *_repo 的事）；憑證與 Sheet ID 一律由參數傳入，不讀環境變數
       （讀 Secrets 的 helper 放 app 層，A6b）。
@@ -15,6 +15,8 @@ travian_bot/infra/store/gsheets.py（if-04）
   2. 憑證與 Sheet ID 由參數傳入（舊版讀 GOOGLE_SERVICE_ACCOUNT_JSON／GOOGLE_SHEET_ID）。
   3. 新增 batch_write：append_rows 合併追加，或 update 寫指定區塊；只在 429 配額錯誤時重試。
   4. gspread、google-auth 在函式內才 import（CI 的 import 步驟只裝 bs4，寫在檔案最上面會紅燈）。
+  6. v0.2（A4b-1）追加 get_worksheet／ensure_worksheet：各 *_repo 開分頁只要一次請求
+     （has_worksheet 之後再 sh.worksheet 是兩次）。只追加函式，既有函式與行為不變。
   5. 預設 value_input="RAW"（舊版 USER_ENTERED）：新格式的 UTC 時間字串與 "TRUE"／"FALSE" 要原樣
      存進儲存格，USER_ENTERED 會被 Sheet 自作主張轉成日期或布林，讀回來就不是原字串。
 """
@@ -70,6 +72,24 @@ def has_worksheet(sh: Any, title: str) -> bool:
     except WorksheetNotFound:
         return False
     return True
+
+
+def get_worksheet(sh: Any, title: str) -> Optional[Any]:
+    """取得分頁；不存在回 None（一次請求）。其他錯誤（權限、網路）照丟，不當成「沒有」。"""
+    from gspread.exceptions import WorksheetNotFound
+
+    try:
+        return sh.worksheet(title)
+    except WorksheetNotFound:
+        return None
+
+
+def ensure_worksheet(sh: Any, title: str, *, rows: int = 1000, cols: int = 10) -> tuple:
+    """取得分頁，不存在就建立。回傳 (ws, created)。表頭由各 *_repo 自己寫。"""
+    ws = get_worksheet(sh, title)
+    if ws is not None:
+        return ws, False
+    return sh.add_worksheet(title=title, rows=rows, cols=cols), True
 
 
 def _is_quota_error(exc: BaseException) -> bool:
