@@ -157,5 +157,44 @@ class TestCredentialsAndWorksheet(unittest.TestCase):
         self.assertFalse([m for m in top if m.split(".")[0] in ("gspread", "google")], top)
 
 
+class TestWorksheetHelpers(unittest.TestCase):
+    """v0.2（A4b-1）追加：get_worksheet／ensure_worksheet。"""
+
+    def _mods(self):
+        exc = types.ModuleType("gspread.exceptions")
+
+        class WorksheetNotFound(Exception):
+            pass
+        exc.WorksheetNotFound = WorksheetNotFound
+        g = types.ModuleType("gspread")
+        g.exceptions = exc
+        return {"gspread": g, "gspread.exceptions": exc}, WorksheetNotFound
+
+    def test_get_worksheet_found_missing_and_other_errors(self):
+        mods, NotFound = self._mods()
+        sh = mock.Mock()
+        sh.worksheet.return_value = "WS"
+        with mock.patch.dict(sys.modules, mods):
+            self.assertEqual(G.get_worksheet(sh, "Config"), "WS")
+            sh.worksheet.side_effect = NotFound()
+            self.assertIsNone(G.get_worksheet(sh, "Nope"))
+            sh.worksheet.side_effect = PermissionError("x")
+            with self.assertRaises(PermissionError):
+                G.get_worksheet(sh, "Config")
+            self.assertEqual(sh.worksheet.call_count, 3)          # 每次只有一次請求
+
+    def test_ensure_worksheet_existing_and_created(self):
+        mods, NotFound = self._mods()
+        sh = mock.Mock()
+        sh.worksheet.return_value = "WS"
+        with mock.patch.dict(sys.modules, mods):
+            self.assertEqual(G.ensure_worksheet(sh, "A"), ("WS", False))
+            sh.add_worksheet.assert_not_called()
+            sh.worksheet.side_effect = NotFound()
+            sh.add_worksheet.return_value = "NEW"
+            self.assertEqual(G.ensure_worksheet(sh, "B", rows=5, cols=3), ("NEW", True))
+            sh.add_worksheet.assert_called_once_with(title="B", rows=5, cols=3)
+
+
 if __name__ == "__main__":
     unittest.main()
