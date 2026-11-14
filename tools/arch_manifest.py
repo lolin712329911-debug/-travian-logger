@@ -14,7 +14,7 @@
   disp  處置：沿用／拆／改寫／新寫（依「舊源→處置」欄最後的粗體字分類；僅供參考，不參與檢查）
 """
 
-SOURCE = 'multi-village-dev-v0_62.md v0.62 §4.2'
+SOURCE = 'multi-village-dev-v0_64.md v0.64 §4.2'
 EXPECTED_COUNT = 73
 
 MANIFEST = [
@@ -35,7 +35,7 @@ MANIFEST = [
     {'id': 'ap-06', 'path': 'app/formatting.py', 'layer': 'app', 'deps': ['cm-05'], 'wp': 'A6a1', 'disp': '沿用'},
     {'id': 'ap-07', 'path': 'app/village_cycle.py', 'layer': 'app', 'deps': ['ap-05', 'ap-04', 'ap-03', 'dm-09', 'ac-01', 'cm-01'], 'wp': 'A6b', 'disp': '拆'},
     {'id': 'ap-08', 'path': 'app/orchestrator.py', 'layer': 'app', 'deps': ['ap-07', 'ap-04', 'ap-03', 'if-05', 'if-03', 'cm-01', 'cm-05'], 'wp': 'A6b／B3', 'disp': '新寫'},
-    {'id': 'ap-10', 'path': 'app/stages/build.py', 'layer': 'app', 'deps': ['ap-03', 'ap-06', 'dm-12', 'dm-01', 'ac-02', 'if-12', 'if-07', 'cm-02'], 'wp': 'A6a2', 'disp': '拆'},
+    {'id': 'ap-10', 'path': 'app/stages/build.py', 'layer': 'app', 'deps': ['ap-03', 'ap-06', 'dm-12', 'dm-01', 'ac-02', 'if-12', 'if-07', 'if-08', 'cm-02'], 'wp': 'A6a2', 'disp': '拆'},
     {'id': 'ap-11', 'path': 'app/stages/item_transfer.py', 'layer': 'app', 'deps': ['ap-03', 'ap-06', 'dm-05', 'ac-03', 'if-07', 'cm-02'], 'wp': 'A6a2', 'disp': '拆'},
     {'id': 'ap-12', 'path': 'app/stages/focus.py', 'layer': 'app', 'deps': ['ap-03', 'ap-06', 'dm-04', 'ac-04', 'if-07', 'cm-02'], 'wp': 'A6a2', 'disp': '拆'},
     {'id': 'ap-13', 'path': 'app/stages/fill_in.py', 'layer': 'app', 'deps': ['ap-03', 'ap-06', 'dm-02', 'ac-02', 'if-07', 'cm-02'], 'wp': 'A6a2', 'disp': '拆'},
