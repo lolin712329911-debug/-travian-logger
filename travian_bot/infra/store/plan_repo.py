@@ -8,7 +8,7 @@ travian_bot/infra/store/plan_repo.py（if-12）
 依賴：if-04（gsheets）、if-05（config_repo）。
 部署狀態：未部署（GA 前不 live）。
 
-與卡片的差異（交接區塊有列；A4b 開頭讀碼後經你同意，v0.57 後續版本更新卡片）
+與卡片的差異（A4b-1 交接區塊有列）
   1. 來源＝**Config 分頁的 build_order 字串**（例 `res:9,26:10,20:10`），不是 `build_order` 分頁：
      Apps Script 套用時寫的是 Config（Code.gs writeConfigOrder_），你手動改 Config 或開 ai_lock 時，
      分頁的 applied 批會和實際生效的不同。`build_order` 分頁只是 Gemini 的紀錄，Python 不讀。
