@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/common/tribe_data.py（cm-06）
-版本：v0.1（A1b）
+版本：v0.2（v0.65：補 tribe_display_name）｜v0.1（A1b）
 用途：種族資料的唯一出口（§4.1 規則 6、開發檔規則 10）。TribeSpec／UnitSpec 是凍結的資料結構，
       取代舊 dispatch.py 的全域 UNIT_SPEED／UNIT_ATTACK／UNIT_CARRY／TRIBE。
       其他模組只能經此取得種族資料，程式碼不得用種族名稱字串判斷（check_arch TRIBE_STRING）。
@@ -18,6 +18,7 @@ travian_bot/common/tribe_data.py（cm-06）
   merchant_info(spec, speed)             → (載重, 格／時)；speed ≠ 1 丟 TribeDataError（倍速換算未驗證）
   cranny_factor(spec)                    → 山洞倍率（int）
   global_unit_id(spec, unit_key)         → 全域單位 id 或 None（D-21 尚未定案）
+  tribe_display_name(tribe_id)           → 顯示用名稱（只供顯示；判斷種族一律走 TribeSpec，v0.2）
 
 來源：舊 dispatch.py v1.8 的 TRIBES、TRIBE_ALIASES、resolve_tribe、tribe_from_state（✓ 已讀）；
       舊 travian_const.py 的 TRIBE_NAMES（種族 id，✓）。ROMAN_TRIBE_ID 不保留。
@@ -54,7 +55,7 @@ from typing import Any, Dict, Iterable, Mapping, Optional, Tuple
 from .schema import ValidationError
 
 __all__ = ["TribeDataError", "UnitSpec", "TribeSpec", "TRIBES", "get_tribe", "resolve_tribe", "tribe_from_state",
-           "tribe_keys_by_id", "merchant_info", "cranny_factor", "global_unit_id"]
+           "tribe_keys_by_id", "merchant_info", "cranny_factor", "global_unit_id", "tribe_display_name"]
 
 Res4 = Tuple[int, int, int, int]
 
@@ -177,6 +178,12 @@ TRIBES: Mapping[str, TribeSpec] = MappingProxyType({
 # 頁面 tribeId → 種族鍵（舊 travian_const.TRIBE_NAMES ✓）。匈奴只有 id，沒有 TribeSpec（沒有可靠兵種表）。
 _TRIBE_KEYS_BY_ID = {1: "roman", 2: "teuton", 3: "gaul", 6: "egyptian", 7: "hun"}
 
+# 沒有 TribeSpec 的種族 id 的顯示名稱（v0.2；來源：台灣服繁中語言包 allgemein.json 的 v0～v9）。
+# 只供顯示（例如 state 的 tribe 值、log），不可用來判斷種族。有 TribeSpec 的 id（1、2、3、6）一律用
+# spec.name，保持與舊 bot 的 TRIBE_NAMES 相同的用語（羅馬、條頓、高盧、埃及；語言包寫「羅馬人」「日耳曼人」
+# 「高盧人」「埃及人」，用語差異見 D-31）；7 匈奴沿用舊 bot。其餘為語言包原文。
+_EXTRA_DISPLAY_NAMES = {0: "無種族", 4: "自然界", 5: "賴達族", 7: "匈奴", 8: "斯巴達人", 9: "維京人"}
+
 # state 分頁 tribe 欄可能的寫法 → TRIBES 的鍵（舊 TRIBE_ALIASES ✓，加上單數鍵本身）
 _ALIASES = {
     "gaul": ("高盧", "高卢", "gaul", "gauls"),
@@ -254,3 +261,16 @@ def global_unit_id(spec: TribeSpec, unit_key: str) -> Optional[int]:
     if not 1 <= n <= 10:
         raise TribeDataError("兵種鍵需為 u1～u10")
     return None if spec.unit_id_base is None else spec.unit_id_base + n
+
+
+def tribe_display_name(tribe_id: Any) -> str:
+    """頁面 tribeId → 顯示用名稱。有 TribeSpec 的用 spec.name，其餘查 _EXTRA_DISPLAY_NAMES，
+    都沒有回「種族 N」（與舊 runner 的備援寫法相同）；tribeId 不是 int（含 bool、None）回「種族 ?」。
+    只供顯示，不可拿來判斷種族。"""
+    if isinstance(tribe_id, bool) or not isinstance(tribe_id, int):
+        return "種族 ?"
+    key = _TRIBE_KEYS_BY_ID.get(tribe_id)
+    spec = TRIBES.get(key) if key else None
+    if spec is not None:
+        return spec.name
+    return _EXTRA_DISPLAY_NAMES.get(tribe_id, f"種族 {tribe_id}")
