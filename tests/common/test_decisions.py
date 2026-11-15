@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""tests/common/test_decisions.py（cm-02）v0.1（A1a-2）：草案結構的基本性質（欄位待 A3a～A3c 定案）。"""
+"""tests/common/test_decisions.py（cm-02）v0.2（A5a：ItemTransferDecision 改為 lines／village_id／targets）｜v0.1（A1a-2）：草案結構的基本性質（欄位待 A3a～A3c 定案）。"""
 import dataclasses
 import unittest
 
 from travian_bot.common import decisions, models
 from travian_bot.common.decisions import (
     BUILD_KINDS, AdventureDecision, BuildDecision, ExecResult, FillInDecision, FocusDecision,
-    GuardDecision, HideCandidate, HideDecision, ItemTransferDecision)
+    GuardDecision, HideCandidate, HideDecision, ItemTransferDecision, TransferLine)
 
 TARGET = models.BuildTarget(aid=5, gid=1, name="伐木場", to_level=3, cost=(100, 80, 60, 40), ready_in_s=0)
 RESULTS = ("ok", "dry", "skipped", "failed", "deferred")
@@ -45,8 +45,21 @@ class TestDecisions(unittest.TestCase):
         GuardDecision(act=False, reason="無來襲")
         FillInDecision(act=True, target=TARGET, reason="插隊")
         FocusDecision(act=False, focus=None, reason="off")
-        ItemTransferDecision(act=False, item=None, amount=None, reason="無")
+        ItemTransferDecision(act=False, reason="無")
         AdventureDecision(act=True, adv_id=7, reason="可出發")
+
+    def test_item_transfer_decision_v03(self):
+        d = ItemTransferDecision(act=True, reason="缺木", lines=(TransferLine(resource=0, item_id=11, amount=500),),
+                                 village_id=7, targets=(500, 0, 0, 0))
+        self.assertEqual((d.lines[0].resource, d.lines[0].item_id, d.lines[0].amount), (0, 11, 500))
+        self.assertEqual((d.village_id, d.targets), (7, (500, 0, 0, 0)))
+        idle = ItemTransferDecision(act=False, reason="無")
+        self.assertEqual((idle.lines, idle.village_id, idle.targets), ((), None, None))
+        self.assertFalse(hasattr(idle, "item"))
+        self.assertFalse(hasattr(idle, "amount"))
+
+    def test_focus_names(self):
+        self.assertEqual(decisions.FOCUS_NAMES, ("balanced", "wood", "clay", "iron", "crop"))
 
     def test_exec_result_defaults(self):
         r = ExecResult(result="dry", detail="未送出")
