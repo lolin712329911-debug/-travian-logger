@@ -3,7 +3,7 @@ from types import SimpleNamespace as NS
 from unittest import mock
 
 from travian_bot.actions import build_exec as BE
-from travian_bot.common.models import BuildTarget, ServerProfile
+from travian_bot.common.models import BuildTarget
 from travian_bot.common.modes import Mode
 from travian_bot.infra.gateway import Gateway, GatewayError
 
@@ -55,7 +55,7 @@ class FakePage:
 
 def make(pages):
     page = FakePage(pages)
-    gw = Gateway(NS(context=NS(), page=page), ServerProfile(BASE))
+    gw = Gateway(NS(context=NS(), page=page), NS(base_url=BASE))
     return gw, page
 
 
