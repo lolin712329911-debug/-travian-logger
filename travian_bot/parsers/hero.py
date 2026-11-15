@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/parsers/hero.py（ps-05）
-版本：v0.1（A2b）
+版本：v0.2（A5a：新增 parse_hero_attributes、parse_focus_set、parse_transfer_state）｜v0.1（A2b）
 用途：英雄狀態（HUD＋冒險頁 JSON 合併）與冒險清單（JSON，已渲染表格時逐列核對）的解析。
       純函式：HTML 進、資料出，不碰網路、不碰 Sheet。
 依賴：cm-09（parsed）、cm-03（constants，BIDI）、cm-11（schema，ParseError）。
@@ -41,16 +41,17 @@ from typing import Any, List, Optional, Tuple
 from bs4 import BeautifulSoup
 
 from ..common.constants import BIDI
-from ..common.parsed import Adventure, HeroState
+from ..common.parsed import Adventure, HeroFocus, HeroState, TransferItem, TransferState
 from ..common.schema import ParseError
 
-__all__ = ["parse_hero_status", "parse_adventures"]
+__all__ = ["parse_hero_status", "parse_adventures", "parse_hero_attributes", "parse_focus_set", "parse_transfer_state"]
 
 _PAGE = "hero"
 _VIEWDATA_RE = re.compile(r"viewData\s*:\s*")
 _PCT_RE = re.compile(r"(\d+)\s*%")
 _NUM_RE = re.compile(r"\d+(?:\.\d+)?")
 _DUR_RE = re.compile(r"(\d+):(\d{2}):(\d{2})")
+_TRANSFER_TYPE_IDS = (145, 146, 147, 148)   # ✓ 木磚鐵穀的道具 typeId（travian_transfer.py）
 _DIST_TOLERANCE = 0.15          # 頁面距離與 JSON 原值的容許誤差（舊 hero-v1.4 同值）
 
 
@@ -263,3 +264,65 @@ def parse_adventures(html: str) -> Tuple[Adventure, ...]:
             clickable=rows[i]["clickable"] if rows is not None else None,
         ))
     return tuple(out)
+
+
+# ---------------------------------------------------------------- A5a：JSON API 回應（輸入是回應文字，不是 HTML）
+def _json_obj(text: Any, what: str) -> dict:
+    if not isinstance(text, str) or not text.strip():
+        raise ParseError(_PAGE, f"{what}：輸入不是字串或是空的")
+    try:
+        obj = json.loads(text)
+    except ValueError:
+        raise ParseError(_PAGE, f"{what}：不是 JSON") from None
+    if not isinstance(obj, dict):
+        raise ParseError(_PAGE, f"{what}：不是 JSON 物件")
+    return obj
+
+
+def parse_hero_attributes(text: str) -> HeroFocus:
+    """GET /api/v1/hero/v2/screen/attributes 的回應 → HeroFocus。格式不符丟 ParseError（✓ hero_focus.py v0.3.1）。"""
+    hero = _json_obj(text, "屬性頁").get("hero")
+    if not isinstance(hero, dict):
+        raise ParseError(_PAGE, "屬性頁沒有 hero")
+    cur, types = hero.get("productionType"), hero.get("productionTypes")
+    if not _is_int(cur) or cur not in range(5):
+        raise ParseError(_PAGE, "屬性頁 productionType 不是 0..4")
+    if not isinstance(types, list) or len(types) != 5 or not all(_is_int(x) for x in types):
+        raise ParseError(_PAGE, "屬性頁 productionTypes 不是 5 個整數")
+    return HeroFocus(current=cur, types=tuple(types))
+
+
+def parse_focus_set(text: str) -> int:
+    """POST /api/v1/hero/v2/attributes 的回應 `{"productionType":N,…}` → N。"""
+    v = _json_obj(text, "設定加成回應").get("productionType")
+    if not _is_int(v) or v not in range(5):
+        raise ParseError(_PAGE, "設定加成回應沒有 productionType（0..4）")
+    return v
+
+
+def parse_transfer_state(text: str) -> TransferState:
+    """POST /api/v1/graphql（STATE_QUERY）的回應 → TransferState。外層 data 有沒有都接受。缺欄位或型別不符丟 ParseError。"""
+    obj = _json_obj(text, "graphql")
+    data = obj.get("data", obj)
+    own = data.get("ownPlayer") if isinstance(data, dict) else None
+    village = own.get("village") if isinstance(own, dict) else None
+    hero = own.get("hero") if isinstance(own, dict) else None
+    res = village.get("resources") if isinstance(village, dict) else None
+    inv = hero.get("inventory") if isinstance(hero, dict) else None
+    if not isinstance(res, dict) or not _is_int(village.get("id")) or not isinstance(inv, list):
+        raise ParseError(_PAGE, "graphql 回應缺 village／resources／inventory")
+    try:
+        stock = tuple(res[k] for k in ("lumberStock", "clayStock", "ironStock", "cropStock"))
+        wh, gr = res["maxStorageCapacity"], res["maxCropStorageCapacity"]
+    except KeyError:
+        raise ParseError(_PAGE, "graphql resources 缺欄位") from None
+    if not all(_is_int(v) for v in stock + (wh, gr)):
+        raise ParseError(_PAGE, "graphql resources 不是整數")
+    by_type = {}
+    for it in inv:
+        if isinstance(it, dict) and it.get("typeId") in _TRANSFER_TYPE_IDS:
+            if not (_is_int(it.get("id")) and _is_int(it.get("amount"))):
+                raise ParseError(_PAGE, "graphql 道具的 id／amount 不是整數")
+            by_type[it["typeId"]] = TransferItem(id=it["id"], amount=it["amount"])
+    return TransferState(village_id=village["id"], stock=stock, capacity=(wh, wh, wh, gr),
+                         inventory=tuple(by_type.get(t) for t in _TRANSFER_TYPE_IDS))
