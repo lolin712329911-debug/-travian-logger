@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/infra/gateway.py（if-02）
-版本：v0.1（A4a；B1 才加 did／newdid）
+版本：v0.2（A5a 追加 Response.headers、base_url、click；既有行為不變）｜v0.1（A4a；B1 才加 did／newdid）
 用途：對遊戲伺服器的唯一出口：抓頁（瀏覽器渲染或純 HTTP）、送出網址、API 呼叫、URL 白名單、
       請求計數與耗時。網址一律由 ServerProfile.base_url 組出。**不驗證頁面內容**（§6.6）。
 依賴：cm-01（ServerProfile，只用 base_url）、cm-03（A4a 沒有實際 import）。
@@ -18,10 +18,17 @@ travian_bot/infra/gateway.py（if-02）
      只有 GET 的傳輸錯誤會重試；POST 與 submit 永不重送（可能已送達）。
   5. 所有請求都過 safe_url：必須是 base_url 同源的 https 網址（或相對路徑）。
   6. did 參數保留但不使用（B1 才加）。
+
+v0.2（A5a）追加，既有簽名與行為不變：
+  - Response.headers：回應標頭（鍵一律小寫；預設空 dict）。轉移的 PUT 要讀回應標頭的 x-nonce（transfer_io v1.2 ✓）。
+    標頭可能含 token，呼叫端不得寫進 log／Actions。
+  - Gateway.base_url：唯讀（無結尾斜線），給需要 origin／referer 標頭的 API 呼叫。
+  - Gateway.click(selector, *, index=0, settle_ms=3000)：在「目前頁面」點一個元素（先用 get 渲染該頁）。
+    目前頁面網址必須通過 safe_url；不重試（可能已送達）；失敗丟 GatewayError。計入 request_count。
 """
 import random
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional, Protocol
 from urllib.parse import urlsplit
 
@@ -68,6 +75,7 @@ class Response:
     status: int
     ok: bool
     text: str
+    headers: Mapping[str, str] = field(default_factory=dict)   # v0.2：鍵小寫
 
 
 # ---------------------------------------------------------------- URL 白名單
@@ -119,6 +127,11 @@ class Gateway:
         """已發出的網路請求數（含重試與 raw_if 備援那一次）。"""
         return self._count
 
+    @property
+    def base_url(self) -> str:
+        """v0.2：ServerProfile.base_url（無結尾斜線）。"""
+        return self._base
+
     def elapsed(self) -> float:
         """從建立 Gateway 起經過的秒數。"""
         return self._clock() - self._t0
@@ -151,6 +164,28 @@ class Gateway:
         except Exception as exc:  # noqa: BLE001
             raise GatewayError(f"開啟 {_path_only(full)} 失敗：{type(exc).__name__}") from exc
 
+    def click(self, selector: str, *, index: int = 0, settle_ms: int = 3000) -> None:
+        """v0.2：在目前頁面點 selector 的第 index 個元素，之後等 settle_ms 毫秒。
+        目前頁面不在白名單內不點；不重試；失敗丟 GatewayError（訊息不含頁面內容）。"""
+        if not isinstance(selector, str) or not selector.strip():
+            raise ValueError("selector 不可為空")
+        if isinstance(index, bool) or not isinstance(index, int) or index < 0:
+            raise ValueError("index 需為 ≥ 0 的整數")
+        if isinstance(settle_ms, bool) or not isinstance(settle_ms, int) or settle_ms < 0:
+            raise ValueError("settle_ms 需為 ≥ 0 的整數")
+        page = self._session.page
+        cur = getattr(page, "url", "")
+        if not self.safe_url(cur):
+            raise GatewayError("目前頁面不在白名單內，不點擊")
+        self._wait()
+        self._count += 1
+        try:
+            page.locator(selector).nth(index).click()
+            if settle_ms > 0:
+                page.wait_for_timeout(settle_ms)
+        except Exception as exc:  # noqa: BLE001
+            raise GatewayError(f"點擊失敗：{type(exc).__name__}") from exc
+
     def request(self, method: str, path: str, *, headers: Optional[Mapping[str, str]] = None,
                 data: Any = None) -> Response:
         """純 HTTP API 呼叫（use-item、hero_focus 等），沿用同一組登入狀態。
@@ -170,7 +205,8 @@ class Gateway:
             if data is not None:
                 kwargs["data"] = data
             resp = self._ctx().request.fetch(url, **kwargs)
-            return Response(status=int(resp.status), ok=bool(resp.ok), text=resp.text())
+            resp_headers = {str(k).lower(): str(v) for k, v in (getattr(resp, "headers", None) or {}).items()}
+            return Response(status=int(resp.status), ok=bool(resp.ok), text=resp.text(), headers=resp_headers)
 
         if m == "GET":
             return self._retry_get(url, call)
