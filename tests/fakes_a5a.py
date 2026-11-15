@@ -10,7 +10,6 @@ make_gateway 組出真的 Gateway（用替身 session）。
 from types import SimpleNamespace as NS
 from urllib.parse import urlsplit
 
-from travian_bot.common.models import ServerProfile
 from travian_bot.infra.gateway import Gateway, GatewayLimits
 
 BASE = "https://ts1.example.com"
@@ -117,5 +116,5 @@ def make_gateway(pages=None, routes=None, limits=None, base=BASE, page=None, **g
     page = page if page is not None else FakePage(pages)
     router = Router(routes)
     session = NS(context=NS(request=router), page=page)
-    gw = Gateway(session, ServerProfile(base), limits, **gw_kw)
+    gw = Gateway(session, NS(base_url=base), limits, **gw_kw)    # Gateway 只讀 profile.base_url；不建真的 ServerProfile（欄位多、會變）
     return gw, page, router
