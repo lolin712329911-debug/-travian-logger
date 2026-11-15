@@ -14,7 +14,7 @@
   disp  處置：沿用／拆／改寫／新寫（依「舊源→處置」欄最後的粗體字分類；僅供參考，不參與檢查）
 """
 
-SOURCE = 'multi-village-dev-v0_69.md v0.69 §4.2（A6a1 交付時手改 ap-02～06；請以主檔重新轉出）'
+SOURCE = 'multi-village-dev-v0_69.md v0.69 §4.2'
 EXPECTED_COUNT = 73
 
 MANIFEST = [
@@ -45,7 +45,7 @@ MANIFEST = [
     {'id': 'ap-17', 'path': 'app/stages/hero.py', 'layer': 'app', 'deps': ['ap-03', 'ap-06', 'dm-06', 'ac-05', 'if-07', 'cm-02'], 'wp': 'A6a2', 'disp': '沿用'},
     {'id': 'ap-18', 'path': 'app/stages/market.py', 'layer': 'app', 'deps': ['ap-03', 'ap-05', 'dm-10', 'ac-08', 'if-11', 'if-07', 'cm-01'], 'wp': 'C4', 'disp': '新寫'},
     {'id': 'ap-19', 'path': 'app/stages/troops.py', 'layer': 'app', 'deps': ['ap-03', 'ap-05', 'dm-11', 'ac-09', 'if-07', 'cm-01'], 'wp': 'D2', 'disp': '新寫'},
-    {'id': 'cm-01', 'path': 'common/models.py', 'layer': 'common', 'deps': ['cm-11', 'cm-10'], 'wp': 'A1a-2', 'disp': '新寫'},
+    {'id': 'cm-01', 'path': 'common/models.py', 'layer': 'common', 'deps': ['cm-11', 'cm-10'], 'wp': 'A1a-2／A6a1', 'disp': '新寫'},
     {'id': 'cm-02', 'path': 'common/decisions.py', 'layer': 'common', 'deps': ['cm-01', 'cm-09'], 'wp': 'A1a-2／A3a', 'disp': '新寫'},
     {'id': 'cm-03', 'path': 'common/constants.py', 'layer': 'common', 'deps': [], 'wp': 'A1a-1', 'disp': '沿用'},
     {'id': 'cm-04', 'path': 'common/modes.py', 'layer': 'common', 'deps': [], 'wp': 'A1a-1', 'disp': '沿用'},
@@ -55,7 +55,7 @@ MANIFEST = [
     {'id': 'cm-08', 'path': 'common/config_schema.py', 'layer': 'common', 'deps': ['cm-01', 'cm-04', 'cm-06', 'cm-10', 'cm-11', 'cm-12', 'cm-13'], 'wp': 'A1b／B2', 'disp': '沿用'},
     {'id': 'cm-09', 'path': 'common/parsed.py', 'layer': 'common', 'deps': ['cm-01'], 'wp': 'A1a-2', 'disp': '新寫'},
     {'id': 'cm-10', 'path': 'common/serialize.py', 'layer': 'common', 'deps': [], 'wp': 'A1a-1', 'disp': '新寫'},
-    {'id': 'cm-11', 'path': 'common/schema.py', 'layer': 'common', 'deps': [], 'wp': 'A1a-1', 'disp': '新寫'},
+    {'id': 'cm-11', 'path': 'common/schema.py', 'layer': 'common', 'deps': [], 'wp': 'A1a-1／A6a1', 'disp': '新寫'},
     {'id': 'cm-12', 'path': 'common/game_rules.py', 'layer': 'common', 'deps': ['cm-01'], 'wp': 'A1b', 'disp': '沿用'},
     {'id': 'cm-13', 'path': 'common/server_profile.py', 'layer': 'common', 'deps': ['cm-01', 'cm-09'], 'wp': 'A1a-2', 'disp': '新寫'},
     {'id': 'dm-01', 'path': 'domain/build_planner.py', 'layer': 'domain', 'deps': ['cm-01', 'cm-02', 'cm-03', 'cm-09', 'cm-12'], 'wp': 'A3a', 'disp': '改寫'},
