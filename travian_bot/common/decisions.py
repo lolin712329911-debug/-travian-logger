@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/common/decisions.py（cm-02）
-版本：v0.2（A3a：BuildDecision／GuardDecision／FillInDecision 定案；其餘仍為草案 ✗，待 A3b／A3c）｜v0.1（A1a-2）
+版本：v0.3（A5a：ItemTransferDecision 改寫＋TransferLine；FOCUS_NAMES）｜v0.2（A3a：BuildDecision／GuardDecision／FillInDecision 定案；其餘仍為草案 ✗，待 A3b／A3c）｜v0.1（A1a-2）
 用途：各 domain 決策的回傳結構（domain 回傳、actions 吃進去、app/stages 串接，§4.1 補充規則 1）：
       BuildTarget、BuildDecision、GuardDecision、FillInDecision、FocusDecision、
       ItemTransferDecision、AdventureDecision、HideCandidate、HideDecision、ExecResult。
@@ -25,7 +25,7 @@ from .parsed import BuildOption, Dorf2, UpgradeCost
 
 __all__ = [
     "BUILD_KINDS", "BuildTarget", "FactsNeed", "BuildFacts", "BuildDecision", "FillCandidate", "GuardDecision", "FillInDecision",
-    "FocusDecision", "ItemTransferDecision", "AdventureDecision", "HideCandidate",
+    "FocusDecision", "TransferLine", "ItemTransferDecision", "AdventureDecision", "HideCandidate",
     "HideDecision", "ExecResult",
 ]
 
@@ -37,6 +37,8 @@ BUILD_KINDS = ("build", "wait_resources", "wait_queue", "storage_too_small",
 BUILD_EXTRA_KINDS = ("no_affordable",   # plan(affordable_only=True) 沒有付得起的候選（舊 ("no_affordable",)）
                      "need_facts")      # 純函式缺頁面資料，要呼叫端抓完再呼叫（見 FactsNeed）
 BUILD_DECISION_KINDS = BUILD_KINDS + BUILD_EXTRA_KINDS   # BuildDecision.kind 的完整值域（planner 實際回傳）
+# v0.3（A5a）：FocusDecision.focus 的值域（actions 換成 hero.productionType：0～4；tuple 不進 __all__）
+FOCUS_NAMES = ("balanced", "wood", "clay", "iron", "crop")
 FACTS_KINDS = ("dorf2", "upgrade_cost", "build_options")  # FactsNeed.kind 的值域
 
 
@@ -98,19 +100,31 @@ class FillInDecision:
 
 @dataclass(frozen=True)
 class FocusDecision:
-    """hero_focus。舊值域只有 auto／off，新值域待 A6a2 定案。"""
+    """hero_focus。v0.3：act＝True 時 focus 為 FOCUS_NAMES 之一（balanced／wood／clay／iron／crop，對應 productionType 0～4）。
+    設定檔的 focus_mode 值域（off／auto）是另一回事，待 A6a2 定案。值域由 actions 檢查（不合法回 failed）。"""
     act: bool
     focus: Optional[str]
     reason: str
 
 
 @dataclass(frozen=True)
+class TransferLine:
+    """轉移的一筆：resource 為資源索引（0 木、1 磚、2 鐵、3 穀，與 Res4 同序）；item_id＝道具庫物件 id；amount＝要轉的量。"""
+    resource: int
+    item_id: int
+    amount: int
+
+
+@dataclass(frozen=True)
 class ItemTransferDecision:
-    """轉移（travian_transfer）。"""
+    """英雄道具庫 → 村莊的資源轉移（travian_transfer）。v0.3 改寫（舊版只有單一 item／amount，放不下四種資源）。
+    act＝True 時：lines 至少一筆（resource 不重複）、village_id＝收貨村、targets＝轉完後村莊每種資源至少要有的量（木磚鐵穀，驗證用）。
+    合法性由 actions 檢查（不合法回 failed、不送出）。"""
     act: bool
-    item: Optional[str]
-    amount: Optional[int]
     reason: str
+    lines: Tuple[TransferLine, ...] = ()
+    village_id: Optional[int] = None
+    targets: Optional[Tuple[int, int, int, int]] = None
 
 
 @dataclass(frozen=True)

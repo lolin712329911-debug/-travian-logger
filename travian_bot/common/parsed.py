@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/common/parsed.py（cm-09）
-版本：v0.5（A2b）｜HeroState／Adventure／RallyOverview／TileSafety 改寫定案，新增 RallyMovement／SendConfirm／BlockOasis
+版本：v0.6（A5a：新增 HeroFocus、TransferItem、TransferState）｜v0.5（A2b）｜HeroState／Adventure／RallyOverview／TileSafety 改寫定案，新增 RallyMovement／SendConfirm／BlockOasis
       （✓ 依 A2b 樣本：冒險頁原始 HTML 3 份＋渲染後 DOM 片段 1 份、集結點概況 6 份、確認頁 4 份、S16 區塊 JSON 1 份、S15 tile-details 3 份；
       TileSafety 依 S15a～c 三份，ps-09 已交付）；
       v0.4（A2a-2b）｜BuildCondition／BuildOption／UpgradeCost 於 A2a-2b 定案（✓ 依 S10 一份、S11 四份樣本，見各類說明）；
@@ -38,6 +38,7 @@ __all__ = [
     "Oasis", "ResField", "QueueItem", "Dorf1", "BuildingSlot", "Dorf2", "PlayerInfo", "HeroState",
     "Adventure", "BuildCondition", "BuildOption", "UpgradeCost", "RallyMovement", "RallyOverview", "SendConfirm",
     "BlockOasis", "MarketState", "TileSafety", "PageVillage", "PageFacts",
+    "HeroFocus", "TransferItem", "TransferState",
 ]
 
 
@@ -358,3 +359,30 @@ class PageFacts:
     tribe_id: Optional[int]
     server_ts: Optional[int]
     villages: Optional[Tuple[PageVillage, ...]]
+
+
+# ---------------------------------------------------------------- A5a：英雄加成與道具庫轉移的讀回結構
+@dataclass(frozen=True)
+class HeroFocus:
+    """英雄資源產量加成（✓ hero_focus.py v0.3.1，GET /api/v1/hero/v2/screen/attributes）。
+    current＝hero.productionType（0 平均、1 木、2 磚、3 鐵、4 穀）；
+    types＝hero.productionTypes，長度 5：[平均時每種資源各加, 木, 磚, 鐵, 穀 單押時加]（10-16 實測 [336, 1120, 1120, 1120, 1120]）。"""
+    current: int
+    types: Tuple[int, ...]
+
+
+@dataclass(frozen=True)
+class TransferItem:
+    """道具庫裡的一種資源道具（typeId 145～148＝木磚鐵穀 ✓）。id＝庫存物件 id（use-item 的 itemId，執行時才讀）。"""
+    id: int
+    amount: int
+
+
+@dataclass(frozen=True)
+class TransferState:
+    """graphql 回應（✓ travian_transfer.py：ownPlayer.village／hero.inventory）：目前村與道具庫。
+    stock、capacity 順序木磚鐵穀；inventory 同順序，道具庫沒有該資源＝None。"""
+    village_id: int
+    stock: Tuple[int, int, int, int]
+    capacity: Tuple[int, int, int, int]
+    inventory: Tuple[Optional[TransferItem], Optional[TransferItem], Optional[TransferItem], Optional[TransferItem]]
