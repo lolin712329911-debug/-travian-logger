@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/domain/guard.py（dm-03）
-版本：v0.1（A3a）
+版本：v0.2（A6a1：C2 hidden 可為 None）｜v0.1（A3a）
 用途：庫存防搶＋防溢出：預估下一輪結束時各資源的「溢出」與「超過山洞隱藏量的暴露」，挑英雄資源加成類型讓兩者合計最小（純函式）。
 依賴：cm-01（models）、cm-02（decisions）。
 部署狀態：未部署（GA 前不 live）。
@@ -76,8 +76,14 @@ def overflow(stock: Mapping[int, float], production: Mapping[int, float], hours:
 def _dicts(snapshot: VillageSnapshot):
     stock = {i + 1: snapshot.stock[i] for i in range(4)}
     prod = {i + 1: snapshot.prod[i] for i in range(4)}
-    hidden = {i + 1: snapshot.hidden[i] for i in range(4)}
-    return stock, prod, hidden, _cap_of(snapshot)
+    cap = _cap_of(snapshot)
+    if snapshot.hidden is None:
+        # v0.2（D-32）：山洞隱藏量未知 → 無法判斷「暴露」，不猜 0（0＝全部暴露）。
+        # 用倉容當隱藏量：min(倉容, 預估量) − 倉容 ≤ 0，暴露恆為 0，守衛只看溢出。
+        hidden = {r: cap[r] for r in (1, 2, 3, 4)}
+    else:
+        hidden = {i + 1: snapshot.hidden[i] for i in range(4)}
+    return stock, prod, hidden, cap
 
 
 def score_stock(snapshot: VillageSnapshot, params: GuardParams = GuardParams(),

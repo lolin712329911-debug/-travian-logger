@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/common/schema.py（cm-11）
-版本：v0.2（A2b）｜對應契約 C-v0.6（全部 ✗ 草案，待 B1／B6 用真實樣本修正）
+版本：v0.3（A6a1）｜對應契約 C-v0.7（全部 ✗ 草案，待 B1／B6 用真實樣本修正）
+      v0.3 唯一變動：C2 VillageSnapshot 的 hidden 改為可為 null（D-32：山洞各級容量表沒有來源，未知＝null，不得用 0 充數）；
+      v0.2（A2b）｜C-v0.6
       v0.2 唯一變動：C2 VillageSnapshot 的 units_home／units_away 鍵改為 u1～u10 或 hero（D-21②；與 TroopMovePlan.units 同一格式）；
       v0.1（A1a-1）｜C-v0.5
 用途：機器可讀的契約規格（CONTRACT_SPECS，來源 §6.1／§6.2）與唯一的驗證入口。
@@ -279,7 +281,7 @@ CONTRACT_SPECS: Dict[str, Dict[str, Any]] = {
     # ---- C2 ----
     "VillageSnapshot": {"fields": {
         "did": _int(1), "ts_utc": _utc(), "stock": _res4(0), "prod": _res4(None),
-        "cap_wh": _int(0), "cap_gr": _int(0), "hidden": _res4(0),
+        "cap_wh": _int(0), "cap_gr": _int(0), "hidden": _res4(0, null=True),
         "queue_free_in_s": _int(0), "queue_slots_used": _int(0),
         "next_target": _struct("BuildTarget", null=True),
         "merchants": _struct("Merchants", null=True),
@@ -624,12 +626,13 @@ def contract_examples() -> Dict[str, Dict[str, List[Any]]]:
         I(_mut(ref, "did", 0), "did", "min"),
         I(_mut(ref, "x", 250), "x", "map_range", {"map_half": 200}),
         I(_mut(ref, "active", 1), "active", "type")]}
-    ex["VillageSnapshot"] = {"valid": [V(snap), V(_mut(snap, "merchants", mer))], "invalid": [
+    ex["VillageSnapshot"] = {"valid": [V(snap), V(_mut(snap, "merchants", mer)), V(_mut(snap, "hidden", None))], "invalid": [
         I(_mut(snap, "stock", [1, 2, 3, -4]), "stock[3]", "min"),
         I(_mut(snap, "ts_utc", "2026-13-40T00:00:00Z"), "ts_utc", "utc_format"),
         I(_mut(snap, "next_target.cost", [1, 2, 3]), "next_target.cost", "res4_length"),
         I(_mut(snap, "units_home", {"u1": 0}), "units_home.u1", "min"),
-        I(_mut(snap, "queue_free_in_s", -1), "queue_free_in_s", "min")]}
+        I(_mut(snap, "queue_free_in_s", -1), "queue_free_in_s", "min"),
+        I(_mut(snap, "hidden", [0, 0, 0, -1]), "hidden[3]", "min")]}
     ex["TransferPlan"] = {"valid": [V(xfer, {"capacity_each": 500})], "invalid": [
         I(_mut(xfer, "to_did", 101), "to_did", "same_village"),
         I(_mut(xfer, "amount", [0, 0, 0, 0]), "amount", "empty_amount"),

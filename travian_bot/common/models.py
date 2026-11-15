@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/common/models.py（cm-01）
-版本：v0.1（A1a-2）｜對應契約 C-v0.5（全部 ✗ 草案，待 B1／B6 用真實樣本修正）
+版本：v0.2（A6a1）｜對應契約 C-v0.7（全部 ✗ 草案，待 B1／B6 用真實樣本修正）
+      v0.2 唯一變動：C2 VillageSnapshot.hidden 改 Optional[Res4]（D-32）；v0.1（A1a-2）｜C-v0.5
 用途：契約資料結構（dataclass；欄位、型別、規則完全依 §6.1／§6.2，即 schema.CONTRACT_SPECS）。
       VillageRef(C1)、VillageSnapshot(C2)、TransferPlan(C3)、TroopMovePlan(C4)、ActionRow(C5)、
       VillageSettingsRow(C6)、MarketConfig(C7)、VillageLock(C8)、BuildSettings／HideContext／
@@ -219,7 +220,7 @@ class VillageSnapshot(_Contract):
     prod: Res4                              # 可負（穀可為負）
     cap_wh: int
     cap_gr: int
-    hidden: Res4                            # 山洞可隱藏量
+    hidden: Optional[Res4]                  # 山洞可隱藏量；未知＝None（v0.69／D-32，C-v0.7；不得用 0 充數）
     queue_free_in_s: int                    # 0＝佇列空閒
     queue_slots_used: int
     next_target: Optional[BuildTarget]
