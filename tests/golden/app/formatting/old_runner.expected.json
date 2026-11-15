@@ -1,0 +1,787 @@
+{
+  "cp_summary": [
+    {
+      "case": "gap",
+      "cp": {
+        "have": 1536,
+        "max": 2,
+        "need": 6000,
+        "per_day": 275,
+        "used": 2
+      },
+      "text": "[文化點] 1536/6000，缺 4464，照目前每日 +275 約 17 天（不含慶典）；村莊名額 2/2"
+    },
+    {
+      "case": "reached",
+      "cp": {
+        "have": 6000,
+        "max": 2,
+        "need": 6000,
+        "per_day": 275,
+        "used": 1
+      },
+      "text": "[文化點] 6000/6000，已達標；村莊名額 1/2"
+    },
+    {
+      "case": "per_day_zero",
+      "cp": {
+        "have": 10,
+        "max": 1,
+        "need": 6000,
+        "per_day": 0,
+        "used": 1
+      },
+      "text": "[文化點] 10/6000，缺 5990，目前每日產量是 0；村莊名額 1/1"
+    },
+    {
+      "case": "ceil",
+      "cp": {
+        "have": 5990,
+        "max": 2,
+        "need": 6000,
+        "per_day": 275,
+        "used": 1
+      },
+      "text": "[文化點] 5990/6000，缺 10，照目前每日 +275 約 1 天（不含慶典）；村莊名額 1/2"
+    }
+  ],
+  "describe": [
+    {
+      "cap": [
+        800,
+        800,
+        800,
+        800
+      ],
+      "case": "wait_res_field",
+      "detail": "下一個要升級 伐木場(slot 3) L4→L5，資源不夠：木材缺400、穀物缺150，預計約 1小時30分 後足夠",
+      "field": {
+        "aid": 3,
+        "cost": [
+          500,
+          400,
+          300,
+          200
+        ],
+        "gid": 1,
+        "level": 4
+      },
+      "kind": "wait_res",
+      "label": "等待資源",
+      "queue_len": 0,
+      "ref_aid": 3,
+      "secs": 5400,
+      "slots": 1,
+      "stock": [
+        100,
+        500,
+        300,
+        50
+      ]
+    },
+    {
+      "cap": [
+        800,
+        800,
+        800,
+        800
+      ],
+      "case": "wait_res_new_building",
+      "detail": "下一個要升級 倉庫 新建→L1，資源不夠：（差一點），預計約 1分 後足夠",
+      "field": {
+        "aid": 25,
+        "cost": [
+          90,
+          50,
+          70,
+          20
+        ],
+        "gid": 10,
+        "level": 0
+      },
+      "kind": "wait_res",
+      "label": "等待資源",
+      "queue_len": 0,
+      "ref_aid": 25,
+      "secs": 30,
+      "slots": 1,
+      "stock": [
+        500,
+        500,
+        500,
+        500
+      ]
+    },
+    {
+      "cap": [
+        800,
+        800,
+        800,
+        800
+      ],
+      "case": "wait_res_short_crop_only",
+      "detail": "下一個要升級 農場(slot 7) L2→L3，資源不夠：穀物缺890，預計約 2小時1分 後足夠",
+      "field": {
+        "aid": 7,
+        "cost": [
+          10,
+          10,
+          10,
+          900
+        ],
+        "gid": 4,
+        "level": 2
+      },
+      "kind": "wait_res",
+      "label": "等待資源",
+      "queue_len": 0,
+      "ref_aid": 7,
+      "secs": 7260,
+      "slots": 1,
+      "stock": [
+        50,
+        50,
+        50,
+        10
+      ]
+    },
+    {
+      "cap": [
+        800,
+        800,
+        800,
+        800
+      ],
+      "case": "wait_queue_full",
+      "detail": "施工佇列已滿（1/1），等有空位再升級，約 2分 後再試",
+      "kind": "wait_queue",
+      "label": "等待佇列",
+      "queue_len": 1,
+      "ref_aid": null,
+      "secs": 125,
+      "slots": 1,
+      "stock": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "cap": [
+        800,
+        800,
+        800,
+        800
+      ],
+      "case": "wait_queue_not_full",
+      "detail": "目標建築（或它的前置建築）正在施工，等施工完成，約 1小時0分 後再試",
+      "kind": "wait_queue",
+      "label": "等待佇列",
+      "queue_len": 0,
+      "ref_aid": null,
+      "secs": 3600,
+      "slots": 2,
+      "stock": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "cap": [
+        800,
+        800,
+        800,
+        800
+      ],
+      "case": "need_storage",
+      "detail": "泥坑(slot 9) L7→L8 的成本超過倉庫/糧倉容量（木材成本1000>容量800、穀物成本900>容量800），需先升倉庫/糧倉",
+      "field": {
+        "aid": 9,
+        "cost": [
+          1000,
+          300,
+          100,
+          900
+        ],
+        "gid": 2,
+        "level": 7
+      },
+      "kind": "need_storage",
+      "label": "倉容不足",
+      "queue_len": 0,
+      "ref_aid": 9,
+      "slots": 1,
+      "stock": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "cap": [
+        800,
+        800,
+        800,
+        800
+      ],
+      "case": "blocked",
+      "detail": "需要人處理：前置建築缺主建築 5 級",
+      "kind": "blocked",
+      "label": "計畫卡住",
+      "queue_len": 0,
+      "ref_aid": null,
+      "slots": 1,
+      "stock": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "text": "前置建築缺主建築 5 級"
+    },
+    {
+      "cap": [
+        800,
+        800,
+        800,
+        800
+      ],
+      "case": "done",
+      "detail": "設定的目標都已達成，沒有需要升級的項目",
+      "kind": "done",
+      "label": "已完成",
+      "queue_len": 0,
+      "ref_aid": null,
+      "slots": 1,
+      "stock": [
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "fname_flv": [
+    {
+      "aid": 3,
+      "flv": "L0→L1",
+      "fname": "伐木場(slot 3)",
+      "gid": 1,
+      "level": 0
+    },
+    {
+      "aid": 3,
+      "flv": "L4→L5",
+      "fname": "伐木場(slot 3)",
+      "gid": 1,
+      "level": 4
+    },
+    {
+      "aid": 25,
+      "flv": "新建→L1",
+      "fname": "倉庫",
+      "gid": 10,
+      "level": 0
+    },
+    {
+      "aid": 25,
+      "flv": "L3→L4",
+      "fname": "倉庫",
+      "gid": 10,
+      "level": 3
+    },
+    {
+      "aid": 9,
+      "flv": "L0→L1",
+      "fname": "農場(slot 9)",
+      "gid": 4,
+      "level": 0
+    },
+    {
+      "aid": 30,
+      "flv": "L9→L10",
+      "fname": "倉庫",
+      "gid": 10,
+      "level": 9
+    }
+  ],
+  "mins": [
+    {
+      "secs": 0,
+      "text": "1分"
+    },
+    {
+      "secs": 1,
+      "text": "1分"
+    },
+    {
+      "secs": 29,
+      "text": "1分"
+    },
+    {
+      "secs": 30,
+      "text": "1分"
+    },
+    {
+      "secs": 31,
+      "text": "1分"
+    },
+    {
+      "secs": 59,
+      "text": "1分"
+    },
+    {
+      "secs": 60,
+      "text": "1分"
+    },
+    {
+      "secs": 89,
+      "text": "1分"
+    },
+    {
+      "secs": 90,
+      "text": "2分"
+    },
+    {
+      "secs": 119,
+      "text": "2分"
+    },
+    {
+      "secs": 150,
+      "text": "2分"
+    },
+    {
+      "secs": 3599,
+      "text": "1小時0分"
+    },
+    {
+      "secs": 3600,
+      "text": "1小時0分"
+    },
+    {
+      "secs": 3660,
+      "text": "1小時1分"
+    },
+    {
+      "secs": 5400,
+      "text": "1小時30分"
+    },
+    {
+      "secs": 7260,
+      "text": "2小時1分"
+    },
+    {
+      "secs": 86399,
+      "text": "24小時0分"
+    }
+  ],
+  "sheet1_old": [
+    {
+      "free_crop": 292,
+      "gold": 120,
+      "hero_adventures": 29,
+      "hero_exp_pct": 17,
+      "hero_health_pct": 100,
+      "loyalty": 100,
+      "population": 119,
+      "prod": [
+        138,
+        1578,
+        138,
+        298
+      ],
+      "sample": "S1a",
+      "server_time_text": "00:38:26",
+      "silver": 4432,
+      "stock": [
+        3611,
+        3430,
+        4909,
+        5780
+      ]
+    },
+    {
+      "free_crop": 460,
+      "gold": 120,
+      "hero_adventures": 28,
+      "hero_exp_pct": 24,
+      "hero_health_pct": 77,
+      "loyalty": 100,
+      "population": 367,
+      "prod": [
+        560,
+        560,
+        392,
+        460
+      ],
+      "sample": "S1b",
+      "server_time_text": "00:47:12",
+      "silver": 4432,
+      "stock": [
+        428,
+        376,
+        2069,
+        1443
+      ]
+    }
+  ],
+  "source": "runner.py v2.36（舊）離線輸出",
+  "state_rows": [
+    {
+      "cap": [
+        6300,
+        6300,
+        6300,
+        7800
+      ],
+      "case": "full",
+      "info": {
+        "cp": {
+          "have": 1536,
+          "max": 2,
+          "need": 6000,
+          "per_day": 275,
+          "used": 2
+        },
+        "plus_active": true,
+        "tribe_id": 3
+      },
+      "queue_slots": 2,
+      "rows": [
+        [
+          "tribe",
+          "高盧",
+          "種族"
+        ],
+        [
+          "plus_active",
+          "TRUE",
+          "Plus 是否有效"
+        ],
+        [
+          "cp_have",
+          1536,
+          "目前文化點"
+        ],
+        [
+          "cp_need",
+          6000,
+          "下一個村莊名額需要的文化點"
+        ],
+        [
+          "cp_gap",
+          4464,
+          "還缺多少文化點（0 = 已達標）"
+        ],
+        [
+          "cp_eta_days",
+          17,
+          "照目前每日產量估計還要幾天達標（不含慶典）"
+        ],
+        [
+          "cp_per_day",
+          275,
+          "文化點每日增加量（不含慶典）"
+        ],
+        [
+          "village_slots_used",
+          2,
+          "已用村莊名額"
+        ],
+        [
+          "village_slots_max",
+          2,
+          "目前文化點可擁有的村莊名額上限"
+        ],
+        [
+          "queue_slots",
+          2,
+          "施工佇列長度（自動偵測或 Config 指定）"
+        ],
+        [
+          "cap_wood",
+          6300,
+          "木材倉容量"
+        ],
+        [
+          "cap_clay",
+          6300,
+          "磚塊倉容量"
+        ],
+        [
+          "cap_iron",
+          6300,
+          "鋼鐵倉容量"
+        ],
+        [
+          "cap_crop",
+          7800,
+          "穀物倉容量"
+        ]
+      ]
+    },
+    {
+      "cap": [
+        6300,
+        6300,
+        6300,
+        7800
+      ],
+      "case": "plus_false_cp_reached",
+      "info": {
+        "cp": {
+          "have": 6000,
+          "max": 2,
+          "need": 6000,
+          "per_day": 275,
+          "used": 1
+        },
+        "plus_active": false,
+        "tribe_id": 3
+      },
+      "queue_slots": 1,
+      "rows": [
+        [
+          "tribe",
+          "高盧",
+          "種族"
+        ],
+        [
+          "plus_active",
+          "FALSE",
+          "Plus 是否有效"
+        ],
+        [
+          "cp_have",
+          6000,
+          "目前文化點"
+        ],
+        [
+          "cp_need",
+          6000,
+          "下一個村莊名額需要的文化點"
+        ],
+        [
+          "cp_gap",
+          0,
+          "還缺多少文化點（0 = 已達標）"
+        ],
+        [
+          "cp_eta_days",
+          0,
+          "照目前每日產量估計還要幾天達標（不含慶典）"
+        ],
+        [
+          "cp_per_day",
+          275,
+          "文化點每日增加量（不含慶典）"
+        ],
+        [
+          "village_slots_used",
+          1,
+          "已用村莊名額"
+        ],
+        [
+          "village_slots_max",
+          2,
+          "目前文化點可擁有的村莊名額上限"
+        ],
+        [
+          "queue_slots",
+          1,
+          "施工佇列長度（自動偵測或 Config 指定）"
+        ],
+        [
+          "cap_wood",
+          6300,
+          "木材倉容量"
+        ],
+        [
+          "cap_clay",
+          6300,
+          "磚塊倉容量"
+        ],
+        [
+          "cap_iron",
+          6300,
+          "鋼鐵倉容量"
+        ],
+        [
+          "cap_crop",
+          7800,
+          "穀物倉容量"
+        ]
+      ]
+    },
+    {
+      "cap": [
+        6300,
+        6300,
+        6300,
+        7800
+      ],
+      "case": "per_day_zero",
+      "info": {
+        "cp": {
+          "have": 10,
+          "max": 1,
+          "need": 6000,
+          "per_day": 0,
+          "used": 1
+        },
+        "plus_active": true,
+        "tribe_id": 7
+      },
+      "queue_slots": 1,
+      "rows": [
+        [
+          "tribe",
+          "匈奴",
+          "種族"
+        ],
+        [
+          "plus_active",
+          "TRUE",
+          "Plus 是否有效"
+        ],
+        [
+          "cp_have",
+          10,
+          "目前文化點"
+        ],
+        [
+          "cp_need",
+          6000,
+          "下一個村莊名額需要的文化點"
+        ],
+        [
+          "cp_gap",
+          5990,
+          "還缺多少文化點（0 = 已達標）"
+        ],
+        [
+          "cp_per_day",
+          0,
+          "文化點每日增加量（不含慶典）"
+        ],
+        [
+          "village_slots_used",
+          1,
+          "已用村莊名額"
+        ],
+        [
+          "village_slots_max",
+          1,
+          "目前文化點可擁有的村莊名額上限"
+        ],
+        [
+          "queue_slots",
+          1,
+          "施工佇列長度（自動偵測或 Config 指定）"
+        ],
+        [
+          "cap_wood",
+          6300,
+          "木材倉容量"
+        ],
+        [
+          "cap_clay",
+          6300,
+          "磚塊倉容量"
+        ],
+        [
+          "cap_iron",
+          6300,
+          "鋼鐵倉容量"
+        ],
+        [
+          "cap_crop",
+          7800,
+          "穀物倉容量"
+        ]
+      ]
+    },
+    {
+      "cap": [
+        6300,
+        6300,
+        6300,
+        7800
+      ],
+      "case": "unknown_tribe_no_cp",
+      "info": {
+        "cp": null,
+        "plus_active": null,
+        "tribe_id": 99
+      },
+      "queue_slots": 1,
+      "rows": [
+        [
+          "tribe",
+          "種族 99",
+          "種族"
+        ],
+        [
+          "queue_slots",
+          1,
+          "施工佇列長度（自動偵測或 Config 指定）"
+        ],
+        [
+          "cap_wood",
+          6300,
+          "木材倉容量"
+        ],
+        [
+          "cap_clay",
+          6300,
+          "磚塊倉容量"
+        ],
+        [
+          "cap_iron",
+          6300,
+          "鋼鐵倉容量"
+        ],
+        [
+          "cap_crop",
+          7800,
+          "穀物倉容量"
+        ]
+      ]
+    },
+    {
+      "cap": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "case": "info_none_caps_zero",
+      "info": null,
+      "queue_slots": 1,
+      "rows": [
+        [
+          "queue_slots",
+          1,
+          "施工佇列長度（自動偵測或 Config 指定）"
+        ]
+      ]
+    },
+    {
+      "cap": null,
+      "case": "info_none_no_snapshot",
+      "info": null,
+      "queue_slots": 3,
+      "rows": [
+        [
+          "queue_slots",
+          3,
+          "施工佇列長度（自動偵測或 Config 指定）"
+        ]
+      ]
+    }
+  ]
+}

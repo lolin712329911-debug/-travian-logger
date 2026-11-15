@@ -123,6 +123,61 @@
         "units_away": null,
         "units_home": null
       }
+    },
+    {
+      "ctx": {},
+      "data": {
+        "cap_gr": 800,
+        "cap_wh": 800,
+        "did": 101,
+        "hidden": null,
+        "incoming_attacks": null,
+        "incoming_res": [
+          {
+            "amount": [
+              100,
+              0,
+              0,
+              0
+            ],
+            "arrive_utc": "2026-11-02T08:15:30Z",
+            "from_did": 101,
+            "to_did": 102
+          }
+        ],
+        "merchants": null,
+        "next_target": {
+          "aid": 5,
+          "cost": [
+            100,
+            80,
+            60,
+            40
+          ],
+          "gid": 1,
+          "name": "伐木場",
+          "ready_in_s": 0,
+          "to_level": 3
+        },
+        "outgoing_res": [],
+        "prod": [
+          10,
+          10,
+          10,
+          -2
+        ],
+        "queue_free_in_s": 0,
+        "queue_slots_used": 0,
+        "stock": [
+          500,
+          500,
+          500,
+          500
+        ],
+        "ts_utc": "2026-11-02T08:15:30Z",
+        "units_away": null,
+        "units_home": null
+      }
     }
   ],
   "contract": "VillageSnapshot",
