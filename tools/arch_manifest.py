@@ -14,15 +14,15 @@
   disp  處置：沿用／拆／改寫／新寫（依「舊源→處置」欄最後的粗體字分類；僅供參考，不參與檢查）
 """
 
-SOURCE = 'multi-village-dev-v0_69.md v0.69 §4.2'
+SOURCE = 'multi-village-dev-v0_70_A5a.md v0.70 §4.2'
 EXPECTED_COUNT = 73
 
 MANIFEST = [
     {'id': 'ac-01', 'path': 'actions/village_switch.py', 'layer': 'actions', 'deps': ['if-02', 'ps-02', 'cm-03'], 'wp': 'A5b／B1', 'disp': '新寫'},
-    {'id': 'ac-02', 'path': 'actions/build_exec.py', 'layer': 'actions', 'deps': ['if-02', 'ps-01', 'ps-03', 'cm-02', 'cm-04'], 'wp': 'A5a', 'disp': '沿用'},
-    {'id': 'ac-03', 'path': 'actions/item_transfer_exec.py', 'layer': 'actions', 'deps': ['if-02', 'ps-05', 'cm-02', 'cm-04'], 'wp': 'A5a', 'disp': '拆'},
-    {'id': 'ac-04', 'path': 'actions/focus_exec.py', 'layer': 'actions', 'deps': ['if-02', 'ps-05', 'cm-02', 'cm-04'], 'wp': 'A5a', 'disp': '拆'},
-    {'id': 'ac-05', 'path': 'actions/hero_exec.py', 'layer': 'actions', 'deps': ['if-02', 'ps-05', 'cm-02', 'cm-04'], 'wp': 'A5a', 'disp': '沿用'},
+    {'id': 'ac-02', 'path': 'actions/build_exec.py', 'layer': 'actions', 'deps': ['if-02', 'ps-01', 'ps-03', 'cm-02', 'cm-04', 'cm-11'], 'wp': 'A5a', 'disp': '沿用'},
+    {'id': 'ac-03', 'path': 'actions/item_transfer_exec.py', 'layer': 'actions', 'deps': ['if-02', 'ps-05', 'cm-02', 'cm-04', 'cm-09', 'cm-11'], 'wp': 'A5a', 'disp': '拆'},
+    {'id': 'ac-04', 'path': 'actions/focus_exec.py', 'layer': 'actions', 'deps': ['if-02', 'ps-05', 'cm-02', 'cm-04', 'cm-09', 'cm-11'], 'wp': 'A5a', 'disp': '拆'},
+    {'id': 'ac-05', 'path': 'actions/hero_exec.py', 'layer': 'actions', 'deps': ['if-02', 'ps-05', 'cm-02', 'cm-04', 'cm-09', 'cm-11'], 'wp': 'A5a', 'disp': '沿用'},
     {'id': 'ac-06', 'path': 'actions/hide_exec.py', 'layer': 'actions', 'deps': ['if-02', 'ps-06', 'cm-02', 'cm-04', 'cm-05'], 'wp': 'A5b', 'disp': '拆'},
     {'id': 'ac-07', 'path': 'actions/oasis_exec.py', 'layer': 'actions', 'deps': ['if-02', 'ps-08', 'ps-09', 'cm-09'], 'wp': 'A5b', 'disp': '沿用'},
     {'id': 'ac-08', 'path': 'actions/market_exec.py', 'layer': 'actions', 'deps': ['if-02', 'ps-07', 'cm-01', 'cm-02', 'cm-04'], 'wp': 'C3', 'disp': '新寫'},
@@ -46,14 +46,14 @@ MANIFEST = [
     {'id': 'ap-18', 'path': 'app/stages/market.py', 'layer': 'app', 'deps': ['ap-03', 'ap-05', 'dm-10', 'ac-08', 'if-11', 'if-07', 'cm-01'], 'wp': 'C4', 'disp': '新寫'},
     {'id': 'ap-19', 'path': 'app/stages/troops.py', 'layer': 'app', 'deps': ['ap-03', 'ap-05', 'dm-11', 'ac-09', 'if-07', 'cm-01'], 'wp': 'D2', 'disp': '新寫'},
     {'id': 'cm-01', 'path': 'common/models.py', 'layer': 'common', 'deps': ['cm-11', 'cm-10'], 'wp': 'A1a-2／A6a1', 'disp': '新寫'},
-    {'id': 'cm-02', 'path': 'common/decisions.py', 'layer': 'common', 'deps': ['cm-01', 'cm-09'], 'wp': 'A1a-2／A3a', 'disp': '新寫'},
+    {'id': 'cm-02', 'path': 'common/decisions.py', 'layer': 'common', 'deps': ['cm-01', 'cm-09'], 'wp': 'A1a-2／A3a／A5a', 'disp': '新寫'},
     {'id': 'cm-03', 'path': 'common/constants.py', 'layer': 'common', 'deps': [], 'wp': 'A1a-1', 'disp': '沿用'},
     {'id': 'cm-04', 'path': 'common/modes.py', 'layer': 'common', 'deps': [], 'wp': 'A1a-1', 'disp': '沿用'},
     {'id': 'cm-05', 'path': 'common/clock.py', 'layer': 'common', 'deps': ['cm-10', 'cm-13'], 'wp': 'A1b', 'disp': '沿用'},
     {'id': 'cm-06', 'path': 'common/tribe_data.py', 'layer': 'common', 'deps': ['cm-11'], 'wp': 'A1b', 'disp': '沿用'},
     {'id': 'cm-07', 'path': 'common/geo.py', 'layer': 'common', 'deps': [], 'wp': 'A1b', 'disp': '沿用'},
     {'id': 'cm-08', 'path': 'common/config_schema.py', 'layer': 'common', 'deps': ['cm-01', 'cm-04', 'cm-06', 'cm-10', 'cm-11', 'cm-12', 'cm-13'], 'wp': 'A1b／B2', 'disp': '沿用'},
-    {'id': 'cm-09', 'path': 'common/parsed.py', 'layer': 'common', 'deps': ['cm-01'], 'wp': 'A1a-2', 'disp': '新寫'},
+    {'id': 'cm-09', 'path': 'common/parsed.py', 'layer': 'common', 'deps': ['cm-01'], 'wp': 'A1a-2／A5a', 'disp': '新寫'},
     {'id': 'cm-10', 'path': 'common/serialize.py', 'layer': 'common', 'deps': [], 'wp': 'A1a-1', 'disp': '新寫'},
     {'id': 'cm-11', 'path': 'common/schema.py', 'layer': 'common', 'deps': [], 'wp': 'A1a-1／A6a1', 'disp': '新寫'},
     {'id': 'cm-12', 'path': 'common/game_rules.py', 'layer': 'common', 'deps': ['cm-01'], 'wp': 'A1b', 'disp': '沿用'},
@@ -71,7 +71,7 @@ MANIFEST = [
     {'id': 'dm-11', 'path': 'domain/troop_plan.py', 'layer': 'domain', 'deps': ['cm-01', 'cm-06', 'cm-07'], 'wp': 'D2', 'disp': '新寫'},
     {'id': 'dm-12', 'path': 'domain/plan_validate.py', 'layer': 'domain', 'deps': ['cm-01', 'cm-02', 'cm-03', 'cm-09', 'cm-12'], 'wp': 'A3a', 'disp': '新寫'},
     {'id': 'if-01', 'path': 'infra/session.py', 'layer': 'infra', 'deps': ['cm-01', 'cm-10'], 'wp': 'A4a', 'disp': '改寫'},
-    {'id': 'if-02', 'path': 'infra/gateway.py', 'layer': 'infra', 'deps': ['cm-03', 'cm-01'], 'wp': 'A4a／B1', 'disp': '拆'},
+    {'id': 'if-02', 'path': 'infra/gateway.py', 'layer': 'infra', 'deps': ['cm-03', 'cm-01'], 'wp': 'A4a／A5a／B1', 'disp': '拆'},
     {'id': 'if-03', 'path': 'infra/notify.py', 'layer': 'infra', 'deps': ['cm-10'], 'wp': 'A4a', 'disp': '沿用'},
     {'id': 'if-04', 'path': 'infra/store/gsheets.py', 'layer': 'infra', 'deps': ['cm-10'], 'wp': 'A4a', 'disp': '改寫'},
     {'id': 'if-05', 'path': 'infra/store/config_repo.py', 'layer': 'infra', 'deps': ['if-04', 'if-06', 'cm-08', 'cm-10'], 'wp': 'A4b-1', 'disp': '拆'},
@@ -86,7 +86,7 @@ MANIFEST = [
     {'id': 'ps-02', 'path': 'parsers/village_list.py', 'layer': 'parsers', 'deps': ['cm-01', 'cm-03', 'cm-11'], 'wp': 'A2a-1／B1', 'disp': '沿用'},
     {'id': 'ps-03', 'path': 'parsers/buildings.py', 'layer': 'parsers', 'deps': ['cm-09', 'cm-03', 'cm-11'], 'wp': 'A2a-2b', 'disp': '沿用'},
     {'id': 'ps-04', 'path': 'parsers/player.py', 'layer': 'parsers', 'deps': ['cm-09', 'cm-11'], 'wp': 'A2a-1', 'disp': '沿用'},
-    {'id': 'ps-05', 'path': 'parsers/hero.py', 'layer': 'parsers', 'deps': ['cm-09', 'cm-03', 'cm-11'], 'wp': 'A2b', 'disp': '沿用'},
+    {'id': 'ps-05', 'path': 'parsers/hero.py', 'layer': 'parsers', 'deps': ['cm-09', 'cm-03', 'cm-11'], 'wp': 'A2b／A5a', 'disp': '沿用'},
     {'id': 'ps-06', 'path': 'parsers/rally.py', 'layer': 'parsers', 'deps': ['cm-09', 'cm-03', 'cm-11'], 'wp': 'A2b／D1', 'disp': '沿用'},
     {'id': 'ps-07', 'path': 'parsers/market.py', 'layer': 'parsers', 'deps': ['cm-09', 'cm-03'], 'wp': 'C1', 'disp': '新寫'},
     {'id': 'ps-08', 'path': 'parsers/oasis.py', 'layer': 'parsers', 'deps': ['cm-09', 'cm-03', 'cm-11'], 'wp': 'A2b', 'disp': '沿用'},
