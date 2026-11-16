@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/common/decisions.py（cm-02）
-版本：v0.3（A5a：ItemTransferDecision 改寫＋TransferLine；FOCUS_NAMES）｜v0.2（A3a：BuildDecision／GuardDecision／FillInDecision 定案；其餘仍為草案 ✗，待 A3b／A3c）｜v0.1（A1a-2）
+版本：v0.4（A3b：ItemTransferDecision 加 kind、TRANSFER_KINDS）｜v0.3（A5a：ItemTransferDecision 改寫＋TransferLine；FOCUS_NAMES）｜v0.2（A3a：BuildDecision／GuardDecision／FillInDecision 定案；其餘仍為草案 ✗，待 A3b／A3c）｜v0.1（A1a-2）
 用途：各 domain 決策的回傳結構（domain 回傳、actions 吃進去、app/stages 串接，§4.1 補充規則 1）：
       BuildTarget、BuildDecision、GuardDecision、FillInDecision、FocusDecision、
       ItemTransferDecision、AdventureDecision、HideCandidate、HideDecision、ExecResult。
@@ -39,6 +39,12 @@ BUILD_EXTRA_KINDS = ("no_affordable",   # plan(affordable_only=True) 沒有付�
 BUILD_DECISION_KINDS = BUILD_KINDS + BUILD_EXTRA_KINDS   # BuildDecision.kind 的完整值域（planner 實際回傳）
 # v0.3（A5a）：FocusDecision.focus 的值域（actions 換成 hero.productionType：0～4；tuple 不進 __all__）
 FOCUS_NAMES = ("balanced", "wood", "clay", "iron", "crop")
+# v0.4（A3b）：ItemTransferDecision.kind 的值域（tuple 不進 __all__）。舊 travian_transfer.Plan.decision 的對應：
+#   transfer→transfer、affordable→affordable、no_incoming→not_needed、queue_busy→queue_busy、no_data→no_data、
+#   gap_too_big／over_capacity／inventory_low 同名；mode_off 不在 domain（由 stage 用 modes 處理）。
+#   gap_too_big／over_capacity／inventory_low 時呼叫端改選「現有資源付得起」的項目（舊註解）。
+TRANSFER_KINDS = ("transfer", "affordable", "not_needed", "queue_busy",
+                  "gap_too_big", "over_capacity", "inventory_low", "no_data")
 FACTS_KINDS = ("dorf2", "upgrade_cost", "build_options")  # FactsNeed.kind 的值域
 
 
@@ -125,6 +131,7 @@ class ItemTransferDecision:
     lines: Tuple[TransferLine, ...] = ()
     village_id: Optional[int] = None
     targets: Optional[Tuple[int, int, int, int]] = None
+    kind: str = ""                              # v0.4：TRANSFER_KINDS 之一；舊呼叫端不給＝空字串
 
 
 @dataclass(frozen=True)
