@@ -14,7 +14,7 @@
   disp  處置：沿用／拆／改寫／新寫（依「舊源→處置」欄最後的粗體字分類；僅供參考，不參與檢查）
 """
 
-SOURCE = 'multi-village-dev-v0_71.md v0.71 §4.2'
+SOURCE = 'multi-village-dev-v0_74.md v0.74 §4.2'
 EXPECTED_COUNT = 73
 
 MANIFEST = [
@@ -31,7 +31,7 @@ MANIFEST = [
     {'id': 'ap-02', 'path': 'app/run_context.py', 'layer': 'app', 'deps': ['if-02', 'if-05', 'if-07', 'if-08', 'if-09', 'if-10', 'cm-01', 'cm-06', 'cm-09', 'cm-10'], 'wp': 'A6a1', 'disp': '新寫'},
     {'id': 'ap-03', 'path': 'app/stage_base.py', 'layer': 'app', 'deps': ['ap-02', 'cm-01', 'cm-04', 'cm-10'], 'wp': 'A6a1', 'disp': '新寫'},
     {'id': 'ap-04', 'path': 'app/registry.py', 'layer': 'app', 'deps': ['ap-03'], 'wp': 'A6a1', 'disp': '新寫'},
-    {'id': 'ap-05', 'path': 'app/observe.py', 'layer': 'app', 'deps': ['ap-02', 'if-01', 'if-02', 'ps-01', 'ps-03', 'ps-04', 'ps-05', 'if-09', 'if-08', 'cm-01', 'cm-03', 'cm-06', 'cm-09', 'cm-10', 'cm-11', 'cm-12'], 'wp': 'A6a1', 'disp': ''},
+    {'id': 'ap-05', 'path': 'app/observe.py', 'layer': 'app', 'deps': ['ap-02', 'if-01', 'if-02', 'ps-01', 'ps-03', 'ps-04', 'ps-05', 'if-09', 'if-08', 'cm-01', 'cm-03', 'cm-06', 'cm-09', 'cm-10', 'cm-11'], 'wp': 'A6a1', 'disp': ''},
     {'id': 'ap-06', 'path': 'app/formatting.py', 'layer': 'app', 'deps': ['cm-01', 'cm-02', 'cm-03', 'cm-10'], 'wp': 'A6a1', 'disp': ''},
     {'id': 'ap-07', 'path': 'app/village_cycle.py', 'layer': 'app', 'deps': ['ap-05', 'ap-04', 'ap-03', 'dm-09', 'ac-01', 'cm-01'], 'wp': 'A6b', 'disp': '拆'},
     {'id': 'ap-08', 'path': 'app/orchestrator.py', 'layer': 'app', 'deps': ['ap-07', 'ap-04', 'ap-03', 'if-05', 'if-03', 'cm-01', 'cm-05'], 'wp': 'A6b／B3', 'disp': '新寫'},
@@ -46,7 +46,7 @@ MANIFEST = [
     {'id': 'ap-18', 'path': 'app/stages/market.py', 'layer': 'app', 'deps': ['ap-03', 'ap-05', 'dm-10', 'ac-08', 'if-11', 'if-07', 'cm-01'], 'wp': 'C4', 'disp': '新寫'},
     {'id': 'ap-19', 'path': 'app/stages/troops.py', 'layer': 'app', 'deps': ['ap-03', 'ap-05', 'dm-11', 'ac-09', 'if-07', 'cm-01'], 'wp': 'D2', 'disp': '新寫'},
     {'id': 'cm-01', 'path': 'common/models.py', 'layer': 'common', 'deps': ['cm-11', 'cm-10'], 'wp': 'A1a-2／A6a1', 'disp': '新寫'},
-    {'id': 'cm-02', 'path': 'common/decisions.py', 'layer': 'common', 'deps': ['cm-01', 'cm-09'], 'wp': 'A1a-2／A3a／A5a', 'disp': '新寫'},
+    {'id': 'cm-02', 'path': 'common/decisions.py', 'layer': 'common', 'deps': ['cm-01', 'cm-09'], 'wp': 'A1a-2／A3a／A5a／A3b', 'disp': '新寫'},
     {'id': 'cm-03', 'path': 'common/constants.py', 'layer': 'common', 'deps': [], 'wp': 'A1a-1', 'disp': '沿用'},
     {'id': 'cm-04', 'path': 'common/modes.py', 'layer': 'common', 'deps': [], 'wp': 'A1a-1', 'disp': '沿用'},
     {'id': 'cm-05', 'path': 'common/clock.py', 'layer': 'common', 'deps': ['cm-10', 'cm-13'], 'wp': 'A1b', 'disp': '沿用'},
@@ -61,9 +61,9 @@ MANIFEST = [
     {'id': 'dm-01', 'path': 'domain/build_planner.py', 'layer': 'domain', 'deps': ['cm-01', 'cm-02', 'cm-03', 'cm-09', 'cm-12'], 'wp': 'A3a', 'disp': '改寫'},
     {'id': 'dm-02', 'path': 'domain/fill_in.py', 'layer': 'domain', 'deps': ['cm-01', 'cm-02'], 'wp': 'A3a', 'disp': '沿用'},
     {'id': 'dm-03', 'path': 'domain/guard.py', 'layer': 'domain', 'deps': ['cm-01', 'cm-02'], 'wp': 'A3a', 'disp': '沿用'},
-    {'id': 'dm-04', 'path': 'domain/focus.py', 'layer': 'domain', 'deps': ['cm-01', 'cm-02', 'cm-09'], 'wp': 'A3b', 'disp': '拆'},
-    {'id': 'dm-05', 'path': 'domain/item_transfer.py', 'layer': 'domain', 'deps': ['cm-01', 'cm-02', 'cm-09'], 'wp': 'A3b', 'disp': '拆'},
-    {'id': 'dm-06', 'path': 'domain/adventure.py', 'layer': 'domain', 'deps': ['cm-01', 'cm-02', 'cm-09'], 'wp': 'A3b', 'disp': '拆'},
+    {'id': 'dm-04', 'path': 'domain/focus.py', 'layer': 'domain', 'deps': ['cm-02', 'cm-09'], 'wp': 'A3b', 'disp': ''},
+    {'id': 'dm-05', 'path': 'domain/item_transfer.py', 'layer': 'domain', 'deps': ['cm-02', 'cm-09'], 'wp': 'A3b', 'disp': ''},
+    {'id': 'dm-06', 'path': 'domain/adventure.py', 'layer': 'domain', 'deps': ['cm-02', 'cm-09'], 'wp': 'A3b', 'disp': ''},
     {'id': 'dm-07', 'path': 'domain/hide_plan.py', 'layer': 'domain', 'deps': ['cm-01', 'cm-02', 'cm-07', 'cm-06'], 'wp': 'A3c', 'disp': '改寫'},
     {'id': 'dm-08', 'path': 'domain/hide_decide.py', 'layer': 'domain', 'deps': ['cm-01', 'cm-02', 'cm-09'], 'wp': 'A3c', 'disp': '沿用'},
     {'id': 'dm-09', 'path': 'domain/village_lock.py', 'layer': 'domain', 'deps': ['cm-01', 'cm-02'], 'wp': 'A3c', 'disp': '新寫'},
