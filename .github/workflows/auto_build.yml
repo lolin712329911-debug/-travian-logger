@@ -42,7 +42,7 @@ jobs:
 
       # 每個 WP 驗收必跑；A2a-2b 加進來（之後每完成一個 WP 就在 --expect-wp 末尾追加）
       - name: check_arch（依賴方向、單一出口）
-        run: python tools/check_arch.py --expect-wp A1a-1,A1a-2,A1b,A2a-1,A2a-2a,A2a-2b,A2b,A3a,A4a,A4b-1,A4b-2,A6a1,A5a --strict
+        run: python tools/check_arch.py --expect-wp A1a-1,A1a-2,A1b,A2a-1,A2a-2a,A2a-2b,A2b,A3a,A4a,A4b-1,A4b-2,A6a1,A5a,A3b --strict
 
       - name: check_contracts（契約與範例）
         run: python tools/check_contracts.py
