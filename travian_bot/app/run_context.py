@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/run_context.py（ap-02）
-版本：v0.1（A6a1）
+版本：v0.1.1（A6a2：加 stage_notes）｜v0.1（A6a1）
 用途：帳號級執行環境。
       StageIO       ：stage 與 observe 對外的全部 IO（Sheet 讀寫、通知、等待、時鐘），欄位都是可替換的函式，
                       測試時整組注入假的；real_io(notify) 組出綁真實 repo 函式的版本。
@@ -19,6 +19,8 @@ travian_bot/app/run_context.py（ap-02）
   3. rc.warn 只收集、不印；訊息先過 serialize.redact（§6.1 機密規則）。
   4. rc.pages 是「本輪已抓頁面」：同一路徑本輪只抓一次（get_page）。
   5. 與卡片的差異（交接區塊有列）：RunContext 多一個 `modes`（帳號級 mode 值，account 級 stage 用；預設空＝全部 off）。
+  6. v0.1.1（A6a2）：多一個 `stage_notes`（同一輪 stage 之間的旗標，例如 focus 這輪切了、守衛不跑；鍵 `{did}:{名稱}`，
+     由 app/stages/_util 讀寫）。StageResult.snapshot_updates 的鍵必須是 C2 欄位名，放不下這種內部旗標，所以另開。
 """
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -106,6 +108,7 @@ class RunContext:
     pages: Dict[str, str] = field(default_factory=dict)      # 路徑 → html（本輪已抓）
     warnings: List[str] = field(default_factory=list)        # 已 redact
     modes: Dict[str, str] = field(default_factory=dict)      # 帳號級 mode（C9 鍵 → 原始值）；空＝全部 off
+    stage_notes: Dict[str, Any] = field(default_factory=dict)   # v0.1.1：同一輪 stage 之間的旗標（每輪新建，不跨輪）
 
     def warn(self, msg: Any) -> None:
         """收集警告（不印）。訊息先 redact。"""
