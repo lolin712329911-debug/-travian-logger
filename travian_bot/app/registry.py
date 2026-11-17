@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/registry.py（ap-04）
-版本：v0.1（A6a1）
+版本：v0.2（A6a2：登記 build／item_transfer／fill_in／focus／guard／hero）｜v0.1（A6a1）
 用途：stage 登記表。新增功能＝新增 stage 檔＋在 STAGES 登記一行，不改 orchestrator 迴圈。
-      A6a1 為空表（stage 檔在 A6a2 才有）。不用動態 import（check_arch 看不到）。
+      A6a1 為空表；A6a2 登記六個 stage（build、item_transfer、fill_in、focus、guard、hero）。不用動態 import（check_arch 看不到）。
 依賴：ap-03（Stage、SCOPES、STAGE_MODE_KEYS）。
 部署狀態：未部署（GA 前不 live）。
 
@@ -15,10 +15,17 @@ mode_key 必須是 None 或 C9 modes 的 9 個鍵；order 為 int（不含 bool�
 from typing import Optional, Sequence, Tuple
 
 from .stage_base import SCOPES, STAGE_MODE_KEYS, Stage
+from .stages import build as _build
+from .stages import fill_in as _fill_in
+from .stages import focus as _focus
+from .stages import guard as _guard
+from .stages import hero as _hero
+from .stages import item_transfer as _item_transfer
 
 __all__ = ["STAGES", "validate_stages", "village_stages", "account_stages"]
 
-STAGES: Tuple[Stage, ...] = ()
+# order：item_transfer 20 → fill_in 25 → build 30 → focus 40 → guard 50；hero 60（帳號級）
+STAGES: Tuple[Stage, ...] = (_item_transfer.STAGE, _fill_in.STAGE, _build.STAGE, _focus.STAGE, _guard.STAGE, _hero.STAGE)
 
 
 def validate_stages(table: Sequence[Stage]) -> None:
