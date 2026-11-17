@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/common/config_schema.py（cm-08）
-版本：v0.1（A1b）
+版本：v0.1.1（A6a2：focus_mode 改 mode 鍵）｜v0.1（A1b）
 用途：Config 分頁的鍵登記（型別、預設、允許值、範圍、說明）、讀入時的型別轉換與驗證、
       由 Config 組出 ServerProfile（C11）與單村的 VillageContext（C9）。純函式，不讀環境變數、不開 Sheet。
 依賴：cm-01（models）、cm-04（modes）、cm-06（tribe_data）、cm-10（serialize）、cm-11（schema）、
@@ -24,8 +24,8 @@ travian_bot/common/config_schema.py（cm-08）
      舊值對應（on→live、TRUE→live、incoming_only／always 等）只在 config_repo 的邊界轉換，
      本檔所有 mode 鍵只認 off／dry／live，其他一律 off 並回報。
      舊 hero_transfer_mode 的 incoming_only／always 區分在新版沒有對應鍵，A6a2 需要時再開 transfer_exposure。
-  3. focus_mode 不是 mode 鍵：值域只有 off／auto（§6.4：新值域待 A6a2，不直接套用 off／dry／live），
-     merge_settings 目前固定回 modes['focus']='off'。
+  3. focus_mode（A6a2 改）：和其他 mode 鍵一樣只認 off／dry／live，對應 C9 modes['focus']；舊 auto 在新 Sheet 重填（config_repo 目前沒有舊值轉換，
+     讀到 auto 會依一般規則視為 off 並回報）。原本「值域 off／auto、merge_settings 固定回 off」的暫時做法取消。
   4. 退役不登記：home_x、home_y（改由 VillageRef）、map_size（改 server_map_half；舊 401＝2×200＋1）、
      village_id（改 main_did／C8）。
   5. 布林嚴格（§6.1）：TRUE／FALSE／true／false／1／0；舊的 yes／是／否 等同義詞不帶進來（新 Sheet 重填）。
@@ -57,7 +57,6 @@ SCHEMA_VERSION = 1
 DEFAULT_TRIBE = "gaul"          # C11 預設；非此值啟用時警告「未驗證」
 _HERO_ALLOWED = ("normal", "hard")
 _EXPOSURE = ("incoming", "always")
-_FOCUS = ("off", "auto")
 
 
 @dataclass(frozen=True)
@@ -117,8 +116,7 @@ KEYS: Tuple[KeySpec, ...] = (
     _k("guard_exposure", "enum", "incoming", "守衛何時算暴露：incoming（有來襲才算，溢出一律算）／always", allowed=_EXPOSURE),
     _k("fill_mode", "mode", "off", "插隊：" + _MODE_NOTE),
     _k("transfer_mode", "mode", "off", "英雄道具庫轉資源（△ 鍵名）：" + _MODE_NOTE),
-    _k("focus_mode", "enum", "off", "英雄產量加成切換：off／auto（△ 值域待 A6a2；目前 merge_settings 一律當 off）",
-       allowed=_FOCUS),
+    _k("focus_mode", "mode", "off", "英雄產量加成切換：" + _MODE_NOTE),
     _k("oasis_mode", "mode", "off", "綠洲掃描（△ 鍵名）：" + _MODE_NOTE),
     _k("hero_mode", "mode", "off", "英雄冒險（△ 鍵名）：" + _MODE_NOTE),
     _k("market_mode", "mode", "off", "市場調度：" + _MODE_NOTE),
@@ -156,8 +154,8 @@ MODE_KEYS: Tuple[str, ...] = tuple(s.key for s in KEYS if s.kind == "mode")
 MODE_TO_CTX: Dict[str, str] = {
     "fill_mode": "fill_in", "guard_mode": "guard", "transfer_mode": "item_transfer",
     "hide_mode": "hide", "oasis_mode": "oasis", "hero_mode": "hero",
-    "market_mode": "market", "troop_mode": "troops",
-}   # focus 的值域未定（見檔頭 3），merge_settings 另外固定填 'off'
+    "market_mode": "market", "troop_mode": "troops", "focus_mode": "focus",
+}
 
 # 舊 Config 鍵 → 新鍵說明（None＝不再使用）。config_repo 在邊界轉換；這裡只用來給出明確的警告。
 LEGACY_KEY_MAP: Dict[str, Optional[str]] = {
@@ -384,7 +382,7 @@ def merge_settings(cfg: Mapping[str, Any], village_rows: Optional[Sequence[Villa
         did=ref.did, name=ref.name, x=ref.x, y=ref.y, is_capital=is_capital,
         role="capital" if is_capital else "resource", enabled=bool(c["enabled"]), priority=100,
         build_settings=settings,
-        modes={**{ctx_key: c[cfg_key] for cfg_key, ctx_key in MODE_TO_CTX.items()}, "focus": "off"},
+        modes={ctx_key: c[cfg_key] for cfg_key, ctx_key in MODE_TO_CTX.items()},
         hide_context=HideContext(home_x=ref.x, home_y=ref.y, oases=(), blocked=(), tribe=c["tribe"]))
     vctx = {"tribe": c["tribe"], "tribes": set(TRIBES), "is_capital": is_capital,
             "max_non_capital_level": game_rules.MAX_NON_CAPITAL_FIELD_LEVEL}
