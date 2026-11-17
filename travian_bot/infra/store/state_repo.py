@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/infra/store/state_repo.py（if-08）
-版本：v0.1（A4b-1）
+版本：v0.1.1（A6a2：ACCOUNT_KEYS 補 plan_* 四鍵；新增 read_state、upsert_state）｜v0.1（A4b-1）
 用途：state 分頁（Python 機器寫、Apps Script／Gemini 讀）：每村各一組 key／value，依 did 區塊取代。
 依賴：if-04（gsheets）、cm-10（serialize）。
 部署狀態：未部署（GA 前不 live）。
@@ -20,6 +20,12 @@ travian_bot/infra/store/state_repo.py（if-08）
   4. 其他村保留下來的列是以字串寫回（Sheet 讀回來的就是字串；Apps Script 以 Number() 轉，不影響）。
   5. 表頭不符（例如舊 4 欄版）：state 是機器產生、可重建，視為空表重寫；人工編輯的分頁不適用這條。
   6. 失敗丟例外（舊版吞掉回 False）。
+v0.1.1（A6a2，ap-10 build 用）
+  7. ACCOUNT_KEYS 補 plan_status／plan_remaining_steps／plan_eta_h／plan_needs_refill（v0.64；多村 B6 再改成每村）。
+  8. 新增 read_state(sh, did, keys)：讀幾個鍵的目前值（plan_status 前值去重用）。
+  9. 新增 upsert_state(sh, did, rows, updated_utc)：只取代「同鍵同範圍」的列，其他列（含同一個 did 的村級列）原樣保留。
+     write_state 是「這個 did 整組取代」，observe 每輪先寫了一整組村級列；build stage 若再用 write_state 只寫 plan_* 四個帳號級鍵，
+     會把同一村 observe 剛寫的村級列全部洗掉，所以 build 一律用 upsert_state。
 """
 from typing import Any, List, Sequence, Tuple
 
@@ -29,7 +35,8 @@ from . import gsheets
 STATE_TAB = "state"
 STATE_HEADER = ("key", "value", "note", "updated_utc", "did")
 ACCOUNT_KEYS = frozenset({"tribe", "plus_active", "cp_have", "cp_need", "cp_gap", "cp_eta_days",
-                          "cp_per_day", "village_slots_used", "village_slots_max"})
+                          "cp_per_day", "village_slots_used", "village_slots_max",
+                          "plan_status", "plan_remaining_steps", "plan_eta_h", "plan_needs_refill"})
 NOTE_MAX = 200
 _N = len(STATE_HEADER)
 
@@ -85,21 +92,15 @@ def merge_rows(old_rows: Sequence[Sequence[Any]], did: int, new_rows: Sequence[S
         kept.append(cells)
     allrows: List[List[Any]] = kept + [list(r) for r in new_rows]
 
-    def sort_key(r):
-        d = str(r[4]).strip()
-        return (0, 0) if d == "" else (1, int(d)) if d.isdigit() else (2, 0)
-
-    return sorted(allrows, key=sort_key)               # sorted 穩定：同一區塊內維持原順序
+    return sorted(allrows, key=_sort_key)              # sorted 穩定：同一區塊內維持原順序
 
 
-def write_state(sh: Any, did: int, rows: Sequence[Tuple[str, Any, str]], updated_utc: str) -> int:
-    """把一個村的 state 寫進分頁（依 did 區塊取代）。回傳這次寫入的列數（不含保留的其他列）。"""
-    new_rows = build_rows(did, rows, updated_utc)
-    ws, _ = gsheets.ensure_worksheet(sh, STATE_TAB, rows=100, cols=_N)
-    values = ws.get_all_values()
-    header_ok = bool(values) and tuple(str(c).strip() for c in values[0][:_N]) == STATE_HEADER
-    old = values[1:] if header_ok else []
-    merged = merge_rows(old, did, new_rows)
+def _sort_key(r):
+    d = str(r[4]).strip()
+    return (0, 0) if d == "" else (1, int(d)) if d.isdigit() else (2, 0)
+
+
+def _put_all(ws: Any, values: Sequence[Sequence[Any]], merged: List[List[Any]]) -> None:
     payload: List[List[Any]] = [list(STATE_HEADER)] + merged
     stale = len(values) - len(payload)
     if stale > 0:
@@ -109,4 +110,47 @@ def write_state(sh: Any, did: int, rows: Sequence[Tuple[str, Any, str]], updated
     if ws.col_count < _N:
         ws.add_cols(_N - ws.col_count)
     gsheets.batch_write(ws, payload, start="A1")
+
+
+def _old_rows(values: Sequence[Sequence[Any]]) -> List[Sequence[Any]]:
+    header_ok = bool(values) and tuple(str(c).strip() for c in values[0][:_N]) == STATE_HEADER
+    return list(values[1:]) if header_ok else []
+
+
+def write_state(sh: Any, did: int, rows: Sequence[Tuple[str, Any, str]], updated_utc: str) -> int:
+    """把一個村的 state 寫進分頁（依 did 區塊取代）。回傳這次寫入的列數（不含保留的其他列）。"""
+    new_rows = build_rows(did, rows, updated_utc)
+    ws, _ = gsheets.ensure_worksheet(sh, STATE_TAB, rows=100, cols=_N)
+    values = ws.get_all_values()
+    _put_all(ws, values, merge_rows(_old_rows(values), did, new_rows))
     return len(new_rows)
+
+
+def upsert_state(sh: Any, did: int, rows: Sequence[Tuple[str, Any, str]], updated_utc: str) -> int:
+    """只更新給的鍵：同鍵同範圍（帳號級 did 空白／村級同 did）的舊列被取代，其他列原樣保留。回傳寫入列數。
+    值是 None 的鍵略過（舊值保留）；要清成空白請給 ""。"""
+    new_rows = build_rows(did, rows, updated_utc)
+    ws, _ = gsheets.ensure_worksheet(sh, STATE_TAB, rows=100, cols=_N)
+    values = ws.get_all_values()
+    replaced = {(r[0], str(r[4]).strip()) for r in new_rows}
+    kept = []
+    for r in _old_rows(values):
+        cells = _pad(r)
+        if cells[0].strip() and (cells[0].strip(), cells[4].strip()) not in replaced:
+            kept.append(cells)
+    _put_all(ws, values, sorted(kept + [list(r) for r in new_rows], key=_sort_key))
+    return len(new_rows)
+
+
+def read_state(sh: Any, did: int, keys: Sequence[str]) -> dict:
+    """讀幾個鍵的目前值 → {key: 儲存格字串}（只含找到的；帳號級鍵 did 空白、村級鍵要 did 相符）。沒有分頁回 {}。讀取失敗丟例外。"""
+    ws = gsheets.get_worksheet(sh, STATE_TAB)
+    if ws is None:
+        return {}
+    want, out = set(keys), {}
+    for r in ws.get_all_values()[1:]:
+        cells = _pad(r)
+        k, d = cells[0].strip(), cells[4].strip()
+        if k in want and (d == "" or d == str(did)):
+            out[k] = cells[1].strip()
+    return out
