@@ -52,7 +52,7 @@ class RegistryTest(unittest.TestCase):
         self.assertFalse([k for k in cs.ORDER if "quiet" in k])
 
     def test_all_modes_default_off(self):
-        self.assertEqual(len(cs.MODE_KEYS), 8)                      # focus_mode 不是 mode 鍵（off／auto，A6a2）
+        self.assertEqual(len(cs.MODE_KEYS), 9)                      # A6a2：focus_mode 改成 mode 鍵（off／dry／live）
         self.assertTrue(all(cs.DEFAULTS[k] == "off" for k in cs.MODE_KEYS))
         self.assertEqual(set(cs.MODE_TO_CTX), set(cs.MODE_KEYS))
         self.assertEqual(cs.DEFAULTS["focus_mode"], "off")
@@ -253,10 +253,10 @@ class MergeSettingsTest(unittest.TestCase):
 
     def test_modes_are_mapped(self):
         cfg = {**REQUIRED, "hide_mode": "dry", "guard_mode": "live", "fill_mode": "dry", "transfer_mode": "dry",
-               "focus_mode": "auto", "oasis_mode": "dry", "hero_mode": "live", "market_mode": "dry", "troop_mode": "live"}
+               "focus_mode": "live", "oasis_mode": "dry", "hero_mode": "live", "market_mode": "dry", "troop_mode": "live"}
         [ctx] = cs.merge_settings(cfg, None, [_ref()])
-        # focus 的值域待 A6a2，目前固定 off（即使 Config 寫 auto）
-        self.assertEqual(ctx.modes, {"fill_in": "dry", "guard": "live", "item_transfer": "dry", "focus": "off",
+        # A6a2：focus_mode 和其他 mode 鍵一樣對應 modes["focus"]
+        self.assertEqual(ctx.modes, {"fill_in": "dry", "guard": "live", "item_transfer": "dry", "focus": "live",
                                      "hide": "dry", "oasis": "dry", "hero": "live", "market": "dry", "troops": "live"})
 
     def test_settings_and_capital(self):
@@ -378,14 +378,16 @@ class MergedBehaviorTest(unittest.TestCase):
         for k in old_keys:
             self.assertTrue(k in cs.DEFAULTS or k in cs.LEGACY_KEY_MAP, k)
 
-    def test_focus_mode_is_off_or_auto(self):
-        cfg, problems = cs.normalize_cfg({**REQUIRED, "focus_mode": "Auto"})
-        self.assertEqual((cfg["focus_mode"], problems), ("auto", []))
-        for bad in ("live", "dry", "yes", 1):
+    def test_focus_mode_is_off_dry_live(self):
+        for good in ("off", "dry", "live", " Live "):
+            with self.subTest(good=good):
+                cfg, problems = cs.normalize_cfg({**REQUIRED, "focus_mode": good})
+                self.assertEqual((cfg["focus_mode"], problems), (good.strip().lower(), []))
+        for bad in ("auto", "yes", 1):                     # 舊值域的 auto 不再合法：視為 off 並回報
             with self.subTest(bad=bad):
                 cfg, problems = cs.normalize_cfg({**REQUIRED, "focus_mode": bad})
                 self.assertEqual(cfg["focus_mode"], "off")
-                self.assertEqual(_rules(problems, "focus_mode"), {("warn", "enum")})
+                self.assertEqual(_rules(problems, "focus_mode"), {("warn", "mode")})
 
     def test_capital_comes_from_config_not_page(self):
         [ctx] = cs.merge_settings(REQUIRED, None, [_ref_cap(True)])
