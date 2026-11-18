@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/run_context.py（ap-02）
-版本：v0.1.1（A6a2：加 stage_notes）｜v0.1（A6a1）
+版本：v0.1.1（A6a2：加 stage_notes；StageIO 加 read_state／upsert_state）｜v0.1（A6a1）
 用途：帳號級執行環境。
       StageIO       ：stage 與 observe 對外的全部 IO（Sheet 讀寫、通知、等待、時鐘），欄位都是可替換的函式，
                       測試時整組注入假的；real_io(notify) 組出綁真實 repo 函式的版本。
@@ -52,6 +52,9 @@ class StageIO:
     notify: Callable[[str], None]
     sleep: Callable[[float], None]
     now: Callable[[], datetime]          # aware UTC
+    # v0.1.1（A6a2，ap-10 用）：有預設值，所以既有的假 StageIO（tests/app/fakes.py）不用改；None＝這個 IO 沒接
+    read_state: Optional[Callable[..., dict]] = None
+    upsert_state: Optional[Callable[..., int]] = None
 
 
 def _utc_now() -> datetime:
@@ -74,6 +77,8 @@ def real_io(notify: Callable[[str], None]) -> StageIO:
         notify=notify,
         sleep=time.sleep,
         now=_utc_now,
+        read_state=state_repo.read_state,
+        upsert_state=state_repo.upsert_state,
     )
 
 
