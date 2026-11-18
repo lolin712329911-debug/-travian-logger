@@ -59,7 +59,7 @@ class TreeCase(unittest.TestCase):
 
 class ManifestTests(unittest.TestCase):
     def test_real_manifest_is_clean(self):
-        self.assertEqual(len(MANIFEST), 73)
+        self.assertEqual(len(MANIFEST), 74)
         self.assertEqual([f.text() for f in CA.check_manifest(MANIFEST, EXPECTED)], [])
 
     def test_bad_manifest_detected(self):
