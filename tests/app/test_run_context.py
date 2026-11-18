@@ -37,7 +37,7 @@ class RealIoTest(unittest.TestCase):
             io.notify = None
         self.assertEqual({f.name for f in dataclasses.fields(io)},
                          {"log_actions", "write_state", "append_snapshot", "write_structure", "buildable_due",
-                          "last_action_age_hours", "disable", "oasis_save", "oasis_load", "notify", "sleep", "now"})
+                          "last_action_age_hours", "disable", "oasis_save", "oasis_load", "notify", "sleep", "now","read_state","upsert_state"})
 
 
 class RunContextTest(unittest.TestCase):
