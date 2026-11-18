@@ -220,7 +220,7 @@ class ItemTransferStageTest(unittest.TestCase):
     def test_transfer_ok_updates_snapshot_and_drops_cached_dorf1(self):
         rc, res, _read, ex = self._run(exec_result=ExecResult("ok", "已轉移並驗證", 6, True))
         self.assertEqual((res.status, [r.result for r in rows_of(res)]), ("ok", ["ok"]))
-        self.assertEqual(res.snapshot_updates["stock"], (500, 200, 0, 0))
+        self.assertEqual(res.snapshot_updates["stock"], (1000, 700, 500, 500))     # snap.stock (500×4) ＋ 轉入 (500, 200, 0, 0)
         self.assertEqual(res.snapshot_updates["next_target"].ready_in_s, 0)
         self.assertNotIn("dorf1.php", rc.pages)
         dec = ex.call_args[0][1]

@@ -13,10 +13,12 @@ def mk(name, scope="village", mode_key="guard", order=10):
 
 
 class RegistryTest(unittest.TestCase):
-    def test_a6a1_table_is_empty(self):
-        self.assertEqual(R.STAGES, ())
-        self.assertEqual(R.village_stages(), ())
-        self.assertEqual(R.account_stages(), ())
+    def test_a6a2_table_registers_six_stages_in_old_runner_order(self):
+        R.validate_stages(R.STAGES)
+        self.assertEqual(len(R.STAGES), 6)
+        # 舊 runner 的順序：transfer → fill_in → build → focus → guard（focus 先 guard 後，使用者定案）；hero 是帳號級
+        self.assertEqual([s.name for s in R.village_stages()], ["item_transfer", "fill_in", "build", "focus", "guard"])
+        self.assertEqual([s.name for s in R.account_stages()], ["hero"])
 
     def test_mode_keys_match_schema_c9(self):
         self.assertEqual(SB.STAGE_MODE_KEYS, schema.CTX_MODE_KEYS)
