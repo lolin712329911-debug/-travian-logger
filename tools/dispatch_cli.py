@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 tools/dispatch_cli.py
-版本：v0.1（A3c）
+版本：v0.1.1（A3c；v0.1 的 --tribe 填錯會拋 ValidationError 而非 exit 2，Actions 發現後修正）
 用途：離線躲兵計畫與推薦（原 dispatch.py 的 main；不連遊戲、不讀 Sheet）。用 domain/hide_plan 的同一套算法。
       不在 bot 執行路徑上。
 執行（在 repo 根目錄）：
@@ -41,7 +41,7 @@ from typing import List, Optional, Tuple
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from travian_bot.common import geo, serialize, tribe_data          # noqa: E402
-from travian_bot.common.models import HideContext, Oasis            # noqa: E402
+from travian_bot.common.models import HideContext, Oasis, ValidationError   # noqa: E402
 from travian_bot.domain import hide_plan as HP                      # noqa: E402
 
 DAY = 86400
@@ -147,7 +147,7 @@ def run(argv: Optional[List[str]] = None, out=None) -> int:
         speed = base_speed * args.server_speed
         ctx = HideContext(home_x=home[0], home_y=home[1], oases=tuple(oases), blocked=(), tribe=spec.key)
         rows = HP.plan_at_speed(ctx, speed, now, arrivals, map_half=args.map_half, margin=args.margin)
-    except (ValueError, KeyError, OSError, TypeError) as e:        # geo.GeoError、ValidationError 都是 ValueError
+    except (ValueError, KeyError, OSError, TypeError, ValidationError) as e:   # GeoError 是 ValueError；ValidationError 不是（Actions 實測）
         print(f"輸入錯誤：{e}", file=sys.stderr)
         return 2
     best = HP.recommend(rows, args.include_unverified)
