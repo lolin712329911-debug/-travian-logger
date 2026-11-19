@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/common/decisions.py（cm-02）
-版本：v0.4（A3b：ItemTransferDecision 加 kind、TRANSFER_KINDS）｜v0.3（A5a：ItemTransferDecision 改寫＋TransferLine；FOCUS_NAMES）｜v0.2（A3a：BuildDecision／GuardDecision／FillInDecision 定案；其餘仍為草案 ✗，待 A3b／A3c）｜v0.1（A1a-2）
+版本：v0.5（A3c：HideCandidate／HideDecision 定案、新增 LockDecision；HIDE_KINDS／HIDE_CODES／LOCK_KINDS）｜v0.4（A3b：ItemTransferDecision 加 kind、TRANSFER_KINDS）｜v0.3（A5a：ItemTransferDecision 改寫＋TransferLine；FOCUS_NAMES）｜v0.2（A3a：BuildDecision／GuardDecision／FillInDecision 定案；其餘仍為草案 ✗，待 A3b／A3c）｜v0.1（A1a-2）
 用途：各 domain 決策的回傳結構（domain 回傳、actions 吃進去、app/stages 串接，§4.1 補充規則 1）：
       BuildTarget、BuildDecision、GuardDecision、FillInDecision、FocusDecision、
       ItemTransferDecision、AdventureDecision、HideCandidate、HideDecision、ExecResult。
@@ -26,7 +26,7 @@ from .parsed import BuildOption, Dorf2, UpgradeCost
 __all__ = [
     "BUILD_KINDS", "BuildTarget", "FactsNeed", "BuildFacts", "BuildDecision", "FillCandidate", "GuardDecision", "FillInDecision",
     "FocusDecision", "TransferLine", "ItemTransferDecision", "AdventureDecision", "HideCandidate",
-    "HideDecision", "ExecResult",
+    "HideDecision", "LockDecision", "ExecResult",
 ]
 
 BUILD_KINDS = ("build", "wait_resources", "wait_queue", "storage_too_small",
@@ -45,6 +45,12 @@ FOCUS_NAMES = ("balanced", "wood", "clay", "iron", "crop")
 #   gap_too_big／over_capacity／inventory_low 時呼叫端改選「現有資源付得起」的項目（舊註解）。
 TRANSFER_KINDS = ("transfer", "affordable", "not_needed", "queue_busy",
                   "gap_too_big", "over_capacity", "inventory_low", "no_data")
+# v0.5（A3c）：躲兵決策的值域（tuple 不進 __all__）。舊 hide_troops.Plan.action／code 的對應：skip／wait／go 同名；
+#   code：no_units、unknown_speed、weak、no_future、too_close、no_oasis 同名；too_far 是 wait 的原因；go 的 code 舊為空字串、新為 ok。
+HIDE_KINDS = ("skip", "wait", "go")
+HIDE_CODES = ("ok", "no_units", "unknown_speed", "weak", "no_future", "too_far", "too_close", "no_oasis")
+# v0.5（A3c）：LockDecision.kind 的值域（C8 村莊鎖）
+LOCK_KINDS = ("ok", "skip")
 FACTS_KINDS = ("dorf2", "upgrade_cost", "build_options")  # FactsNeed.kind 的值域
 
 
@@ -144,19 +150,45 @@ class AdventureDecision:
 
 @dataclass(frozen=True)
 class HideCandidate:
+    """躲兵候選（空綠洲）。v0.5（A3c）定案：前五欄沿用 v0.1；其後欄位為 domain/hide_plan 算出，預設值讓舊建構方式不受影響。
+    時間一律 epoch 秒（頁面 server_ts 同一基準，不碰時區）；covered／missed 是「呼叫 plan 時給的來襲到達 epoch」中
+    被撐過（now＜a＜back－margin）與沒撐過（a≥back－margin）的那些，已排序。distance 單位為格；safe＝綠洲清單的驗證旗標（None＝未驗證）。"""
     x: int
     y: int
     kind: Optional[str]
     distance: Optional[float]
     safe: Optional[bool]
+    map_id: Optional[int] = None
+    one_way_s: Optional[int] = None
+    back_ts: Optional[int] = None               # 現在出發、單程估算時的返回 epoch（＝now＋2×單程）
+    covered: Tuple[int, ...] = ()
+    missed: Tuple[int, ...] = ()
 
 
 @dataclass(frozen=True)
 class HideDecision:
+    """躲兵決策（domain/hide_decide）。act＝True 才表示要派兵（kind＝go）；chosen＝candidates[0]；
+    candidates＝依建議順序（先「撐過範圍內全部來襲」近→遠，再「只撐過前幾波」撐得多→近）。
+    v0.5 追加：kind（HIDE_KINDS）、code（HIDE_CODES）、units（要派的 (兵種鍵, 數量)，不含英雄）、
+    scope（要撐過的來襲 epoch）、full（chosen 是否一趟撐過 scope 全部；False＝返回後需再發第二趟）。"""
     act: bool
     chosen: Optional[HideCandidate]
     candidates: Tuple[HideCandidate, ...]
     reason: str
+    kind: str = ""
+    code: str = ""
+    units: Tuple[Tuple[str, int], ...] = ()
+    scope: Tuple[int, ...] = ()
+    full: bool = False
+
+
+@dataclass(frozen=True)
+class LockDecision:
+    """村莊鎖（C8 VillageLock；domain/village_lock）。kind＝ok／skip（LOCK_KINDS）；
+    record＝True 表示鎖還沒記錄（第一次執行），呼叫端要用 record_main 建新鎖並存檔；skip 時 reason 說明原因（寫「村莊跳過」，不 disable）。"""
+    kind: str
+    reason: str
+    record: bool = False
 
 
 @dataclass(frozen=True)
