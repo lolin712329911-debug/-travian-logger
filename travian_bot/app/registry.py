@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/registry.py（ap-04）
-版本：v0.2（A6a2：登記 build／item_transfer／fill_in／focus／guard／hero）｜v0.1（A6a1）
+版本：v0.3（A6a2b：登記 oasis／hide）｜v0.2（A6a2：登記 build／item_transfer／fill_in／focus／guard／hero）｜v0.1（A6a1）
 用途：stage 登記表。新增功能＝新增 stage 檔＋在 STAGES 登記一行，不改 orchestrator 迴圈。
-      A6a1 為空表；A6a2 登記六個 stage（build、item_transfer、fill_in、focus、guard、hero）。不用動態 import（check_arch 看不到）。
+      A6a1 為空表；A6a2 登記六個 stage（build、item_transfer、fill_in、focus、guard、hero）；A6a2b 再登記 oasis、hide。不用動態 import（check_arch 看不到）。
 依賴：ap-03（Stage、SCOPES、STAGE_MODE_KEYS）。
 部署狀態：未部署（GA 前不 live）。
 
@@ -20,12 +20,16 @@ from .stages import fill_in as _fill_in
 from .stages import focus as _focus
 from .stages import guard as _guard
 from .stages import hero as _hero
+from .stages import hide as _hide
 from .stages import item_transfer as _item_transfer
+from .stages import oasis as _oasis
 
 __all__ = ["STAGES", "validate_stages", "village_stages", "account_stages"]
 
-# order：item_transfer 20 → fill_in 25 → build 30 → focus 40 → guard 50；hero 60（帳號級）
-STAGES: Tuple[Stage, ...] = (_item_transfer.STAGE, _fill_in.STAGE, _build.STAGE, _focus.STAGE, _guard.STAGE, _hero.STAGE)
+# order：oasis 5 → hide 10（躲兵在建城前，舊 hide_observe 每輪建城前跑；oasis 先把綠洲清單放進 HideContext）→ item_transfer 20 → fill_in 25 → build 30
+#        → focus 40 → guard 50；hero 60（帳號級）
+STAGES: Tuple[Stage, ...] = (_oasis.STAGE, _hide.STAGE, _item_transfer.STAGE, _fill_in.STAGE, _build.STAGE, _focus.STAGE,
+                             _guard.STAGE, _hero.STAGE)
 
 
 def validate_stages(table: Sequence[Stage]) -> None:
