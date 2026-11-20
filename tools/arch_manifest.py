@@ -14,17 +14,17 @@
   disp  處置：沿用／拆／改寫／新寫（依「舊源→處置」欄最後的粗體字分類；僅供參考，不參與檢查）
 """
 
-SOURCE = 'multi-village-dev-v0_78.md v0.78 §4.2'
+SOURCE = 'multi-village-dev-v0_79.md v0.79 §4.2'
 EXPECTED_COUNT = 74
 
 MANIFEST = [
-    {'id': 'ac-01', 'path': 'actions/village_switch.py', 'layer': 'actions', 'deps': ['if-02', 'ps-02', 'cm-03'], 'wp': 'A5b／B1', 'disp': '新寫'},
+    {'id': 'ac-01', 'path': 'actions/village_switch.py', 'layer': 'actions', 'deps': ['if-02', 'ps-02', 'cm-03', 'cm-02'], 'wp': 'A5b／B1', 'disp': '新寫'},
     {'id': 'ac-02', 'path': 'actions/build_exec.py', 'layer': 'actions', 'deps': ['if-02', 'ps-01', 'ps-03', 'cm-02', 'cm-04', 'cm-11'], 'wp': 'A5a', 'disp': '沿用'},
     {'id': 'ac-03', 'path': 'actions/item_transfer_exec.py', 'layer': 'actions', 'deps': ['if-02', 'ps-05', 'cm-02', 'cm-04', 'cm-09', 'cm-11'], 'wp': 'A5a', 'disp': '拆'},
     {'id': 'ac-04', 'path': 'actions/focus_exec.py', 'layer': 'actions', 'deps': ['if-02', 'ps-05', 'cm-02', 'cm-04', 'cm-09', 'cm-11'], 'wp': 'A5a', 'disp': '拆'},
     {'id': 'ac-05', 'path': 'actions/hero_exec.py', 'layer': 'actions', 'deps': ['if-02', 'ps-05', 'cm-02', 'cm-04', 'cm-09', 'cm-11'], 'wp': 'A5a', 'disp': '沿用'},
-    {'id': 'ac-06', 'path': 'actions/hide_exec.py', 'layer': 'actions', 'deps': ['if-02', 'ps-06', 'cm-02', 'cm-04', 'cm-05'], 'wp': 'A5b', 'disp': '拆'},
-    {'id': 'ac-07', 'path': 'actions/oasis_exec.py', 'layer': 'actions', 'deps': ['if-02', 'ps-08', 'ps-09', 'cm-09'], 'wp': 'A5b', 'disp': '沿用'},
+    {'id': 'ac-06', 'path': 'actions/hide_exec.py', 'layer': 'actions', 'deps': ['if-02', 'ps-06', 'cm-02', 'cm-04', 'cm-07', 'cm-09', 'cm-11'], 'wp': 'A5b', 'disp': '改寫'},
+    {'id': 'ac-07', 'path': 'actions/oasis_exec.py', 'layer': 'actions', 'deps': ['if-02', 'ps-08', 'ps-09', 'cm-09', 'cm-07'], 'wp': 'A5b', 'disp': '改寫'},
     {'id': 'ac-08', 'path': 'actions/market_exec.py', 'layer': 'actions', 'deps': ['if-02', 'ps-07', 'cm-01', 'cm-02', 'cm-04'], 'wp': 'C3', 'disp': '新寫'},
     {'id': 'ac-09', 'path': 'actions/troop_exec.py', 'layer': 'actions', 'deps': ['if-02', 'ps-06', 'cm-01', 'cm-02', 'cm-04'], 'wp': 'D2', 'disp': '新寫'},
     {'id': 'ap-01', 'path': 'app/main.py', 'layer': 'app', 'deps': ['if-01', 'if-02', 'if-05', 'if-06', 'cm-08', 'cm-13', 'ps-01', 'ps-02', 'ap-02', 'ap-08'], 'wp': 'A6b', 'disp': '拆'},
