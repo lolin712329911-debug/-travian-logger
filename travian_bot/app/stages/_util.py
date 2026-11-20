@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/stages/_util.py（A6a2 共用小工具；卡片沒列，交接區塊要補記）
-版本：v0.1（A6a2）
+版本：v0.1.1（A6a2b：加 ACTION_HIDE／ACTION_OASIS、set_hide_context／hide_context_of）｜v0.1（A6a2）
 用途：A6a2 各 stage 共用的幾個函式：英雄所在村判斷、同一輪 stage 之間的旗標（rc.stage_notes）、Actions 列、
       need_facts 補資料迴圈（build_planner／plan_validate 缺頁面時由 stage 抓完再呼叫）。
 部署狀態：未部署（GA 前不 live）。未實測（本機沒有整個 repo）。
@@ -11,7 +11,7 @@ from typing import Any, Callable, Optional, Tuple
 
 from ...common import serialize
 from ...common.decisions import BuildDecision, BuildFacts, BuildTarget, FactsNeed
-from ...common.models import ActionRow, VillageContext, clip_text
+from ...common.models import ActionRow, HideContext, VillageContext, clip_text
 from ...common.modes import Mode
 from ...common.schema import ParseError
 from ...parsers.buildings import parse_build_options, parse_building_cost
@@ -24,6 +24,8 @@ ACTION_FOCUS = "加成"
 ACTION_GUARD = "防搶加成"
 ACTION_FILL_IN = "插隊"
 ACTION_HERO = "冒險"
+ACTION_HIDE = "躲兵"            # v0.1.1（A6a2b；舊 hide_observe 的 observe 列叫「躲兵觀察」，新版只有 dry／live，一律「躲兵」）
+ACTION_OASIS = "綠洲掃描"      # v0.1.1（A6a2b）
 
 MAX_FACT_FETCHES = 6          # 一輪最多補幾次頁面資料（build_planner 檔頭寫 3～5 次）
 DETAIL_MAX = 300
@@ -102,3 +104,16 @@ def run_with_facts(rc: RunContext, step: Callable[[BuildFacts], Tuple[Any, Optio
         else:
             raise ValueError(f"未知的 need_facts 種類：{need.kind}")
     raise RuntimeError("補頁面資料超過上限仍不足")
+
+
+# ---------------------------------------------------------------- 本輪的躲兵環境（v0.1.1，A6a2b）
+def set_hide_context(rc: RunContext, did: int, ctx: HideContext) -> None:
+    """oasis stage 把掃描／讀 Sheet 得到的綠洲清單放進「換了 oases／blocked 的 HideContext」，供同一輪後面的 hide 使用。
+    VillageContext 是 frozen，stage 不能改它；orchestrator（A6b）每輪新建 RunContext，所以不會跨輪。"""
+    rc.stage_notes[_key(did, "hide_context")] = ctx
+
+
+def hide_context_of(rc: RunContext, vc: VillageContext) -> HideContext:
+    """本輪有效的 HideContext：oasis stage 設過就用它，否則用 vc.hide_context。"""
+    got = rc.stage_notes.get(_key(vc.did, "hide_context"))
+    return got if isinstance(got, HideContext) else vc.hide_context
