@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/stages/item_transfer.py（ap-11）
-版本：v0.1.2（A6a2＋診斷輸出（print，不依賴 logging 設定）；只加 log 與 Actions detail 的道具庫存量，判斷邏輯不變）
+版本：v0.2（建城前自己預判目標，不再依賴 snapshot.next_target）｜v0.1.2（A6a2＋診斷輸出（print，不依賴 logging 設定）；只加 log 與 Actions detail 的道具庫存量，判斷邏輯不變）
 用途：英雄道具庫 → 村莊轉資源 stage：next_target 付不起時，domain.item_transfer 決定轉哪些，
       actions.item_transfer_exec 送出並驗證，寫一列 Actions（動作「轉移」）。僅英雄所在村。
 依賴：ap-03、ap-06、dm-05、ac-03、if-07、cm-02。
 部署狀態：未部署（GA 前不 live）。未實測。
 
 來源：runner.py `_try_transfer`（✓）。與舊版的差異
-  1. 觸發條件：next_target 有值且 ready_in_s > 0、佇列還有空位（舊 wait_res）。need＝next_target.cost（升級成本總量）。
+  1. 觸發條件：佇列還有空位、英雄在本村；目標（need＝升級成本總量）建城前自己預判（_resolve_target，同舊流程 plan）。
   2. attack_eta_s：快照沒有，來襲數 > 0 才抓 dorf1（rc.get_page，本輪已抓過不重抓）取 Dorf1.attack_eta_s；
      沒有來襲＝None（舊 `st.attack_eta_s if st.attacks else None`）。
   3. queue_busy＝佇列已滿（舊版固定 False，因為只在 wait_res 才呼叫；這裡寫成實際判斷，precondition 下一定是 False）。
@@ -28,8 +28,10 @@ from ...actions.item_transfer_exec import execute_item_transfer, read_transfer_s
 from ...common.models import StageResult, VillageContext, VillageSnapshot
 from ...common.modes import Mode
 from ...common.schema import ParseError
+from ...domain.build_planner import plan
 from ...domain.item_transfer import TransferSettings, decide_item_transfer
 from ...infra.gateway import GatewayError
+from ...infra.store import plan_repo
 from ...parsers.village import parse_dorf1
 from ..formatting import flv, fname
 from ..run_context import RunContext
@@ -53,15 +55,9 @@ class log:  # noqa: N801  診斷用：同時走 logging 與 print（GitHub log �
 
 
 def precondition(rc: RunContext, vc, snap) -> bool:
+    """建城前執行：不看 next_target（observe 一律給 None），目標由 run() 自己預判。"""
     if vc is None or snap is None:
         log.info("item_transfer 略過：vc／snap 為 None")
-        return False
-    t = snap.next_target
-    if t is None:
-        log.info("item_transfer 略過：沒有 next_target")
-        return False
-    if t.ready_in_s <= 0:
-        log.info("item_transfer 略過：目標已付得起（ready_in_s=%s）", t.ready_in_s)
         return False
     if snap.queue_slots_used >= vc.build_settings.queue_slots:
         log.info("item_transfer 略過：佇列已滿（%s/%s）", snap.queue_slots_used, vc.build_settings.queue_slots)
@@ -72,9 +68,35 @@ def precondition(rc: RunContext, vc, snap) -> bool:
     return here
 
 
+def _resolve_target(rc: RunContext, vc: VillageContext, snap: VillageSnapshot):
+    """→ (BuildTarget｜None, 說明)。與 build stage 的「無 build_order 舊流程」用同一個 plan()，不寫任何東西。
+    目前只支援：沒有 build_order 且 target_building_level＝0（Config 現況）。其餘情況略過並說明原因。"""
+    if snap.next_target is not None:                     # 前面有 stage 已補上就直接用
+        return snap.next_target, "snapshot.next_target"
+    try:
+        raw = plan_repo.load_build_order(rc.sh, vc.did)
+    except Exception as e:  # noqa: BLE001  讀不到就不猜，略過（建城 stage 自己會處理）
+        return None, f"讀 build_order 失敗，略過（{type(e).__name__}）"
+    if raw is not None:
+        return None, "有 build_order：建城前還不能預判目標，略過（需要 build 拆出預判函式）"
+    if int(rc.cfg.get("target_building_level", 0)) > 0:
+        return None, "target_building_level>0（含倉庫／糧倉候選）：建城前還不能預判目標，略過"
+    d1 = parse_dorf1(rc.get_page("dorf1.php", raw_if=rc.dorf1_raw_if))
+    d = plan(d1, vc.build_settings, vc.is_capital, extra=[], touched=set(), queue_secs=None)
+    if d.kind != "wait_resources" or d.target is None:
+        return None, f"建城決策是 {d.kind}（不是等資源），不需轉"
+    if (d.wait_s or 0) <= 0:
+        return None, "目標已付得起，不需轉"
+    return dataclasses.replace(d.target, ready_in_s=d.wait_s), "預判（舊流程 plan）"
+
+
 def run(rc: RunContext, vc: VillageContext, snap: VillageSnapshot, mode: Mode) -> StageResult:
-    gw, t = rc.gateway, snap.next_target
+    gw = rc.gateway
     cfg = rc.cfg
+    t, why = _resolve_target(rc, vc, snap)
+    log.info("item_transfer 目標：%s｜%s", (f"{t.name} →L{t.to_level} cost={t.cost}" if t is not None else None), why)
+    if t is None:
+        return StageResult(status="skipped", note=why)
     settings = TransferSettings(min_inventory=int(cfg.get("hero_transfer_min", 20000)),
                                 max_gap=int(cfg.get("hero_transfer_max_gap", 1000)),
                                 eta_min=int(cfg.get("hero_transfer_eta_min", 45)))
