@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/stages/item_transfer.py（ap-11）
-版本：v0.1.1（A6a2＋診斷 log；只加 log 與 Actions detail 的道具庫存量，判斷邏輯不變）
+版本：v0.1.2（A6a2＋診斷輸出（print，不依賴 logging 設定）；只加 log 與 Actions detail 的道具庫存量，判斷邏輯不變）
 用途：英雄道具庫 → 村莊轉資源 stage：next_target 付不起時，domain.item_transfer 決定轉哪些，
       actions.item_transfer_exec 送出並驗證，寫一列 Actions（動作「轉移」）。僅英雄所在村。
 依賴：ap-03、ap-06、dm-05、ac-03、if-07、cm-02。
@@ -38,7 +38,18 @@ from . import _util as U
 
 __all__ = ["STAGE", "precondition", "run"]
 
-log = logging.getLogger("item_transfer")
+_log = logging.getLogger("item_transfer")
+
+
+class log:  # noqa: N801  診斷用：同時走 logging 與 print（GitHub log 一定看得到）
+    @staticmethod
+    def info(msg, *args):
+        try:
+            text = msg % args if args else msg
+        except Exception:  # 格式錯誤也不能影響建城
+            text = f"{msg} {args}"
+        _log.info(text)
+        print(f"[item_transfer] {text}", flush=True)
 
 
 def precondition(rc: RunContext, vc, snap) -> bool:
