@@ -1,0 +1,27 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "reason": "主建築等級不足",
+        "rule": "BAD_FORMAT",
+        "seq": 3
+      },
+      "field": "rule",
+      "rule": "enum"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "reason": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "rule": "prereq_unmet",
+        "seq": 3
+      },
+      "field": "reason",
+      "rule": "max_len"
+    }
+  ],
+  "contract": "PlanRejection",
+  "kind": "invalid",
+  "schema_version": 1
+}

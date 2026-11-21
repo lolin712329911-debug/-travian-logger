@@ -1,0 +1,29 @@
+{
+  "cases": [
+    {
+      "expected": {
+        "cp_have": 1536,
+        "cp_need": 6000,
+        "cp_per_day": 275,
+        "plus_active": true,
+        "tribe_id": 3,
+        "village_slots_max": 2,
+        "village_slots_used": 2
+      },
+      "sample": "S1a"
+    },
+    {
+      "expected": {
+        "cp_have": 1538,
+        "cp_need": 6000,
+        "cp_per_day": 275,
+        "plus_active": true,
+        "tribe_id": 3,
+        "village_slots_max": 2,
+        "village_slots_used": 2
+      },
+      "sample": "S1b"
+    }
+  ],
+  "schema_version": 1
+}

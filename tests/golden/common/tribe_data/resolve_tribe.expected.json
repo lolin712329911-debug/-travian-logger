@@ -1,0 +1,189 @@
+{
+  "cases": [
+    {
+      "expected": "gaul",
+      "input": "高盧"
+    },
+    {
+      "expected": "gaul",
+      "input": "高盧人"
+    },
+    {
+      "expected": "gaul",
+      "input": "高卢"
+    },
+    {
+      "expected": "gaul",
+      "input": "gaul"
+    },
+    {
+      "expected": "gaul",
+      "input": "Gauls"
+    },
+    {
+      "expected": "gaul",
+      "input": "GAUL "
+    },
+    {
+      "expected": "gaul",
+      "input": " gauls"
+    },
+    {
+      "expected": "roman",
+      "input": "羅馬"
+    },
+    {
+      "expected": "roman",
+      "input": "罗马人"
+    },
+    {
+      "expected": "roman",
+      "input": "roman"
+    },
+    {
+      "expected": "teuton",
+      "input": "條頓"
+    },
+    {
+      "expected": "teuton",
+      "input": "日耳曼"
+    },
+    {
+      "expected": "teuton",
+      "input": "日耳曼族"
+    },
+    {
+      "expected": "teuton",
+      "input": "teuton"
+    },
+    {
+      "expected": "egyptian",
+      "input": "埃及"
+    },
+    {
+      "expected": "egyptian",
+      "input": "埃及人"
+    },
+    {
+      "expected": "egyptian",
+      "input": "egyptians"
+    },
+    {
+      "expected": null,
+      "input": "匈奴"
+    },
+    {
+      "expected": null,
+      "input": "hun"
+    },
+    {
+      "expected": null,
+      "input": "spartan"
+    },
+    {
+      "expected": null,
+      "input": "viking"
+    },
+    {
+      "expected": null,
+      "input": ""
+    },
+    {
+      "expected": null,
+      "input": "  "
+    },
+    {
+      "expected": null,
+      "input": null
+    },
+    {
+      "expected": "gaul",
+      "input": "高盧族人"
+    },
+    {
+      "expected": null,
+      "input": "Unknown"
+    },
+    {
+      "expected": null,
+      "input": "高"
+    },
+    {
+      "expected": null,
+      "input": "人"
+    },
+    {
+      "expected": null,
+      "input": "族"
+    }
+  ],
+  "schema_version": 1,
+  "state_cases": [
+    {
+      "expected": "gaul",
+      "rows": [
+        [
+          "tribe",
+          "高盧"
+        ],
+        [
+          "x",
+          "y"
+        ]
+      ]
+    },
+    {
+      "expected": "roman",
+      "rows": [
+        [
+          "x",
+          "y"
+        ],
+        [
+          "tribe",
+          "羅馬人",
+          "說明"
+        ]
+      ]
+    },
+    {
+      "expected": null,
+      "rows": [
+        [
+          "tribe",
+          ""
+        ]
+      ]
+    },
+    {
+      "expected": null,
+      "rows": [
+        [
+          "tribe"
+        ]
+      ]
+    },
+    {
+      "expected": null,
+      "rows": []
+    },
+    {
+      "expected": "gaul",
+      "rows": [
+        [
+          " tribe ",
+          " Gauls "
+        ]
+      ]
+    },
+    {
+      "expected": null,
+      "rows": [
+        [
+          "tribe",
+          "外星人"
+        ]
+      ]
+    }
+  ]
+}

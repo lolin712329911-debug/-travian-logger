@@ -1,0 +1,25 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "main_did": 101,
+        "main_did_set_utc": null
+      },
+      "field": "main_did_set_utc",
+      "rule": "lock_incomplete"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "main_did": 0,
+        "main_did_set_utc": "2026-11-02T08:15:30Z"
+      },
+      "field": "main_did",
+      "rule": "min"
+    }
+  ],
+  "contract": "VillageLock",
+  "kind": "invalid",
+  "schema_version": 1
+}

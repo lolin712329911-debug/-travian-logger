@@ -1,0 +1,23 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "aid": 5,
+        "cost": [
+          100,
+          80,
+          60,
+          40
+        ],
+        "gid": 1,
+        "name": "伐木場",
+        "ready_in_s": 0,
+        "to_level": 3
+      }
+    }
+  ],
+  "contract": "BuildTarget",
+  "kind": "valid",
+  "schema_version": 1
+}

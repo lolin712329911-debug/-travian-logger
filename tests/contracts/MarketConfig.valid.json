@@ -1,0 +1,17 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "market_max_per_ship": 0,
+        "market_max_ships_per_run": 3,
+        "market_min_ship": 200,
+        "market_reserve_hours": 2.0,
+        "market_target_fill_pct": 80
+      }
+    }
+  ],
+  "contract": "MarketConfig",
+  "kind": "valid",
+  "schema_version": 1
+}

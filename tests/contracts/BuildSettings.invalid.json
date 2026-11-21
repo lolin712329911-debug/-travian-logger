@@ -1,0 +1,40 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "build_order": null,
+        "queue_slots": 4,
+        "target_level": 10
+      },
+      "field": "queue_slots",
+      "rule": "max"
+    },
+    {
+      "ctx": {
+        "is_capital": false,
+        "max_non_capital_level": 10
+      },
+      "data": {
+        "build_order": null,
+        "queue_slots": 1,
+        "target_level": 11
+      },
+      "field": "target_level",
+      "rule": "level_over_cap"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "build_order": "none",
+        "queue_slots": 1,
+        "target_level": 10
+      },
+      "field": "build_order",
+      "rule": "no_sentinel"
+    }
+  ],
+  "contract": "BuildSettings",
+  "kind": "invalid",
+  "schema_version": 1
+}

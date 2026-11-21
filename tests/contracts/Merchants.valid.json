@@ -1,0 +1,15 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "capacity_each": 500,
+        "free": 2,
+        "total": 3
+      }
+    }
+  ],
+  "contract": "Merchants",
+  "kind": "valid",
+  "schema_version": 1
+}

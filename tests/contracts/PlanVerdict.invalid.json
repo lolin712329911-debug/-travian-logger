@@ -1,0 +1,79 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "checked_utc": "2026-11-02T08:15:30Z",
+        "did": 101,
+        "next_seq": 3,
+        "rejected": [
+          {
+            "reason": "主建築等級不足",
+            "rule": "prereq_unmet",
+            "seq": 3
+          }
+        ],
+        "verdict": "proceed"
+      },
+      "field": "verdict",
+      "rule": "hold_mismatch"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "checked_utc": "2026-11-02T08:15:30Z",
+        "did": 101,
+        "next_seq": 3,
+        "rejected": [],
+        "verdict": "hold"
+      },
+      "field": "verdict",
+      "rule": "hold_mismatch"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "checked_utc": "2026-11-02T08:15:30Z",
+        "did": 101,
+        "next_seq": null,
+        "rejected": [],
+        "verdict": "proceed"
+      },
+      "field": "next_seq",
+      "rule": "null_next_seq_requires_missing_order"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "checked_utc": "2026-11-02T08:15:30Z",
+        "did": 101,
+        "next_seq": 1,
+        "rejected": [
+          {
+            "reason": "沒有 build_order",
+            "rule": "missing_order",
+            "seq": 1
+          }
+        ],
+        "verdict": "hold"
+      },
+      "field": "next_seq",
+      "rule": "next_seq_must_be_null_when_missing_order"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "checked_utc": "2026-11-02T08:15:30Z",
+        "did": 101,
+        "next_seq": 3,
+        "rejected": [],
+        "verdict": "maybe"
+      },
+      "field": "verdict",
+      "rule": "enum"
+    }
+  ],
+  "contract": "PlanVerdict",
+  "kind": "invalid",
+  "schema_version": 1
+}

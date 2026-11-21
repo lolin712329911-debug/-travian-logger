@@ -1,0 +1,77 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "aid": 41,
+        "cost": [
+          100,
+          80,
+          60,
+          40
+        ],
+        "gid": 1,
+        "name": "伐木場",
+        "ready_in_s": 0,
+        "to_level": 3
+      },
+      "field": "aid",
+      "rule": "max"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "aid": 5,
+        "cost": [
+          1,
+          2,
+          3
+        ],
+        "gid": 1,
+        "name": "伐木場",
+        "ready_in_s": 0,
+        "to_level": 3
+      },
+      "field": "cost",
+      "rule": "res4_length"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "aid": 5,
+        "cost": [
+          1,
+          -2,
+          3,
+          4
+        ],
+        "gid": 1,
+        "name": "伐木場",
+        "ready_in_s": 0,
+        "to_level": 3
+      },
+      "field": "cost[1]",
+      "rule": "min"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "aid": 5,
+        "cost": [
+          100,
+          80,
+          60,
+          40
+        ],
+        "gid": 1,
+        "ready_in_s": 0,
+        "to_level": 3
+      },
+      "field": "name",
+      "rule": "required"
+    }
+  ],
+  "contract": "BuildTarget",
+  "kind": "invalid",
+  "schema_version": 1
+}

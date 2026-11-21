@@ -1,0 +1,95 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "action": "調度資源",
+        "aid": null,
+        "cost": null,
+        "detail": "",
+        "did": 101,
+        "gid": null,
+        "level": null,
+        "mode": "dry",
+        "result": "ok",
+        "ts_utc": "2026-11-02T08:15:30Z"
+      },
+      "field": "result",
+      "rule": "dry_result_ok"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "action": "調度資源",
+        "aid": null,
+        "cost": "1,2,3",
+        "detail": "",
+        "did": 101,
+        "gid": null,
+        "level": null,
+        "mode": "dry",
+        "result": "dry",
+        "ts_utc": "2026-11-02T08:15:30Z"
+      },
+      "field": "cost",
+      "rule": "pattern"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "action": "調度資源",
+        "aid": null,
+        "cost": null,
+        "detail": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "did": 101,
+        "gid": null,
+        "level": null,
+        "mode": "dry",
+        "result": "dry",
+        "ts_utc": "2026-11-02T08:15:30Z"
+      },
+      "field": "detail",
+      "rule": "max_len"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "action": "調度資源",
+        "aid": null,
+        "cost": null,
+        "detail": "",
+        "gid": null,
+        "level": null,
+        "mode": "dry",
+        "result": "dry",
+        "ts_utc": "2026-11-02T08:15:30Z"
+      },
+      "field": "did",
+      "rule": "required"
+    },
+    {
+      "ctx": {
+        "action_names": [
+          "調度資源"
+        ]
+      },
+      "data": {
+        "action": "亂寫",
+        "aid": null,
+        "cost": null,
+        "detail": "",
+        "did": 101,
+        "gid": null,
+        "level": null,
+        "mode": "dry",
+        "result": "dry",
+        "ts_utc": "2026-11-02T08:15:30Z"
+      },
+      "field": "action",
+      "rule": "unknown_action"
+    }
+  ],
+  "contract": "ActionRow",
+  "kind": "invalid",
+  "schema_version": 1
+}

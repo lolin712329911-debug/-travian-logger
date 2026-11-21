@@ -1,0 +1,75 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "arrive_utc": null,
+        "from_did": 101,
+        "kind": "reinforce",
+        "mode": "dry",
+        "plan_id": "M202611020815-101-102",
+        "reason": "增援",
+        "to_did": 102,
+        "units": {}
+      },
+      "field": "units",
+      "rule": "min_len"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "arrive_utc": null,
+        "from_did": 101,
+        "kind": "reinforce",
+        "mode": "dry",
+        "plan_id": "M202611020815-101-102",
+        "reason": "增援",
+        "to_did": 102,
+        "units": {
+          "u11": 1
+        }
+      },
+      "field": "units",
+      "rule": "key_pattern"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "arrive_utc": null,
+        "from_did": 101,
+        "kind": "attack",
+        "mode": "dry",
+        "plan_id": "M202611020815-101-102",
+        "reason": "增援",
+        "to_did": 102,
+        "units": {
+          "hero": 1,
+          "u1": 10
+        }
+      },
+      "field": "kind",
+      "rule": "enum"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "arrive_utc": null,
+        "from_did": 101,
+        "kind": "reinforce",
+        "mode": "dry",
+        "plan_id": "M202611020815-101-102",
+        "reason": "增援",
+        "to_did": 101,
+        "units": {
+          "hero": 1,
+          "u1": 10
+        }
+      },
+      "field": "to_did",
+      "rule": "same_village"
+    }
+  ],
+  "contract": "TroopMovePlan",
+  "kind": "invalid",
+  "schema_version": 1
+}

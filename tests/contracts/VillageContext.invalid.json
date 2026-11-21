@@ -1,0 +1,167 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "build_settings": {
+          "build_order": null,
+          "queue_slots": 1,
+          "target_level": 10
+        },
+        "did": 101,
+        "enabled": true,
+        "hide_context": {
+          "blocked": [
+            0
+          ],
+          "home_x": 0,
+          "home_y": 0,
+          "oases": [
+            {
+              "kind": "wood25",
+              "safe": null,
+              "x": 3,
+              "y": -4
+            }
+          ],
+          "tribe": "gaul"
+        },
+        "is_capital": false,
+        "modes": {
+          "build": "live"
+        },
+        "name": "主村",
+        "priority": 100,
+        "role": "resource",
+        "x": 0,
+        "y": 0
+      },
+      "field": "modes",
+      "rule": "key_enum"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "build_settings": {
+          "build_order": null,
+          "queue_slots": 1,
+          "target_level": 10
+        },
+        "did": 101,
+        "enabled": true,
+        "hide_context": {
+          "blocked": [
+            0
+          ],
+          "home_x": 0,
+          "home_y": 0,
+          "oases": [
+            {
+              "kind": "wood25",
+              "safe": null,
+              "x": 3,
+              "y": -4
+            }
+          ],
+          "tribe": "gaul"
+        },
+        "is_capital": false,
+        "modes": {
+          "hide": "on"
+        },
+        "name": "主村",
+        "priority": 100,
+        "role": "resource",
+        "x": 0,
+        "y": 0
+      },
+      "field": "modes.hide",
+      "rule": "enum"
+    },
+    {
+      "ctx": {
+        "tribe": "gaul"
+      },
+      "data": {
+        "build_settings": {
+          "build_order": null,
+          "queue_slots": 1,
+          "target_level": 10
+        },
+        "did": 101,
+        "enabled": true,
+        "hide_context": {
+          "blocked": [
+            0
+          ],
+          "home_x": 0,
+          "home_y": 0,
+          "oases": [
+            {
+              "kind": "wood25",
+              "safe": null,
+              "x": 3,
+              "y": -4
+            }
+          ],
+          "tribe": "other"
+        },
+        "is_capital": false,
+        "modes": {
+          "guard": "dry",
+          "hide": "off"
+        },
+        "name": "主村",
+        "priority": 100,
+        "role": "resource",
+        "x": 0,
+        "y": 0
+      },
+      "field": "hide_context.tribe",
+      "rule": "tribe_mismatch"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "build_settings": {
+          "build_order": null,
+          "queue_slots": 0,
+          "target_level": 10
+        },
+        "did": 101,
+        "enabled": true,
+        "hide_context": {
+          "blocked": [
+            0
+          ],
+          "home_x": 0,
+          "home_y": 0,
+          "oases": [
+            {
+              "kind": "wood25",
+              "safe": null,
+              "x": 3,
+              "y": -4
+            }
+          ],
+          "tribe": "gaul"
+        },
+        "is_capital": false,
+        "modes": {
+          "guard": "dry",
+          "hide": "off"
+        },
+        "name": "主村",
+        "priority": 100,
+        "role": "resource",
+        "x": 0,
+        "y": 0
+      },
+      "field": "build_settings.queue_slots",
+      "rule": "min"
+    }
+  ],
+  "contract": "VillageContext",
+  "kind": "invalid",
+  "schema_version": 1
+}

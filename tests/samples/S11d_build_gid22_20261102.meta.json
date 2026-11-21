@@ -1,0 +1,14 @@
+{
+  "captured_epoch": 1793622000,
+  "captured_utc": "2026-11-02T12:20:00Z",
+  "did": 10001,
+  "kind": "build",
+  "note": "舊服 Asia 8 既有建築頁：研究院 10 級（頁面含各兵種研究成本，標記與升級成本相同，解析只能讀 upgradeBuilding）；佇列已滿；資源不足但「交換資源」按鈕可按。 captured_utc 取自頁面 Travian.Game.timestamp；server_id 取自頁面標題；source=raw 為依屬性大小寫、無 data-value 等特徵判斷，未經取得方式確認（A-10）。檔名日期為舊命名（S10a 實際擷取日是 2026-11-02，見 captured_utc）。",
+  "path_only": "/build.php",
+  "sample_id": "S11d",
+  "schema_version": 1,
+  "scrub_tool": "scrub_sample.py v0.3",
+  "scrubbed": true,
+  "server_id": "Asia 8",
+  "source": "raw"
+}

@@ -1,0 +1,119 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "base_url": "http://example.invalid",
+        "game": "legends",
+        "locale": "zh-TW",
+        "map_half": 200,
+        "protection_days": null,
+        "server_id": "example-s1",
+        "server_tz": "Europe/London",
+        "speed": 1,
+        "start_utc": "2026-11-02T08:15:30Z",
+        "tribe": "gaul",
+        "version": null
+      },
+      "field": "base_url",
+      "rule": "pattern"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "base_url": "https://example.invalid/path",
+        "game": "legends",
+        "locale": "zh-TW",
+        "map_half": 200,
+        "protection_days": null,
+        "server_id": "example-s1",
+        "server_tz": "Europe/London",
+        "speed": 1,
+        "start_utc": "2026-11-02T08:15:30Z",
+        "tribe": "gaul",
+        "version": null
+      },
+      "field": "base_url",
+      "rule": "pattern"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "base_url": "https://user:pw@example.invalid",
+        "game": "legends",
+        "locale": "zh-TW",
+        "map_half": 200,
+        "protection_days": null,
+        "server_id": "example-s1",
+        "server_tz": "Europe/London",
+        "speed": 1,
+        "start_utc": "2026-11-02T08:15:30Z",
+        "tribe": "gaul",
+        "version": null
+      },
+      "field": "base_url",
+      "rule": "credentials_in_url"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "base_url": "https://example.invalid",
+        "game": "legends",
+        "locale": "zh-TW",
+        "map_half": 200,
+        "protection_days": null,
+        "server_id": "example-s1",
+        "server_tz": "Taipei",
+        "speed": 1,
+        "start_utc": "2026-11-02T08:15:30Z",
+        "tribe": "gaul",
+        "version": null
+      },
+      "field": "server_tz",
+      "rule": "pattern"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "base_url": "https://example.invalid",
+        "game": "legends",
+        "locale": "zh-TW",
+        "map_half": 200,
+        "protection_days": null,
+        "server_id": "example-s1",
+        "server_tz": "Europe/London",
+        "speed": 0,
+        "start_utc": "2026-11-02T08:15:30Z",
+        "tribe": "gaul",
+        "version": null
+      },
+      "field": "speed",
+      "rule": "min"
+    },
+    {
+      "ctx": {
+        "tribes": [
+          "gaul"
+        ]
+      },
+      "data": {
+        "base_url": "https://example.invalid",
+        "game": "legends",
+        "locale": "zh-TW",
+        "map_half": 200,
+        "protection_days": null,
+        "server_id": "example-s1",
+        "server_tz": "Europe/London",
+        "speed": 1,
+        "start_utc": "2026-11-02T08:15:30Z",
+        "tribe": "nobody",
+        "version": null
+      },
+      "field": "tribe",
+      "rule": "unknown_tribe"
+    }
+  ],
+  "contract": "ServerProfile",
+  "kind": "invalid",
+  "schema_version": 1
+}

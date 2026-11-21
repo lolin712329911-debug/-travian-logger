@@ -1,0 +1,14 @@
+{
+  "captured_epoch": 1793621891,
+  "captured_utc": "2026-11-02T12:18:11Z",
+  "did": 10001,
+  "kind": "build",
+  "note": "測試帳號 International 11（埃及、單村）的空地建造頁（gid0，12 張建築卡：4 張可蓋、寶物庫為 disabled 的綠色按鈕、金幣「交換資源」按鈕可按與 disabled 各有、5 張只列前置條件）；只當頁面結構樣本、不進舊服 golden。沒有同時刻 dorf1／dorf2，佇列是否已滿未知。 captured_utc 取自頁面 Travian.Game.timestamp；server_id 取自頁面標題；source=raw 為依屬性大小寫、無 data-value 等特徵判斷，未經取得方式確認（A-10）。檔名日期為舊命名（S10a 實際擷取日是 2026-11-02，見 captured_utc）。",
+  "path_only": "/build.php",
+  "sample_id": "S10a",
+  "schema_version": 1,
+  "scrub_tool": "scrub_sample.py v0.3",
+  "scrubbed": true,
+  "server_id": "International 11",
+  "source": "raw"
+}

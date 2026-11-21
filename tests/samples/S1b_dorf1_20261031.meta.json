@@ -1,0 +1,13 @@
+{
+  "captured_utc": "2026-10-31T00:47:12Z",
+  "did": 10001,
+  "kind": "dorf1",
+  "note": "舊服 dorf1（S1：≥2 個村；第 2 份，作用中的村＝脫敏後 did 10001）。captured_utc 取自頁面 Travian.Game.timestamp；server_id 取自頁面標題，頁面內沒有主機名稱；source=raw 為依屬性大小寫、無 data-value 等特徵判斷，未經取得方式確認（A-10）。",
+  "path_only": "/dorf1.php",
+  "sample_id": "S1b",
+  "schema_version": 1,
+  "scrub_tool": "scrub_sample.py v0.2",
+  "scrubbed": true,
+  "server_id": "Asia 8",
+  "source": "raw"
+}

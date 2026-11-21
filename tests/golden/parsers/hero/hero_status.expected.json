@@ -1,0 +1,185 @@
+{
+ "cases": [
+  {
+   "id": 1794016856,
+   "state": {
+    "adventure_no": null,
+    "adventures_count": 18,
+    "arrival_at": null,
+    "arrival_in_s": null,
+    "at_home": false,
+    "difficulty_bonus": null,
+    "duration_bonus": null,
+    "exp_pct": 59,
+    "health_pct": 50,
+    "home_did": null,
+    "in_village_did": null,
+    "regenerating": null,
+    "status": null
+   }
+  },
+  {
+   "id": 1794017064,
+   "state": {
+    "adventure_no": null,
+    "adventures_count": null,
+    "arrival_at": null,
+    "arrival_in_s": null,
+    "at_home": true,
+    "difficulty_bonus": null,
+    "duration_bonus": null,
+    "exp_pct": 37,
+    "health_pct": 82,
+    "home_did": null,
+    "in_village_did": null,
+    "regenerating": null,
+    "status": null
+   }
+  },
+  {
+   "id": 1794017822,
+   "state": {
+    "adventure_no": null,
+    "adventures_count": 18,
+    "arrival_at": 1794018151,
+    "arrival_in_s": 329,
+    "at_home": false,
+    "difficulty_bonus": false,
+    "duration_bonus": false,
+    "exp_pct": 59,
+    "health_pct": 51,
+    "home_did": 34593,
+    "in_village_did": null,
+    "regenerating": false,
+    "status": 9
+   }
+  },
+  {
+   "id": 1794017928,
+   "state": {
+    "adventure_no": null,
+    "adventures_count": 18,
+    "arrival_at": null,
+    "arrival_in_s": null,
+    "at_home": false,
+    "difficulty_bonus": null,
+    "duration_bonus": null,
+    "exp_pct": 59,
+    "health_pct": 51,
+    "home_did": null,
+    "in_village_did": null,
+    "regenerating": null,
+    "status": null
+   }
+  },
+  {
+   "id": 1794018272,
+   "state": {
+    "adventure_no": null,
+    "adventures_count": null,
+    "arrival_at": null,
+    "arrival_in_s": null,
+    "at_home": false,
+    "difficulty_bonus": null,
+    "duration_bonus": null,
+    "exp_pct": 37,
+    "health_pct": 82,
+    "home_did": null,
+    "in_village_did": null,
+    "regenerating": null,
+    "status": null
+   }
+  },
+  {
+   "id": 1794018301,
+   "state": {
+    "adventure_no": null,
+    "adventures_count": null,
+    "arrival_at": null,
+    "arrival_in_s": null,
+    "at_home": false,
+    "difficulty_bonus": null,
+    "duration_bonus": null,
+    "exp_pct": 37,
+    "health_pct": 82,
+    "home_did": null,
+    "in_village_did": null,
+    "regenerating": null,
+    "status": null
+   }
+  },
+  {
+   "id": 1794037576,
+   "state": {
+    "adventure_no": null,
+    "adventures_count": 17,
+    "arrival_at": 1794038778,
+    "arrival_in_s": 1202,
+    "at_home": false,
+    "difficulty_bonus": false,
+    "duration_bonus": false,
+    "exp_pct": 63,
+    "health_pct": 24,
+    "home_did": 34593,
+    "in_village_did": null,
+    "regenerating": false,
+    "status": 9
+   }
+  },
+  {
+   "id": 1794037595,
+   "state": {
+    "adventure_no": null,
+    "adventures_count": 17,
+    "arrival_at": null,
+    "arrival_in_s": null,
+    "at_home": false,
+    "difficulty_bonus": null,
+    "duration_bonus": null,
+    "exp_pct": 63,
+    "health_pct": 24,
+    "home_did": null,
+    "in_village_did": null,
+    "regenerating": null,
+    "status": null
+   }
+  },
+  {
+   "id": 1794044366,
+   "state": {
+    "adventure_no": 85,
+    "adventures_count": 1,
+    "arrival_at": 1794046209,
+    "arrival_in_s": 1843,
+    "at_home": false,
+    "difficulty_bonus": false,
+    "duration_bonus": false,
+    "exp_pct": 37,
+    "health_pct": 91,
+    "home_did": 65222,
+    "in_village_did": null,
+    "regenerating": false,
+    "status": 50
+   }
+  },
+  {
+   "id": 1794044387,
+   "state": {
+    "adventure_no": null,
+    "adventures_count": 1,
+    "arrival_at": null,
+    "arrival_in_s": null,
+    "at_home": false,
+    "difficulty_bonus": null,
+    "duration_bonus": null,
+    "exp_pct": 37,
+    "health_pct": 91,
+    "home_did": null,
+    "in_village_did": null,
+    "regenerating": null,
+    "status": null
+   }
+  }
+ ],
+ "schema_version": 1
+}

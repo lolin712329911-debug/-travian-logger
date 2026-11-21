@@ -1,0 +1,479 @@
+{
+ "cases": [
+  {
+   "id": 1794016856,
+   "overview": {
+    "incoming_attacks": 0,
+    "movements": [
+     {
+      "arrive_ts": 1794018151,
+      "head_did": 0,
+      "headline": "從冒險回來",
+      "hostile": false,
+      "kinds": [
+       "inReturn"
+      ],
+      "link_did": 114461,
+      "own_home": false,
+      "recall_id": null,
+      "role_did": 114461,
+      "section": "來村軍團 (1)",
+      "units": {
+       "hero": 1
+      }
+     }
+    ],
+    "server_ts": 1794016856,
+    "units_away": null,
+    "units_home": {
+     "u1": 238,
+     "u3": 23
+    }
+   }
+  },
+  {
+   "id": 1794017928,
+   "overview": {
+    "incoming_attacks": 0,
+    "movements": [
+     {
+      "arrive_ts": 1794018151,
+      "head_did": 0,
+      "headline": "從冒險回來",
+      "hostile": false,
+      "kinds": [
+       "inReturn"
+      ],
+      "link_did": 114461,
+      "own_home": false,
+      "recall_id": null,
+      "role_did": 114461,
+      "section": "來村軍團 (1)",
+      "units": {
+       "hero": 1
+      }
+     }
+    ],
+    "server_ts": 1794017928,
+    "units_away": null,
+    "units_home": {
+     "u1": 238,
+     "u3": 23
+    }
+   }
+  },
+  {
+   "id": 1794018272,
+   "overview": {
+    "incoming_attacks": 3,
+    "movements": [
+     {
+      "arrive_ts": 1794021128,
+      "head_did": 11233,
+      "headline": "JerseyDevil 搶奪 WoodViking的村莊",
+      "hostile": true,
+      "kinds": [
+       "inRaid"
+      ],
+      "link_did": 3623,
+      "own_home": false,
+      "recall_id": null,
+      "role_did": 3623,
+      "section": "來村軍團 (3)",
+      "units": {
+       "hero": null,
+       "u1": null,
+       "u10": null,
+       "u2": null,
+       "u3": null,
+       "u4": null,
+       "u5": null,
+       "u6": null,
+       "u7": null,
+       "u8": null,
+       "u9": null
+      }
+     },
+     {
+      "arrive_ts": 1794026767,
+      "head_did": 11233,
+      "headline": "BredYmer 搶奪 WoodViking的村莊",
+      "hostile": true,
+      "kinds": [
+       "inRaid"
+      ],
+      "link_did": 117945,
+      "own_home": false,
+      "recall_id": null,
+      "role_did": 117945,
+      "section": "來村軍團 (3)",
+      "units": {
+       "hero": null,
+       "u1": null,
+       "u10": null,
+       "u2": null,
+       "u3": null,
+       "u4": null,
+       "u5": null,
+       "u6": null,
+       "u7": null,
+       "u8": null,
+       "u9": null
+      }
+     },
+     {
+      "arrive_ts": 1794039660,
+      "head_did": 11233,
+      "headline": "rat 攻擊 WoodViking的村莊",
+      "hostile": true,
+      "kinds": [
+       "inAttack"
+      ],
+      "link_did": 30491,
+      "own_home": false,
+      "recall_id": null,
+      "role_did": 30491,
+      "section": "來村軍團 (3)",
+      "units": {
+       "hero": null,
+       "u1": null,
+       "u10": null,
+       "u2": null,
+       "u3": null,
+       "u4": null,
+       "u5": null,
+       "u6": null,
+       "u7": null,
+       "u8": null,
+       "u9": null
+      }
+     },
+     {
+      "arrive_ts": 1794019145,
+      "head_did": 11630,
+      "headline": "掠奪荒廢之綠州 (−200 | 171)",
+      "hostile": false,
+      "kinds": [
+       "outRaid"
+      ],
+      "link_did": 11630,
+      "own_home": false,
+      "recall_id": 197142515,
+      "role_did": 11233,
+      "section": "出擊軍團 (1)",
+      "units": {
+       "hero": 1
+      }
+     }
+    ],
+    "server_ts": 1794018272,
+    "units_away": null,
+    "units_home": {}
+   }
+  },
+  {
+   "id": 1794018301,
+   "overview": {
+    "incoming_attacks": 3,
+    "movements": [
+     {
+      "arrive_ts": 1794021128,
+      "head_did": 11233,
+      "headline": "JerseyDevil 搶奪 WoodViking的村莊",
+      "hostile": true,
+      "kinds": [
+       "inRaid"
+      ],
+      "link_did": 3623,
+      "own_home": false,
+      "recall_id": null,
+      "role_did": 3623,
+      "section": "來村軍團 (3)",
+      "units": {
+       "hero": null,
+       "u1": null,
+       "u10": null,
+       "u2": null,
+       "u3": null,
+       "u4": null,
+       "u5": null,
+       "u6": null,
+       "u7": null,
+       "u8": null,
+       "u9": null
+      }
+     },
+     {
+      "arrive_ts": 1794026767,
+      "head_did": 11233,
+      "headline": "BredYmer 搶奪 WoodViking的村莊",
+      "hostile": true,
+      "kinds": [
+       "inRaid"
+      ],
+      "link_did": 117945,
+      "own_home": false,
+      "recall_id": null,
+      "role_did": 117945,
+      "section": "來村軍團 (3)",
+      "units": {
+       "hero": null,
+       "u1": null,
+       "u10": null,
+       "u2": null,
+       "u3": null,
+       "u4": null,
+       "u5": null,
+       "u6": null,
+       "u7": null,
+       "u8": null,
+       "u9": null
+      }
+     },
+     {
+      "arrive_ts": 1794039660,
+      "head_did": 11233,
+      "headline": "rat 攻擊 WoodViking的村莊",
+      "hostile": true,
+      "kinds": [
+       "inAttack"
+      ],
+      "link_did": 30491,
+      "own_home": false,
+      "recall_id": null,
+      "role_did": 30491,
+      "section": "來村軍團 (3)",
+      "units": {
+       "hero": null,
+       "u1": null,
+       "u10": null,
+       "u2": null,
+       "u3": null,
+       "u4": null,
+       "u5": null,
+       "u6": null,
+       "u7": null,
+       "u8": null,
+       "u9": null
+      }
+     },
+     {
+      "arrive_ts": 1794019145,
+      "head_did": 11630,
+      "headline": "掠奪荒廢之綠州 (−200 | 171)",
+      "hostile": false,
+      "kinds": [
+       "outRaid"
+      ],
+      "link_did": 11630,
+      "own_home": false,
+      "recall_id": 197142515,
+      "role_did": 11233,
+      "section": "出擊軍團 (1)",
+      "units": {
+       "hero": 1
+      }
+     }
+    ],
+    "server_ts": 1794018301,
+    "units_away": null,
+    "units_home": {}
+   }
+  },
+  {
+   "id": 1794037595,
+   "overview": {
+    "incoming_attacks": 0,
+    "movements": [
+     {
+      "arrive_ts": 1794038778,
+      "head_did": 0,
+      "headline": "從冒險回來",
+      "hostile": false,
+      "kinds": [
+       "inReturn"
+      ],
+      "link_did": 114461,
+      "own_home": false,
+      "recall_id": null,
+      "role_did": 114461,
+      "section": "來村軍團 (1)",
+      "units": {
+       "hero": 1
+      }
+     }
+    ],
+    "server_ts": 1794037595,
+    "units_away": null,
+    "units_home": {
+     "u1": 238,
+     "u3": 23
+    }
+   }
+  },
+  {
+   "id": 1794044387,
+   "overview": {
+    "incoming_attacks": 5,
+    "movements": [
+     {
+      "arrive_ts": 1794044629,
+      "head_did": 11233,
+      "headline": "JerseyDevil 搶奪 WoodViking的村莊",
+      "hostile": true,
+      "kinds": [
+       "inRaid"
+      ],
+      "link_did": 2424,
+      "own_home": false,
+      "recall_id": null,
+      "role_did": 2424,
+      "section": "來村軍團 (5)",
+      "units": {
+       "hero": null,
+       "u1": null,
+       "u10": null,
+       "u2": null,
+       "u3": null,
+       "u4": null,
+       "u5": null,
+       "u6": null,
+       "u7": null,
+       "u8": null,
+       "u9": null
+      }
+     },
+     {
+      "arrive_ts": 1794044760,
+      "head_did": 11233,
+      "headline": "JerseyDevil 搶奪 WoodViking的村莊",
+      "hostile": true,
+      "kinds": [
+       "inRaid"
+      ],
+      "link_did": 3623,
+      "own_home": false,
+      "recall_id": null,
+      "role_did": 3623,
+      "section": "來村軍團 (5)",
+      "units": {
+       "hero": null,
+       "u1": null,
+       "u10": null,
+       "u2": null,
+       "u3": null,
+       "u4": null,
+       "u5": null,
+       "u6": null,
+       "u7": null,
+       "u8": null,
+       "u9": null
+      }
+     },
+     {
+      "arrive_ts": 1794045683,
+      "head_did": 11233,
+      "headline": "rat 搶奪 WoodViking的村莊",
+      "hostile": true,
+      "kinds": [
+       "inRaid"
+      ],
+      "link_did": 30491,
+      "own_home": false,
+      "recall_id": null,
+      "role_did": 30491,
+      "section": "來村軍團 (5)",
+      "units": {
+       "hero": null,
+       "u1": null,
+       "u10": null,
+       "u2": null,
+       "u3": null,
+       "u4": null,
+       "u5": null,
+       "u6": null,
+       "u7": null,
+       "u8": null,
+       "u9": null
+      }
+     },
+     {
+      "arrive_ts": 1794046962,
+      "head_did": 11233,
+      "headline": "JerseyDevil 搶奪 WoodViking的村莊",
+      "hostile": true,
+      "kinds": [
+       "inRaid"
+      ],
+      "link_did": 3623,
+      "own_home": false,
+      "recall_id": null,
+      "role_did": 3623,
+      "section": "來村軍團 (5)",
+      "units": {
+       "hero": null,
+       "u1": null,
+       "u10": null,
+       "u2": null,
+       "u3": null,
+       "u4": null,
+       "u5": null,
+       "u6": null,
+       "u7": null,
+       "u8": null,
+       "u9": null
+      }
+     },
+     {
+      "arrive_ts": 1794050119,
+      "head_did": 11233,
+      "headline": "BredYmer 搶奪 WoodViking的村莊",
+      "hostile": true,
+      "kinds": [
+       "inRaid"
+      ],
+      "link_did": 117945,
+      "own_home": false,
+      "recall_id": null,
+      "role_did": 117945,
+      "section": "來村軍團 (5)",
+      "units": {
+       "hero": null,
+       "u1": null,
+       "u10": null,
+       "u2": null,
+       "u3": null,
+       "u4": null,
+       "u5": null,
+       "u6": null,
+       "u7": null,
+       "u8": null,
+       "u9": null
+      }
+     },
+     {
+      "arrive_ts": 1794046209,
+      "head_did": 0,
+      "headline": "冒險",
+      "hostile": false,
+      "kinds": [
+       "outHero"
+      ],
+      "link_did": 0,
+      "own_home": false,
+      "recall_id": null,
+      "role_did": 11233,
+      "section": "出擊軍團 (1)",
+      "units": {
+       "hero": 1
+      }
+     }
+    ],
+    "server_ts": 1794044387,
+    "units_away": null,
+    "units_home": {}
+   }
+  }
+ ],
+ "schema_version": 1
+}

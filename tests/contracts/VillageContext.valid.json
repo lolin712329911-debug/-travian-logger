@@ -1,0 +1,47 @@
+{
+  "cases": [
+    {
+      "ctx": {
+        "tribe": "gaul"
+      },
+      "data": {
+        "build_settings": {
+          "build_order": null,
+          "queue_slots": 1,
+          "target_level": 10
+        },
+        "did": 101,
+        "enabled": true,
+        "hide_context": {
+          "blocked": [
+            0
+          ],
+          "home_x": 0,
+          "home_y": 0,
+          "oases": [
+            {
+              "kind": "wood25",
+              "safe": null,
+              "x": 3,
+              "y": -4
+            }
+          ],
+          "tribe": "gaul"
+        },
+        "is_capital": false,
+        "modes": {
+          "guard": "dry",
+          "hide": "off"
+        },
+        "name": "主村",
+        "priority": 100,
+        "role": "resource",
+        "x": 0,
+        "y": 0
+      }
+    }
+  ],
+  "contract": "VillageContext",
+  "kind": "valid",
+  "schema_version": 1
+}

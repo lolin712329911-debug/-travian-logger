@@ -1,0 +1,27 @@
+{
+  "cases": [
+    {
+      "ctx": {},
+      "data": {
+        "capacity_each": 500,
+        "free": 4,
+        "total": 3
+      },
+      "field": "free",
+      "rule": "free_le_total"
+    },
+    {
+      "ctx": {},
+      "data": {
+        "capacity_each": 0,
+        "free": 2,
+        "total": 3
+      },
+      "field": "capacity_each",
+      "rule": "min"
+    }
+  ],
+  "contract": "Merchants",
+  "kind": "invalid",
+  "schema_version": 1
+}

@@ -1,0 +1,323 @@
+{
+ "cases": [
+  {
+   "id": "ts1793407065",
+   "slots": [
+    {
+     "aid": 19,
+     "gid": null,
+     "level": 0,
+     "name": null,
+     "under_construction": false
+    },
+    {
+     "aid": 20,
+     "gid": null,
+     "level": 0,
+     "name": null,
+     "under_construction": false
+    },
+    {
+     "aid": 21,
+     "gid": 23,
+     "level": 10,
+     "name": "山洞",
+     "under_construction": false
+    },
+    {
+     "aid": 22,
+     "gid": 36,
+     "level": 5,
+     "name": "陷阱機",
+     "under_construction": false
+    },
+    {
+     "aid": 23,
+     "gid": null,
+     "level": 0,
+     "name": null,
+     "under_construction": false
+    },
+    {
+     "aid": 24,
+     "gid": null,
+     "level": 0,
+     "name": null,
+     "under_construction": false
+    },
+    {
+     "aid": 25,
+     "gid": null,
+     "level": 0,
+     "name": null,
+     "under_construction": false
+    },
+    {
+     "aid": 26,
+     "gid": 15,
+     "level": 9,
+     "name": "村莊大樓",
+     "under_construction": true
+    },
+    {
+     "aid": 27,
+     "gid": null,
+     "level": 0,
+     "name": null,
+     "under_construction": false
+    },
+    {
+     "aid": 28,
+     "gid": null,
+     "level": 0,
+     "name": null,
+     "under_construction": false
+    },
+    {
+     "aid": 29,
+     "gid": null,
+     "level": 0,
+     "name": null,
+     "under_construction": false
+    },
+    {
+     "aid": 30,
+     "gid": 10,
+     "level": 7,
+     "name": "倉庫",
+     "under_construction": false
+    },
+    {
+     "aid": 31,
+     "gid": null,
+     "level": 0,
+     "name": null,
+     "under_construction": false
+    },
+    {
+     "aid": 32,
+     "gid": 11,
+     "level": 7,
+     "name": "穀倉",
+     "under_construction": true
+    },
+    {
+     "aid": 33,
+     "gid": null,
+     "level": 0,
+     "name": null,
+     "under_construction": false
+    },
+    {
+     "aid": 34,
+     "gid": null,
+     "level": 0,
+     "name": null,
+     "under_construction": false
+    },
+    {
+     "aid": 35,
+     "gid": 19,
+     "level": 1,
+     "name": "兵營",
+     "under_construction": false
+    },
+    {
+     "aid": 36,
+     "gid": null,
+     "level": 0,
+     "name": null,
+     "under_construction": false
+    },
+    {
+     "aid": 37,
+     "gid": null,
+     "level": 0,
+     "name": null,
+     "under_construction": false
+    },
+    {
+     "aid": 38,
+     "gid": null,
+     "level": 0,
+     "name": null,
+     "under_construction": false
+    },
+    {
+     "aid": 39,
+     "gid": 16,
+     "level": 1,
+     "name": "集結點",
+     "under_construction": false
+    },
+    {
+     "aid": 40,
+     "gid": null,
+     "level": 0,
+     "name": null,
+     "under_construction": false
+    }
+   ]
+  },
+  {
+   "id": "ts1793407599",
+   "slots": [
+    {
+     "aid": 19,
+     "gid": 18,
+     "level": 10,
+     "name": "大使館",
+     "under_construction": false
+    },
+    {
+     "aid": 20,
+     "gid": 25,
+     "level": 10,
+     "name": "行宮",
+     "under_construction": false
+    },
+    {
+     "aid": 21,
+     "gid": 22,
+     "level": 9,
+     "name": "研究院",
+     "under_construction": true
+    },
+    {
+     "aid": 22,
+     "gid": 8,
+     "level": 2,
+     "name": "麵粉廠",
+     "under_construction": false
+    },
+    {
+     "aid": 23,
+     "gid": null,
+     "level": 0,
+     "name": null,
+     "under_construction": false
+    },
+    {
+     "aid": 24,
+     "gid": null,
+     "level": 0,
+     "name": null,
+     "under_construction": false
+    },
+    {
+     "aid": 25,
+     "gid": 13,
+     "level": 3,
+     "name": "盔甲廠",
+     "under_construction": false
+    },
+    {
+     "aid": 26,
+     "gid": 15,
+     "level": 11,
+     "name": "村莊大樓",
+     "under_construction": false
+    },
+    {
+     "aid": 27,
+     "gid": 23,
+     "level": 10,
+     "name": "山洞",
+     "under_construction": false
+    },
+    {
+     "aid": 28,
+     "gid": null,
+     "level": 0,
+     "name": null,
+     "under_construction": false
+    },
+    {
+     "aid": 29,
+     "gid": 36,
+     "level": 8,
+     "name": "陷阱機",
+     "under_construction": false
+    },
+    {
+     "aid": 30,
+     "gid": 11,
+     "level": 8,
+     "name": "穀倉",
+     "under_construction": false
+    },
+    {
+     "aid": 31,
+     "gid": 17,
+     "level": 9,
+     "name": "市場",
+     "under_construction": false
+    },
+    {
+     "aid": 32,
+     "gid": 10,
+     "level": 13,
+     "name": "倉庫",
+     "under_construction": false
+    },
+    {
+     "aid": 33,
+     "gid": 20,
+     "level": 6,
+     "name": "馬廄",
+     "under_construction": false
+    },
+    {
+     "aid": 34,
+     "gid": null,
+     "level": 0,
+     "name": null,
+     "under_construction": false
+    },
+    {
+     "aid": 35,
+     "gid": 19,
+     "level": 5,
+     "name": "兵營",
+     "under_construction": false
+    },
+    {
+     "aid": 36,
+     "gid": null,
+     "level": 0,
+     "name": null,
+     "under_construction": false
+    },
+    {
+     "aid": 37,
+     "gid": null,
+     "level": 0,
+     "name": null,
+     "under_construction": false
+    },
+    {
+     "aid": 38,
+     "gid": null,
+     "level": 0,
+     "name": null,
+     "under_construction": false
+    },
+    {
+     "aid": 39,
+     "gid": 16,
+     "level": 3,
+     "name": "集結點",
+     "under_construction": false
+    },
+    {
+     "aid": 40,
+     "gid": 33,
+     "level": 1,
+     "name": "木牆",
+     "under_construction": false
+    }
+   ]
+  }
+ ],
+ "schema_version": 1
+}
