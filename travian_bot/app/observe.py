@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/observe.py（ap-05）
-版本：v0.1（A6a1）
+版本：v0.1.1（GA-fix1：dorf1 抓取改用 rc.dorf1_raw_if，成本被渲染清空時改抓原始 HTML）｜v0.1（A6a1）
 用途：每村每輪的唯讀觀察：抓 dorf1／dorf2 → parsers → 組 C2 VillageSnapshot，並把資料記到 Sheet
       （Sheet1／Fields／Buildings／Buildable／Changes／state）。
 依賴：ap-02、if-01（SessionLost）、if-02（GatewayError）、ps-01、ps-03、ps-04、ps-05（HeroState、parse_hero_status）、
@@ -151,12 +151,11 @@ def _fetch_dorf1(rc: RunContext) -> str:
     if DORF1 in rc.pages:
         return rc.pages[DORF1]
     session = rc.session
-    not_village = lambda h: not session.is_village_html(h)   # noqa: E731
-    html = rc.get_page(DORF1, raw_if=not_village)
+    html = rc.get_page(DORF1, raw_if=rc.dorf1_raw_if)      # 非村莊頁或成本被清空 → 純 HTTP 再抓
     if not session.is_village_html(html):
         if session.can_recover:
             session.recover()
-            html = rc.get_page(DORF1, raw_if=not_village, refresh=True)
+            html = rc.get_page(DORF1, raw_if=rc.dorf1_raw_if, refresh=True)
         if not session.is_village_html(html):
             rc.pages.pop(DORF1, None)
             raise SessionLost("dorf1 不是村莊頁，登入狀態失效")

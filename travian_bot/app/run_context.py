@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/run_context.py（ap-02）
-版本：v0.1.2（A6a2b：StageIO 加 oasis_centers）｜v0.1.1（A6a2：加 stage_notes；StageIO 加 read_state／upsert_state）｜v0.1（A6a1）
+版本：v0.1.3（GA-fix1：加 dorf1_raw_if）｜v0.1.2（A6a2b：StageIO 加 oasis_centers）｜v0.1.1（A6a2：加 stage_notes；StageIO 加 read_state／upsert_state）｜v0.1（A6a1）
 用途：帳號級執行環境。
       StageIO       ：stage 與 observe 對外的全部 IO（Sheet 讀寫、通知、等待、時鐘），欄位都是可替換的函式，
                       測試時整組注入假的；real_io(notify) 組出綁真實 repo 函式的版本。
@@ -10,7 +10,7 @@ travian_bot/app/run_context.py（ap-02）
       RunContext    ：帳號級可變狀態（cfg、profile、tribe、gateway、session、sh、io、dry_flag、hero、pages、warnings）。
 依賴：if-02（gateway）、if-05（config_repo.disable）、if-07（action_repo）、if-08（state_repo）、
       if-09（snapshot_repo）、if-10（oasis_repo）、cm-01（models）、cm-06（tribe_data）、cm-09（parsed）、
-      cm-10（serialize.redact；v0.69 卡片漏列，見交接區塊）。
+      cm-10（serialize.redact；v0.69 卡片漏列，見交接區塊）、ps-01（dorf1_fields_lack_cost；v0.1.3，卡片與 arch_manifest 要補）。
 部署狀態：未部署（GA 前不 live）。
 
 設計重點
@@ -31,6 +31,7 @@ from ..common.models import ActionRow, ServerProfile
 from ..common.parsed import HeroState
 from ..common.tribe_data import TribeSpec
 from ..infra import gateway as _gateway
+from ..parsers.village import dorf1_fields_lack_cost
 from ..infra.store import action_repo, config_repo, oasis_repo, snapshot_repo, state_repo
 
 __all__ = ["StageIO", "SessionLike", "RunContext", "real_io"]
@@ -121,6 +122,11 @@ class RunContext:
     def warn(self, msg: Any) -> None:
         """收集警告（不印）。訊息先 redact。"""
         self.warnings.append(serialize.redact(msg))
+
+    def dorf1_raw_if(self, html: str) -> bool:
+        """dorf1 專用的 gateway raw_if：不是村莊頁，或資源田成本被渲染後的頁面清空 → 改抓純 HTTP 原始 HTML
+        （取代舊 need_cost 備援）。所有抓 dorf1 的地方都要傳它（含 refresh=True），否則升級後重讀會丟成本。"""
+        return (not self.session.is_village_html(html)) or dorf1_fields_lack_cost(html)
 
     def get_page(self, path: str, *, raw_if: Optional[Callable[[str], bool]] = None, refresh: bool = False) -> str:
         """抓一頁並記在 pages；同一路徑本輪只抓一次（refresh=True 才重抓）。"""
