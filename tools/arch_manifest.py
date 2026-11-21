@@ -33,7 +33,7 @@ MANIFEST = [
     {'id': 'ap-04', 'path': 'app/registry.py', 'layer': 'app', 'deps': ['ap-03', 'ap-10', 'ap-11', 'ap-12', 'ap-13', 'ap-14', 'ap-15', 'ap-16', 'ap-17'], 'wp': 'A6a1', 'disp': '新寫'},
     {'id': 'ap-05', 'path': 'app/observe.py', 'layer': 'app', 'deps': ['ap-02', 'if-01', 'if-02', 'ps-01', 'ps-03', 'ps-04', 'ps-05', 'if-09', 'if-08', 'cm-01', 'cm-03', 'cm-06', 'cm-09', 'cm-10', 'cm-11'], 'wp': 'A6a1', 'disp': ''},
     {'id': 'ap-06', 'path': 'app/formatting.py', 'layer': 'app', 'deps': ['cm-01', 'cm-02', 'cm-03', 'cm-10'], 'wp': 'A6a1', 'disp': ''},
-    {'id': 'ap-07', 'path': 'app/village_cycle.py', 'layer': 'app', 'deps': ['ap-02', 'ap-03', 'ap-04', 'ap-05', 'dm-09', 'ac-01', 'cm-01', 'cm-04', 'cm-10', 'if-01', 'if-05'], 'wp': 'A6b', 'disp': '拆'},
+    {'id': 'ap-07', 'path': 'app/village_cycle.py', 'layer': 'app', 'deps': ['ap-02', 'ap-03', 'ap-04', 'ap-05', 'dm-09', 'ac-01', 'cm-01', 'cm-03', 'cm-04', 'cm-10', 'if-01', 'if-05'], 'wp': 'A6b', 'disp': '拆'},
     {'id': 'ap-08', 'path': 'app/orchestrator.py', 'layer': 'app', 'deps': ['ap-02', 'ap-03', 'ap-04', 'ap-07', 'cm-01', 'if-01'], 'wp': 'A6b／B3', 'disp': '新寫'},
     {'id': 'ap-10', 'path': 'app/stages/build.py', 'layer': 'app', 'deps': ['ac-02', 'ap-02', 'ap-03', 'ap-06', 'ap-20', 'cm-01', 'cm-02', 'cm-03', 'cm-04', 'cm-10', 'cm-11', 'cm-12', 'dm-01', 'dm-12', 'if-12', 'ps-01', 'ps-03'], 'wp': 'A6a2', 'disp': '拆'},
     {'id': 'ap-11', 'path': 'app/stages/item_transfer.py', 'layer': 'app', 'deps': ['ac-03', 'ap-02', 'ap-03', 'ap-06', 'ap-20', 'cm-01', 'cm-04', 'cm-11', 'dm-05', 'if-02', 'ps-01'], 'wp': 'A6a2', 'disp': '拆'},
