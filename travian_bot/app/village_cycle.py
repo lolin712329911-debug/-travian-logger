@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/village_cycle.py（ap-07）
-版本：v0.1（A6b）
+版本：v0.1.1（A6b：動作名稱改用 constants.ACTION_VILLAGE_SKIP）
 用途：單一村莊一輪的流程：核對目前村莊→village_lock→observe→依 registry 順序跑村級 stage。
       寫入類 stage 執行前再核對一次目前村莊；不符則該村剩餘寫入 stage 全記 skipped、不 disable()。
-依賴：ap-02、ap-03、ap-04、ap-05、dm-09、ac-01、cm-01、cm-04、cm-10、if-01、if-05。
+依賴：ap-02、ap-03、ap-04、ap-05、dm-09、ac-01、cm-01、cm-03、cm-04、cm-10、if-01、if-05。
 部署狀態：未部署（GA 前不 live）。
 
 處置：拆（舊 runner.run_build_cycle 的串接段；決策與送出已在各 stage）。
@@ -25,6 +25,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 from ..actions import village_switch
 from ..common import serialize
+from ..common.constants import ACTION_VILLAGE_SKIP   # "村莊跳過"（cm-03，C5／C8）
 from ..common.modes import Mode
 from ..common.models import ActionRow, StageResult, VillageContext, VillageLock, VillageSnapshot
 from ..domain import village_lock
@@ -36,8 +37,6 @@ from .stage_base import run_stage, stage_mode
 
 __all__ = ["VillageRun", "run_village", "run_village_cycle", "apply_updates", "log_line", "log_event"]
 
-# ✗ C5 的 action 是「常數」，應放 common/constants；目前沒看到登記，先放本檔，等你決定（見交接區塊）
-ACTION_VILLAGE_SKIP = "village_skip"
 _FROZEN_KEYS = ("did",)
 
 
