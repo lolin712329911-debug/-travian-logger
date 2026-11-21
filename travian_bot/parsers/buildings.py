@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/parsers/buildings.py（ps-03）
-版本：v0.1（A2a-2b）
+版本：v0.1.1（GA-fix3：find_upgrade_url 認新版「按鈕＋JS POST」的升級按鈕，回傳 click:build:<aid>:<gid>）｜v0.1（A2a-2b）
 用途：建築頁解析（HTML 進、結構出；不碰網路、不碰 Sheet、無全域可變狀態）：
   parse_building_cost(html)  → UpgradeCost     既有建築頁（build.php?id=<aid>）的升級成本／工期／缺資源資訊
   parse_build_options(html)  → tuple[BuildOption, ...]  空地建造頁（build.php?id=<空地>，body #build.gid0）
@@ -38,6 +38,14 @@ _PAGE = "buildings"
 # 「興建／擴建」按鈕的網址只認這一種格式（✓ S10：/dorf2.php?id=21&gid=23&action=build&checksum=4cdfae）。
 # 金幣（&buildmaster）、看廣告（&as=）、其他多餘參數一律不算。
 _BUILD_URL_RE = re.compile(r"/dorf[12]\.php\?id=\d+&gid=\d+&action=build&checksum=[0-9a-fA-F]+")
+# v0.1.1：新版頁面的升級按鈕沒有網址，onclick 是無參數的 build_<token>()，真正動作在頁面 script：
+#   function build_<token>(token = undefined, masterBuilder = false) { Travian.Promises.post('building/build/<aid>', {..., buildingId: <gid>, ...}) }
+# 只認「呼叫端不帶任何參數」（masterBuilder 預設 false，不花金幣）；函式簽名的 masterBuilder 預設不是 false 就不認。
+_CLICK_ONCLICK_RE = re.compile(r"\s*(build_\w+)\(\s*\)\s*;?\s*return\s+false\s*;?\s*")
+_BUILD_FN_RE = re.compile(
+    r"function\s+(build_\w+)\s*\(([^)]*)\)\s*\{\s*Travian\.Promises\.post\(\s*'building/build/(\d+)'\s*,\s*\{([^}]*)\}", re.S)
+_BUILDING_ID_RE = re.compile(r"buildingId\s*:\s*(\d+)")
+_MASTER_FALSE_RE = re.compile(r"masterBuilder\s*=\s*false")
 _HREF_RE = re.compile(r"location\.href\s*=\s*'([^']+)'")
 _RES_CLASS_RE = re.compile(r"\br([1-4])Big\b")
 _OPEN_BUILDING_RE = re.compile(r"open\(\s*'building'\s*,\s*(\d+)")
@@ -97,7 +105,27 @@ def _build_time(scope) -> Optional[int]:
     return _seconds(_text(d)) if d is not None else None
 
 
-def _green_url(scope) -> Optional[str]:
+def _click_token(btn, soup) -> Optional[str]:
+    """新版升級按鈕 → 'click:build:<aid>:<gid>'（aid、gid 取自頁面 script 的 POST 內容，供呼叫端核對）；不符安全條件回 None。"""
+    m = _CLICK_ONCLICK_RE.fullmatch(btn.get("onclick", "") or "")
+    if not m:
+        return None
+    fname = m.group(1)
+    for sc in soup.find_all("script"):
+        text = sc.string or sc.get_text()
+        if not text or fname not in text:
+            continue
+        for fm in _BUILD_FN_RE.finditer(text):
+            if fm.group(1) != fname:
+                continue
+            bid = _BUILDING_ID_RE.search(fm.group(4))
+            if bid is None or not _MASTER_FALSE_RE.search(fm.group(2)):
+                return None
+            return f"click:build:{int(fm.group(3))}:{int(bid.group(1))}"
+    return None
+
+
+def _green_url(scope, soup=None) -> Optional[str]:
     box = scope.select_one("div.upgradeButtonsContainer")
     if box is None:
         return None
@@ -107,6 +135,10 @@ def _green_url(scope) -> Optional[str]:
         u = _safe_url(b.get("onclick", ""))
         if u:
             return u
+        if soup is not None:                    # v0.1.1：新版按鈕（只有 find_upgrade_url 傳 soup）
+            tok = _click_token(b, soup)
+            if tok:
+                return tok
     return None
 
 
@@ -181,11 +213,11 @@ def parse_build_options(html: str) -> Tuple[BuildOption, ...]:
 
 
 def find_upgrade_url(html: str) -> Optional[str]:
-    """單一建築頁上綠色興建／升級按鈕的網址（通過白名單才回）；沒有（佇列滿、資源不足、已滿級）＝None。
+    """單一建築頁上綠色興建／升級按鈕的網址（通過白名單才回）；新版頁面沒有網址，回 'click:build:<aid>:<gid>'（v0.1.1）；沒有（佇列滿、資源不足、已滿級）＝None。
     頁面有多個 `upgradeBuilding`（空地建造頁 gid0）丟 ParseError：該頁要用 parse_build_options，
     不能拿第一個按鈕當「這棟建築的網址」。紫色加速、金幣、disabled 的按鈕一律不碰。"""
     soup = _soup(html)
     blocks = soup.select("div.upgradeBuilding")
     if len(blocks) > 1:
         raise ParseError(_PAGE, "multiple upgradeBuilding blocks (gid0 page?)")
-    return _green_url(blocks[0]) if blocks else None
+    return _green_url(blocks[0], soup) if blocks else None
