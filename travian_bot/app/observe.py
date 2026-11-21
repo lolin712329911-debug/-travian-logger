@@ -187,11 +187,14 @@ def _diag_dorf1(rc: RunContext, vc: VillageContext, html: str, d1: Dorf1, cached
     只讀、不丟例外；同時 rc.warn 與印到 log（rc.warn 只收集不印）。查清後整段移除。"""
     try:
         n_cost = sum(1 for f in d1.fields if f.cost is not None)
-        msg = (f"[診斷 dorf1] 來源={'本輪快取' if cached else '本次抓取'}；本次抓取請求數={req_used}；"
+        quote_title = 'title="'                     # 不能直接寫在 f-string 運算式裡（Python < 3.12 不允許反斜線）
+        src = "本輪快取" if cached else "本次抓取"
+        n_rf, n_r1, n_title = html.count("resourceField"), html.count("r1Big"), html.count(quote_title)
+        lack = dorf1_fields_lack_cost(html)
+        msg = (f"[診斷 dorf1] 來源={src}；本次抓取請求數={req_used}；"
                f"進入 observe 前 rc.pages={list(pages_before)}；html 長度={len(html)}；"
-               f"'resourceField'×{html.count('resourceField')}、'r1Big'×{html.count('r1Big')}、"
-               f"'title=\"'×{html.count('title=\"')}；解析後有成本的資源田={n_cost}/{len(d1.fields)}；"
-               f"dorf1_fields_lack_cost={dorf1_fields_lack_cost(html)}")
+               f"resourceField 出現 {n_rf} 次、r1Big {n_r1} 次、title= {n_title} 次；"
+               f"解析後有成本的資源田={n_cost}/{len(d1.fields)}；dorf1_fields_lack_cost={lack}")
         rc.warn(msg)
         print(f"{serialize.to_utc_str(rc.io.now())} INFO observe {vc.did} {msg}", flush=True)
     except Exception:  # noqa: BLE001
