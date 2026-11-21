@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/run_context.py（ap-02）
-版本：v0.1.3（GA-fix1：加 dorf1_raw_if）｜v0.1.2（A6a2b：StageIO 加 oasis_centers）｜v0.1.1（A6a2：加 stage_notes；StageIO 加 read_state／upsert_state）｜v0.1（A6a1）
+版本：v0.1.3（GA-fix1：加 dorf1_raw_if；get_page 對 dorf1.php 預設套用它，實機診斷發現 observe 前已有別處用無備援方式抓過 dorf1）｜v0.1.2（A6a2b：StageIO 加 oasis_centers）｜v0.1.1（A6a2：加 stage_notes；StageIO 加 read_state／upsert_state）｜v0.1（A6a1）
 用途：帳號級執行環境。
       StageIO       ：stage 與 observe 對外的全部 IO（Sheet 讀寫、通知、等待、時鐘），欄位都是可替換的函式，
                       測試時整組注入假的；real_io(notify) 組出綁真實 repo 函式的版本。
@@ -129,9 +129,12 @@ class RunContext:
         return (not self.session.is_village_html(html)) or dorf1_fields_lack_cost(html)
 
     def get_page(self, path: str, *, raw_if: Optional[Callable[[str], bool]] = None, refresh: bool = False) -> str:
-        """抓一頁並記在 pages；同一路徑本輪只抓一次（refresh=True 才重抓）。"""
+        """抓一頁並記在 pages；同一路徑本輪只抓一次（refresh=True 才重抓）。
+        dorf1.php 呼叫端沒傳 raw_if 時自動套用 dorf1_raw_if：誰先抓都會拿到帶資源田成本的原始 HTML。"""
         if not refresh and path in self.pages:
             return self.pages[path]
+        if raw_if is None and path.split("?", 1)[0].lstrip("/") == "dorf1.php":
+            raw_if = self.dorf1_raw_if
         html = self.gateway.get(path, raw_if=raw_if)
         self.pages[path] = html
         return html
