@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/parsers/village.py（ps-01）
-版本：v0.1（A2a-2a）
+版本：v0.1.1（GA-fix1：加 dorf1_fields_lack_cost，給 gateway raw_if 用）｜v0.1（A2a-2a）
 用途：dorf1（資源田頁）與 dorf2（村莊中心）的解析，以及每頁都有的頁面事實（PageFacts，D-18）。
       純函式：HTML 進、資料出，不碰網路、不碰 Sheet。
 依賴：cm-09（parsed）、cm-03（constants，BIDI）、cm-11（schema，ParseError）。
@@ -55,7 +55,8 @@ from ..common.parsed import (
 )
 from ..common.schema import ParseError
 
-__all__ = ["parse_dorf1", "parse_movements", "parse_dorf2", "parse_dorf2_slots", "parse_page_facts"]
+__all__ = ["parse_dorf1", "parse_movements", "parse_dorf2", "parse_dorf2_slots", "parse_page_facts",
+           "dorf1_fields_lack_cost"]
 
 _PAGE = "village"
 _VIEWDATA_RE = re.compile(r"viewData\s*:\s*")
@@ -247,6 +248,26 @@ def _sidebar_timers(soup: BeautifulSoup) -> Tuple[Optional[int], Optional[int]]:
         elif "Plus" in txt:
             plus = int(v)
     return protection, plus
+
+
+def dorf1_fields_lack_cost(html: Any) -> bool:
+    """（給 gateway 的 raw_if 用）渲染後的 dorf1 是否缺資源田升級成本。
+    資源田成本放在 <a class="resourceField"> 的 title；瀏覽器渲染後前端 JS 可能把 title 清掉，
+    純 HTTP 的原始 HTML 才有（✓ 2026-11-21 intl11 的 dorf1 檢視原始碼樣本確認原始碼有成本）。
+    True＝至少一塊「沒在施工」的資源田讀不到成本，或讀不到資源田結構（呼叫端應改抓原始 HTML）。
+    不丟例外。已滿級的資源田本來就沒有成本，會讓它回 True（多抓一次純 HTTP，無害；原始 HTML 仍沒有就照原樣用）。"""
+    try:
+        nodes = _soup(_need_str(html)).select("#resourceFieldContainer a.resourceField")
+    except Exception:  # noqa: BLE001
+        return True
+    if not nodes:
+        return True
+    for a in nodes:
+        if "underConstruction" in (a.get("class") or []):
+            continue
+        if _TIP_COST_RE.search(a.get("title") or "") is None:
+            return True
+    return False
 
 
 def parse_dorf1(html: str) -> Dorf1:
