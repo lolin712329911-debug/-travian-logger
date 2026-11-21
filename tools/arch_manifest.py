@@ -14,7 +14,7 @@
   disp  處置：沿用／拆／改寫／新寫（依「舊源→處置」欄最後的粗體字分類；僅供參考，不參與檢查）
 """
 
-SOURCE = 'multi-village-dev-v0_79.md v0.79 §4.2'
+SOURCE = 'multi-village-dev-v0_81-draft.md v0.80 §4.2'
 EXPECTED_COUNT = 74
 
 MANIFEST = [
@@ -30,7 +30,7 @@ MANIFEST = [
     {'id': 'ap-01', 'path': 'app/main.py', 'layer': 'app', 'deps': ['if-01', 'if-02', 'if-05', 'if-06', 'cm-08', 'cm-13', 'ps-01', 'ps-02', 'ap-02', 'ap-08'], 'wp': 'A6b', 'disp': '拆'},
     {'id': 'ap-02', 'path': 'app/run_context.py', 'layer': 'app', 'deps': ['if-02', 'if-05', 'if-07', 'if-08', 'if-09', 'if-10', 'cm-01', 'cm-06', 'cm-09', 'cm-10'], 'wp': 'A6a1', 'disp': '新寫'},
     {'id': 'ap-03', 'path': 'app/stage_base.py', 'layer': 'app', 'deps': ['ap-02', 'cm-01', 'cm-04', 'cm-10'], 'wp': 'A6a1', 'disp': '新寫'},
-    {'id': 'ap-04', 'path': 'app/registry.py', 'layer': 'app', 'deps': ['ap-03', 'ap-10', 'ap-11', 'ap-12', 'ap-13', 'ap-14', 'ap-17'], 'wp': 'A6a1', 'disp': '新寫'},
+    {'id': 'ap-04', 'path': 'app/registry.py', 'layer': 'app', 'deps': ['ap-03', 'ap-10', 'ap-11', 'ap-12', 'ap-13', 'ap-14', 'ap-15', 'ap-16', 'ap-17'], 'wp': 'A6a1', 'disp': '新寫'},
     {'id': 'ap-05', 'path': 'app/observe.py', 'layer': 'app', 'deps': ['ap-02', 'if-01', 'if-02', 'ps-01', 'ps-03', 'ps-04', 'ps-05', 'if-09', 'if-08', 'cm-01', 'cm-03', 'cm-06', 'cm-09', 'cm-10', 'cm-11'], 'wp': 'A6a1', 'disp': ''},
     {'id': 'ap-06', 'path': 'app/formatting.py', 'layer': 'app', 'deps': ['cm-01', 'cm-02', 'cm-03', 'cm-10'], 'wp': 'A6a1', 'disp': ''},
     {'id': 'ap-07', 'path': 'app/village_cycle.py', 'layer': 'app', 'deps': ['ap-05', 'ap-04', 'ap-03', 'dm-09', 'ac-01', 'cm-01'], 'wp': 'A6b', 'disp': '拆'},
@@ -40,8 +40,8 @@ MANIFEST = [
     {'id': 'ap-12', 'path': 'app/stages/focus.py', 'layer': 'app', 'deps': ['ac-04', 'ap-02', 'ap-03', 'ap-06', 'ap-20', 'cm-01', 'cm-02', 'cm-04', 'cm-11', 'dm-04', 'if-02', 'ps-01'], 'wp': 'A6a2', 'disp': '拆'},
     {'id': 'ap-13', 'path': 'app/stages/fill_in.py', 'layer': 'app', 'deps': ['ac-02', 'ap-02', 'ap-03', 'ap-06', 'ap-20', 'cm-01', 'cm-04', 'cm-10', 'dm-01', 'dm-02', 'dm-12', 'ps-01'], 'wp': 'A6a2', 'disp': '拆'},
     {'id': 'ap-14', 'path': 'app/stages/guard.py', 'layer': 'app', 'deps': ['ac-04', 'ap-02', 'ap-03', 'ap-06', 'ap-20', 'cm-01', 'cm-02', 'cm-04', 'cm-11', 'dm-01', 'dm-03', 'dm-04', 'dm-12', 'if-02', 'ps-01'], 'wp': 'A6a2', 'disp': '拆'},
-    {'id': 'ap-15', 'path': 'app/stages/hide.py', 'layer': 'app', 'deps': ['ap-03', 'ap-06', 'ps-06', 'dm-07', 'dm-08', 'ac-06', 'if-07', 'cm-02'], 'wp': 'A6a2b', 'disp': '改寫'},
-    {'id': 'ap-16', 'path': 'app/stages/oasis.py', 'layer': 'app', 'deps': ['ap-03', 'ac-07', 'if-10', 'cm-01', 'cm-09'], 'wp': 'A6a2b', 'disp': '改寫'},
+    {'id': 'ap-15', 'path': 'app/stages/hide.py', 'layer': 'app', 'deps': ['ap-02', 'ap-03', 'ap-20', 'dm-07', 'dm-08', 'ac-06', 'ac-07', 'ps-06', 'if-02', 'cm-01', 'cm-02', 'cm-04', 'cm-09', 'cm-11'], 'wp': 'A6a2b', 'disp': '改寫'},
+    {'id': 'ap-16', 'path': 'app/stages/oasis.py', 'layer': 'app', 'deps': ['ap-02', 'ap-03', 'ap-20', 'ac-07', 'if-02', 'if-10', 'cm-01', 'cm-04', 'cm-07', 'cm-09', 'cm-10', 'cm-11'], 'wp': 'A6a2b', 'disp': '改寫'},
     {'id': 'ap-17', 'path': 'app/stages/hero.py', 'layer': 'app', 'deps': ['ac-05', 'ap-02', 'ap-03', 'ap-20', 'cm-01', 'cm-04', 'cm-11', 'dm-06', 'if-02', 'ps-01', 'ps-05'], 'wp': 'A6a2', 'disp': ''},
     {'id': 'ap-18', 'path': 'app/stages/market.py', 'layer': 'app', 'deps': ['ap-03', 'ap-05', 'dm-10', 'ac-08', 'if-11', 'if-07', 'cm-01'], 'wp': 'C4', 'disp': '新寫'},
     {'id': 'ap-19', 'path': 'app/stages/troops.py', 'layer': 'app', 'deps': ['ap-03', 'ap-05', 'dm-11', 'ac-09', 'if-07', 'cm-01'], 'wp': 'D2', 'disp': '新寫'},
