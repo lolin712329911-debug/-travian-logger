@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""ap-02 run_context（A6a1）。"""
+"""ap-02 run_context（A6a1；A6a2b 加 oasis_centers）。"""
 import dataclasses
 import unittest
 from datetime import timezone
@@ -23,6 +23,7 @@ class RealIoTest(unittest.TestCase):
         self.assertIs(io.disable, config_repo.disable)
         self.assertIs(io.oasis_save, oasis_repo.save)
         self.assertIs(io.oasis_load, oasis_repo.load)
+        self.assertIs(io.oasis_centers, oasis_repo.list_centers)      # v0.1.2（A6a2b）
         io.notify("x")
         self.assertEqual(notes, ["x"])
 
@@ -37,7 +38,8 @@ class RealIoTest(unittest.TestCase):
             io.notify = None
         self.assertEqual({f.name for f in dataclasses.fields(io)},
                          {"log_actions", "write_state", "append_snapshot", "write_structure", "buildable_due",
-                          "last_action_age_hours", "disable", "oasis_save", "oasis_load", "notify", "sleep", "now","read_state","upsert_state"})
+                          "last_action_age_hours", "disable", "oasis_save", "oasis_load", "notify", "sleep", "now", "read_state", "upsert_state",
+                          "oasis_centers"})
 
 
 class RunContextTest(unittest.TestCase):
