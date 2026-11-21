@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/village_cycle.py（ap-07）
-版本：v0.1.1（A6b：動作名稱改用 constants.ACTION_VILLAGE_SKIP）
+版本：v0.1.2（GA 修正：record_main 要 UTC 字串，改傳 serialize.to_utc_str(rc.io.now())；v0.1.1：動作名稱改用 constants.ACTION_VILLAGE_SKIP）
 用途：單一村莊一輪的流程：核對目前村莊→village_lock→observe→依 registry 順序跑村級 stage。
       寫入類 stage 執行前再核對一次目前村莊；不符則該村剩餘寫入 stage 全記 skipped、不 disable()。
 依賴：ap-02、ap-03、ap-04、ap-05、dm-09、ac-01、cm-01、cm-03、cm-04、cm-10、if-01、if-05。
@@ -143,7 +143,8 @@ def run_village_cycle(rc: RunContext, vc: VillageContext, *,
     if decision.kind == "skip":
         return _skipped(rc, vc, decision.reason)
     if decision.record:
-        new_lock = village_lock.record_main(vc.did, rc.io.now(), existing=lock if lock.main_did else None)
+        new_lock = village_lock.record_main(vc.did, serialize.to_utc_str(rc.io.now()),
+                                            existing=lock if lock.main_did else None)
         record_lock(rc, new_lock)
         log_line(rc, "INFO", "village_lock", vc.did, "第一次執行，已記錄 main_did")
 
