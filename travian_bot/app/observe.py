@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/observe.py（ap-05）
-版本：v0.1.2（GA-fix1 診斷：每輪印一行 [診斷 dorf1]，查出成本備援有沒有生效；查清後移除）｜v0.1.1（GA-fix1：dorf1 抓取改用 rc.dorf1_raw_if，成本被渲染清空時改抓原始 HTML）｜v0.1（A6a1）
+版本：v0.1.3（GA-fix1：快取的 dorf1 缺成本就純 HTTP 重抓；不論誰先抓）｜v0.1.2（GA-fix1 診斷：每輪印一行 [診斷 dorf1]，查出成本備援有沒有生效；查清後移除）｜v0.1.1（GA-fix1：dorf1 抓取改用 rc.dorf1_raw_if，成本被渲染清空時改抓原始 HTML）｜v0.1（A6a1）
 用途：每村每輪的唯讀觀察：抓 dorf1／dorf2 → parsers → 組 C2 VillageSnapshot，並把資料記到 Sheet
       （Sheet1／Fields／Buildings／Buildable／Changes／state）。
 依賴：ap-02、if-01（SessionLost）、if-02（GatewayError）、ps-01、ps-03、ps-04、ps-05（HeroState、parse_hero_status）、
@@ -148,9 +148,24 @@ def cp_summary(info: Optional[PlayerInfo]) -> Optional[str]:
 # ---------------------------------------------------------------- 抓頁
 def _fetch_dorf1(rc: RunContext) -> str:
     """抓 dorf1。不是村莊頁：能 recover 就重建 session 重抓一次，仍失效丟 SessionLost。"""
-    if DORF1 in rc.pages:
-        return rc.pages[DORF1]
     session = rc.session
+    if DORF1 in rc.pages:
+        cached = rc.pages[DORF1]
+        if not dorf1_fields_lack_cost(cached):
+            return cached
+        # 別處（observe 之前）已用無備援方式抓過 dorf1，渲染後的頁面沒有資源田成本：純 HTTP 重抓一次，換掉快取。
+        # 這只是備援：失敗或不是村莊頁就沿用原頁，讓下游 plan_stuck 處理（登入失效由後續流程判斷，不在這裡丟）。
+        try:
+            raw = rc.gateway.get(DORF1, raw=True)
+        except SessionLost:
+            raise
+        except Exception as exc:  # noqa: BLE001
+            rc.warn(f"dorf1 成本備援（純 HTTP 重抓）失敗：{type(exc).__name__}，沿用快取頁面")
+            return cached
+        if session.is_village_html(raw):
+            rc.pages[DORF1] = raw
+            return raw
+        return cached
     html = rc.get_page(DORF1, raw_if=rc.dorf1_raw_if)      # 非村莊頁或成本被清空 → 純 HTTP 再抓
     if not session.is_village_html(html):
         if session.can_recover:
