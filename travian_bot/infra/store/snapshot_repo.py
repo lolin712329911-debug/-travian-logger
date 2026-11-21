@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/infra/store/snapshot_repo.py（if-09）
-版本：v0.1（A4b-2）
+版本：v0.1.1（GA-fix2：Fields 的 watch 加入成本與工期欄，舊列成本空白時會被補寫）｜v0.1（A4b-2）
 用途：村莊快照與結構記錄的 Sheet 讀寫。
   · Sheet1     每輪追加一列（24 欄舊欄序＋did；只追加）
   · Fields／Buildings／Buildable   依 did 取代；有差異才寫；每列帶「最後變動」
@@ -384,7 +384,7 @@ def write_structure(sh: Any, did: int, *, now: str, fields: Optional[Sequence[Re
     err: Optional[BaseException] = None
     try:
         if fields:
-            run(FIELDS_TAB, FIELDS_HEADER, _FIELDS_N, (1, 3, 4), lambda old: fields_rows(fields, names, old), fields_changes)
+            run(FIELDS_TAB, FIELDS_HEADER, _FIELDS_N, (1, 3, 4, 5, 6, 7, 8, 9), lambda old: fields_rows(fields, names, old), fields_changes)
         if buildings:
             b_changed = run(BUILDINGS_TAB, BUILDINGS_HEADER, _BUILDINGS_N, (1, 3, 4),
                             lambda old: buildings_rows(buildings, names), buildings_changes)
