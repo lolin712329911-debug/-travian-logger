@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/stages/build.py（ap-10）
-版本：v0.1.1（GA-fix1：dorf1 抓取與升級後重讀都傳 rc.dorf1_raw_if）｜v0.1（A6a2）
+版本：v0.1.2（GA-fix3：升級成功後，用重讀的 dorf1 立刻補寫 Fields；不增加請求）｜v0.1.1（GA-fix1：dorf1 抓取與升級後重讀都傳 rc.dorf1_raw_if）｜v0.1（A6a2）
 用途：建城 stage：讀 build_order → 決策 → actions.build_exec 升級 → 寫 Actions；每輪寫 plan_* 四個 state 鍵。
 依賴：ap-03、ap-06、dm-01、dm-12、ac-02、if-12、if-07、if-08、cm-02、cm-03（ps-01～03 用來抓 dorf1／dorf2／建築頁，v0.67 的依賴列要補）。
 部署狀態：未部署（GA 前不 live）。未實測。
@@ -246,8 +246,20 @@ def run(rc: RunContext, vc: VillageContext, snap: VillageSnapshot, mode: Mode) -
         updates = {"stock": tuple(d1.stock), "queue_slots_used": len(d1.queue), "queue_free_in_s": _min_queue(d1),
                    "next_target": nxt}
 
+    if any_live_ok:
+        _record_fields_after_build(rc, vc, d1)
     _write_plan_state(rc, vc, order, d1, facts_box["facts"], last, status)
     return StageResult(status="failed" if any_failed else "ok", actions=rows, snapshot_updates=updates, note=last_note)
+
+
+def _record_fields_after_build(rc: RunContext, vc: VillageContext, d1) -> None:
+    """升級成功後用重讀的 dorf1（build 迴圈本來就會讀，不增加請求）補寫 Fields，讓 Sheet 當輪就反映施工中。
+    names 必須帶，否則 Fields 的 name 欄會被寫成空白。任何失敗只 rc.warn，不影響建城。"""
+    try:
+        names = {f.gid: gid_name(f.gid) for f in d1.fields}
+        rc.io.write_structure(rc.sh, vc.did, now=serialize.to_utc_str(rc.io.now()), fields=d1.fields, names=names)
+    except Exception as exc:  # noqa: BLE001
+        rc.warn(f"stage build：升級後補寫 Fields 失敗（{type(exc).__name__}）")
 
 
 def _write_plan_state(rc: RunContext, vc: VillageContext, order, d1, facts, last: Optional[BuildDecision],
