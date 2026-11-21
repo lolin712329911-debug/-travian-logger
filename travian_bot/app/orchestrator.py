@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/orchestrator.py（ap-08）
-版本：v0.1（A6b，單村版；B3 擴成多村）
+版本：v0.1.1（A6b，單村版；B3 擴成多村；log 不重複 did）
 用途：一輪的總指揮：排村莊順序→逐村 run_village_cycle→帳號級 stage→寫彙總。
       村級例外隔離（只記錄、不關帳號）；SessionLost 往上丟，由 app/main 處理（disable／通知）。
 依賴：ap-02、ap-03、ap-04、ap-07、cm-01、cm-10、if-01。
@@ -68,7 +68,7 @@ def run(rc: RunContext, refs: Sequence[VillageRef], vcs: Sequence[VillageContext
         except Exception as exc:  # noqa: BLE001  村級例外隔離：不關帳號、不影響其他村
             msg = f"村 {vc.did} 本輪失敗（{type(exc).__name__}）"
             report.errors.append(msg)
-            village_cycle.log_line(rc, "ERROR", "village_cycle", vc.did, f"{msg}：{exc}")
+            village_cycle.log_line(rc, "ERROR", "village_cycle", vc.did, f"本輪失敗（{type(exc).__name__}）：{exc}")
             village_cycle.log_event(rc, vc, "village_cycle", "failed", f"{type(exc).__name__}：{exc}")
             continue
         report.runs.append(run_)
