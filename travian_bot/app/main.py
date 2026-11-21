@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/main.py（ap-01）
-版本：v0.1（A6b）
+版本：v0.1.1（A6b：merge_settings 例外改為 hold＋通知；hard 啟動檢查 hold 也通知）
 用途：GitHub Actions 入口（`python -m travian_bot.app.main`）。
       讀 Secrets→開 Sheet 讀 Config→建 Session／Gateway／RunContext→確認登入→讀村莊清單→
       啟動檢查（verify_against_page；hard＝本輪 hold）→merge_settings→orchestrator.run→存 session。
@@ -67,6 +67,20 @@ def _fetch_dorf1(rc: RunContext) -> str:
         rc.pages.pop(DORF1, None)
         raise SessionLost("dorf1 不是村莊頁，登入狀態失效")
     return html
+
+
+def _build_contexts(cfg: Dict[str, Any], sh: Any, refs: Any) -> Any:
+    """merge_settings 的包裝：不合法（main_did 不在頁面清單、無法選村、Villages 列尚未支援等）＝本輪 hold。
+
+    成功回 list[VillageContext]；失敗 _say＋notify 後回 None（呼叫端 return 1）。
+    """
+    try:
+        return config_schema.merge_settings(cfg, village_repo.load_villages(sh), refs)
+    except (ValidationError, NotImplementedError) as exc:
+        msg = f"村莊設定合併失敗，本輪 hold（{type(exc).__name__}）：{exc}"
+        _say("ERROR", msg)
+        notify(msg)
+        return None
 
 
 def _session_lost(rc: RunContext, msg: str) -> int:
@@ -148,10 +162,14 @@ def main() -> int:
                 if pr.severity == "hard":
                     hard.append(pr.key)
             if hard:
-                _say("ERROR", "啟動檢查有 hard 問題，本輪 hold（不動作）")
+                msg = "啟動檢查有 hard 問題，本輪 hold（不動作）：" + "、".join(hard)
+                _say("ERROR", msg)
+                notify(msg)
                 return 1
 
-            vcs = config_schema.merge_settings(cfg, village_repo.load_villages(sh), refs)
+            vcs = _build_contexts(cfg, sh, refs)
+            if vcs is None:
+                return 1
             try:
                 report = orchestrator.run(rc, refs, vcs)
             except SessionLost as exc:
