@@ -14,7 +14,7 @@
   disp  處置：沿用／拆／改寫／新寫（依「舊源→處置」欄最後的粗體字分類；僅供參考，不參與檢查）
 """
 
-SOURCE = 'multi-village-dev-v0_81-draft.md v0.81 §4.2'
+SOURCE = 'main_v083.md v0.83 §4.2'
 EXPECTED_COUNT = 74
 
 MANIFEST = [
@@ -27,14 +27,14 @@ MANIFEST = [
     {'id': 'ac-07', 'path': 'actions/oasis_exec.py', 'layer': 'actions', 'deps': ['if-02', 'ps-08', 'ps-09', 'cm-09', 'cm-07'], 'wp': 'A5b', 'disp': '改寫'},
     {'id': 'ac-08', 'path': 'actions/market_exec.py', 'layer': 'actions', 'deps': ['if-02', 'ps-07', 'cm-01', 'cm-02', 'cm-04'], 'wp': 'C3', 'disp': '新寫'},
     {'id': 'ac-09', 'path': 'actions/troop_exec.py', 'layer': 'actions', 'deps': ['if-02', 'ps-06', 'cm-01', 'cm-02', 'cm-04'], 'wp': 'D2', 'disp': '新寫'},
-    {'id': 'ap-01', 'path': 'app/main.py', 'layer': 'app', 'deps': ['if-01', 'if-02', 'if-05', 'if-06', 'cm-08', 'cm-13', 'ps-01', 'ps-02', 'ap-02', 'ap-08'], 'wp': 'A6b', 'disp': '拆'},
+    {'id': 'ap-01', 'path': 'app/main.py', 'layer': 'app', 'deps': ['if-01', 'if-02', 'if-03', 'if-04', 'if-05', 'if-06', 'cm-01', 'cm-05', 'cm-06', 'cm-08', 'cm-10', 'cm-11', 'cm-13', 'ps-01', 'ps-02', 'ap-02', 'ap-08'], 'wp': 'A6b', 'disp': '拆'},
     {'id': 'ap-02', 'path': 'app/run_context.py', 'layer': 'app', 'deps': ['if-02', 'if-05', 'if-07', 'if-08', 'if-09', 'if-10', 'cm-01', 'cm-06', 'cm-09', 'cm-10'], 'wp': 'A6a1', 'disp': '新寫'},
     {'id': 'ap-03', 'path': 'app/stage_base.py', 'layer': 'app', 'deps': ['ap-02', 'cm-01', 'cm-04', 'cm-10'], 'wp': 'A6a1', 'disp': '新寫'},
     {'id': 'ap-04', 'path': 'app/registry.py', 'layer': 'app', 'deps': ['ap-03', 'ap-10', 'ap-11', 'ap-12', 'ap-13', 'ap-14', 'ap-15', 'ap-16', 'ap-17'], 'wp': 'A6a1', 'disp': '新寫'},
     {'id': 'ap-05', 'path': 'app/observe.py', 'layer': 'app', 'deps': ['ap-02', 'if-01', 'if-02', 'ps-01', 'ps-03', 'ps-04', 'ps-05', 'if-09', 'if-08', 'cm-01', 'cm-03', 'cm-06', 'cm-09', 'cm-10', 'cm-11'], 'wp': 'A6a1', 'disp': ''},
     {'id': 'ap-06', 'path': 'app/formatting.py', 'layer': 'app', 'deps': ['cm-01', 'cm-02', 'cm-03', 'cm-10'], 'wp': 'A6a1', 'disp': ''},
-    {'id': 'ap-07', 'path': 'app/village_cycle.py', 'layer': 'app', 'deps': ['ap-05', 'ap-04', 'ap-03', 'dm-09', 'ac-01', 'cm-01'], 'wp': 'A6b', 'disp': '拆'},
-    {'id': 'ap-08', 'path': 'app/orchestrator.py', 'layer': 'app', 'deps': ['ap-07', 'ap-04', 'ap-03', 'if-05', 'if-03', 'cm-01', 'cm-05'], 'wp': 'A6b／B3', 'disp': '新寫'},
+    {'id': 'ap-07', 'path': 'app/village_cycle.py', 'layer': 'app', 'deps': ['ap-02', 'ap-03', 'ap-04', 'ap-05', 'dm-09', 'ac-01', 'cm-01', 'cm-04', 'cm-10', 'if-01', 'if-05'], 'wp': 'A6b', 'disp': '拆'},
+    {'id': 'ap-08', 'path': 'app/orchestrator.py', 'layer': 'app', 'deps': ['ap-02', 'ap-03', 'ap-04', 'ap-07', 'cm-01', 'if-01'], 'wp': 'A6b／B3', 'disp': '新寫'},
     {'id': 'ap-10', 'path': 'app/stages/build.py', 'layer': 'app', 'deps': ['ac-02', 'ap-02', 'ap-03', 'ap-06', 'ap-20', 'cm-01', 'cm-02', 'cm-03', 'cm-04', 'cm-10', 'cm-11', 'cm-12', 'dm-01', 'dm-12', 'if-12', 'ps-01', 'ps-03'], 'wp': 'A6a2', 'disp': '拆'},
     {'id': 'ap-11', 'path': 'app/stages/item_transfer.py', 'layer': 'app', 'deps': ['ac-03', 'ap-02', 'ap-03', 'ap-06', 'ap-20', 'cm-01', 'cm-04', 'cm-11', 'dm-05', 'if-02', 'ps-01'], 'wp': 'A6a2', 'disp': '拆'},
     {'id': 'ap-12', 'path': 'app/stages/focus.py', 'layer': 'app', 'deps': ['ac-04', 'ap-02', 'ap-03', 'ap-06', 'ap-20', 'cm-01', 'cm-02', 'cm-04', 'cm-11', 'dm-04', 'if-02', 'ps-01'], 'wp': 'A6a2', 'disp': '拆'},
@@ -75,7 +75,7 @@ MANIFEST = [
     {'id': 'if-02', 'path': 'infra/gateway.py', 'layer': 'infra', 'deps': ['cm-03', 'cm-01'], 'wp': 'A4a／A5a／B1', 'disp': '拆'},
     {'id': 'if-03', 'path': 'infra/notify.py', 'layer': 'infra', 'deps': ['cm-10'], 'wp': 'A4a', 'disp': '沿用'},
     {'id': 'if-04', 'path': 'infra/store/gsheets.py', 'layer': 'infra', 'deps': ['cm-10'], 'wp': 'A4a', 'disp': '改寫'},
-    {'id': 'if-05', 'path': 'infra/store/config_repo.py', 'layer': 'infra', 'deps': ['if-04', 'if-06', 'cm-08', 'cm-10'], 'wp': 'A4b-1', 'disp': '拆'},
+    {'id': 'if-05', 'path': 'infra/store/config_repo.py', 'layer': 'infra', 'deps': ['if-04', 'if-06', 'cm-08', 'cm-10'], 'wp': 'A4b-1／A6b', 'disp': '拆'},
     {'id': 'if-06', 'path': 'infra/store/village_repo.py', 'layer': 'infra', 'deps': ['if-04', 'cm-01', 'cm-10'], 'wp': 'A4b-1／B2', 'disp': '新寫'},
     {'id': 'if-07', 'path': 'infra/store/action_repo.py', 'layer': 'infra', 'deps': ['if-04', 'cm-01', 'cm-10'], 'wp': 'A4b-1／B2', 'disp': '沿用'},
     {'id': 'if-08', 'path': 'infra/store/state_repo.py', 'layer': 'infra', 'deps': ['if-04', 'cm-10'], 'wp': 'A4b-1／B2', 'disp': '改寫'},
