@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/observe.py（ap-05）
-版本：v0.1.3（GA-fix1：快取的 dorf1 缺成本就純 HTTP 重抓；不論誰先抓）｜v0.1.2（GA-fix1 診斷：每輪印一行 [診斷 dorf1]，查出成本備援有沒有生效；查清後移除）｜v0.1.1（GA-fix1：dorf1 抓取改用 rc.dorf1_raw_if，成本被渲染清空時改抓原始 HTML）｜v0.1（A6a1）
+版本：v0.1.4（GA-fix2：移除 [診斷 dorf1] 暫時診斷）｜v0.1.3（GA-fix1：快取的 dorf1 缺成本就純 HTTP 重抓；不論誰先抓）｜v0.1.2（GA-fix1 診斷：每輪印一行 [診斷 dorf1]，查出成本備援有沒有生效；查清後移除）｜v0.1.1（GA-fix1：dorf1 抓取改用 rc.dorf1_raw_if，成本被渲染清空時改抓原始 HTML）｜v0.1（A6a1）
 用途：每村每輪的唯讀觀察：抓 dorf1／dorf2 → parsers → 組 C2 VillageSnapshot，並把資料記到 Sheet
       （Sheet1／Fields／Buildings／Buildable／Changes／state）。
 依賴：ap-02、if-01（SessionLost）、if-02（GatewayError）、ps-01、ps-03、ps-04、ps-05（HeroState、parse_hero_status）、
@@ -196,36 +196,11 @@ def _make_snapshot(rc: RunContext, vc: VillageContext, d1: Dorf1) -> VillageSnap
     return snap
 
 
-def _diag_dorf1(rc: RunContext, vc: VillageContext, html: str, d1: Dorf1, cached: bool,
-                pages_before: Sequence[str], req_used: Optional[int]) -> None:
-    """【暫時診斷，GA-fix1】分辨「dorf1 來自本輪快取（備援沒機會觸發）」與「備援抓了但仍沒成本」。
-    只讀、不丟例外；同時 rc.warn 與印到 log（rc.warn 只收集不印）。查清後整段移除。"""
-    try:
-        n_cost = sum(1 for f in d1.fields if f.cost is not None)
-        quote_title = 'title="'                     # 不能直接寫在 f-string 運算式裡（Python < 3.12 不允許反斜線）
-        src = "本輪快取" if cached else "本次抓取"
-        n_rf, n_r1, n_title = html.count("resourceField"), html.count("r1Big"), html.count(quote_title)
-        lack = dorf1_fields_lack_cost(html)
-        msg = (f"[診斷 dorf1] 來源={src}；本次抓取請求數={req_used}；"
-               f"進入 observe 前 rc.pages={list(pages_before)}；html 長度={len(html)}；"
-               f"resourceField 出現 {n_rf} 次、r1Big {n_r1} 次、title= {n_title} 次；"
-               f"解析後有成本的資源田={n_cost}/{len(d1.fields)}；dorf1_fields_lack_cost={lack}")
-        rc.warn(msg)
-        print(f"{serialize.to_utc_str(rc.io.now())} INFO observe {vc.did} {msg}", flush=True)
-    except Exception:  # noqa: BLE001
-        pass
-
-
 def observe_village(rc: RunContext, vc: VillageContext) -> VillageSnapshot:
     """唯讀觀察一個村，回傳 C2 快照；並盡力把資料記到 Sheet（失敗只 rc.warn）。"""
-    cached, pages_before = DORF1 in rc.pages, tuple(rc.pages)
-    rq = getattr(rc.gateway, "request_count", None)
-    req0 = rq() if callable(rq) else None
     html1 = _fetch_dorf1(rc)
-    req_used = (rq() - req0) if (callable(rq) and req0 is not None) else None
     html2 = rc.get_page(DORF2)
     d1 = parse_dorf1(html1)
-    _diag_dorf1(rc, vc, html1, d1, cached, pages_before, req_used)
     d2 = parse_dorf2(html2)
     facts = parse_page_facts(html1)
     try:
