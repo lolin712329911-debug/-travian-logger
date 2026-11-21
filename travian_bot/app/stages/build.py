@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/stages/build.py（ap-10）
-版本：v0.1（A6a2）
+版本：v0.1.1（GA-fix1：dorf1 抓取與升級後重讀都傳 rc.dorf1_raw_if）｜v0.1（A6a2）
 用途：建城 stage：讀 build_order → 決策 → actions.build_exec 升級 → 寫 Actions；每輪寫 plan_* 四個 state 鍵。
 依賴：ap-03、ap-06、dm-01、dm-12、ac-02、if-12、if-07、if-08、cm-02、cm-03（ps-01～03 用來抓 dorf1／dorf2／建築頁，v0.67 的依賴列要補）。
 部署狀態：未部署（GA 前不 live）。未實測。
@@ -146,7 +146,7 @@ def run(rc: RunContext, vc: VillageContext, snap: VillageSnapshot, mode: Mode) -
     tbl = int(cfg.get("target_building_level", 0))
 
     raw = plan_repo.load_build_order(rc.sh, did)          # 例外照丟：讀取失敗不走舊流程
-    d1 = parse_dorf1(rc.get_page("dorf1.php"))
+    d1 = parse_dorf1(rc.get_page("dorf1.php", raw_if=rc.dorf1_raw_if))
     now_s = serialize.to_utc_str(rc.io.now())
     rows: list = []
     order: Optional[list] = None
@@ -225,7 +225,7 @@ def run(rc: RunContext, vc: VillageContext, snap: VillageSnapshot, mode: Mode) -
         if res.result == "ok":
             any_live_ok = True
             rc.io.notify(f"已升級：{desc}")
-            d1 = parse_dorf1(rc.get_page("dorf1.php", refresh=True))
+            d1 = parse_dorf1(rc.get_page("dorf1.php", raw_if=rc.dorf1_raw_if, refresh=True))
             touched.add(tgt.aid)
             queue_secs = None
         elif res.result == "dry":                          # 乾跑：模擬「已排入」，佇列加長、標記已動過
