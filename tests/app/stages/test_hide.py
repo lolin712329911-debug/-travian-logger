@@ -134,9 +134,9 @@ class RunTest(unittest.TestCase):
 
     def test_weak_skips_without_sending(self):
         rc, _ = rc_for()
-        res, send, _v = go(rc, vc_with(), ov(home={"u1": 1}))       # 攻擊力 40 > 20，要更弱
-        self.assertTrue(send.called)                                  # 40 > 20 → 會派
-        rc, _ = rc_for(cfg={"main_did": 101, "hide_min_attack": 100})
+        res, send, _v = go(rc, vc_with(), ov(home={"u1": 5}))       # 5 個 u1 的攻擊力遠大於預設門檻 20 → 會派
+        self.assertTrue(send.called)
+        rc, _ = rc_for(cfg={"main_did": 101, "hide_min_attack": 100000})   # 門檻設成不可能超過 → weak（與兵種攻擊力表無關）
         res, send, _v = go(rc, vc_with(), ov(home={"u1": 1}))
         send.assert_not_called()
         self.assertEqual(res.actions[0].result, "skipped")
@@ -165,10 +165,10 @@ class RunTest(unittest.TestCase):
         self.assertEqual((send.call_args[0][2].chosen.x, send.call_args[0][2].chosen.y), (5, 0))
 
     def test_cfg_values_reach_domain(self):
-        rc, _ = rc_for(cfg={"main_did": 101, "hide_min_attack": 5000})
+        rc, _ = rc_for(cfg={"main_did": 101, "hide_min_attack": 10 ** 6})
         res, send, _v = go(rc, vc_with(), ov())
         send.assert_not_called()
-        self.assertIn("門檻>5000", res.actions[0].detail)
+        self.assertIn("門檻>1000000", res.actions[0].detail)
 
     def test_read_failure_is_failed_row(self):
         rc, rec = rc_for(fail={PATH: GatewayError("x")})
@@ -202,11 +202,11 @@ class WindowTest(unittest.TestCase):
         self.assertIn("窗口=", res.actions[0].detail)
 
     def test_weak_units_also_wait_for_return(self):
-        rc, _ = rc_for(cfg={"main_did": 101, "hide_min_attack": 100})        # 在家只有 1 個 u1（攻擊力 40）→ weak
+        rc, _ = rc_for(cfg={"main_did": 101, "hide_min_attack": 300})        # 1 個 u1 → weak；歸來後 51 個 u1 → 超過門檻（不依賴確切攻擊力）
         slept = []
         rc.io = dataclasses.replace(rc.io, sleep=slept.append)
         first = dataclasses.replace(self.window_ov(), units_home={"u1": 1})
-        second = ov(arrivals=(T0 + 1200,), home={"u1": 51}, ts=T0 + 64)       # 歸來後 51×40＝2040 > 100
+        second = ov(arrivals=(T0 + 1200,), home={"u1": 51}, ts=T0 + 64)
         _res, send, _v = go(rc, vc_with(), [first, second], Mode.LIVE, OK)
         self.assertEqual(slept, [63])
         self.assertTrue(send.called)

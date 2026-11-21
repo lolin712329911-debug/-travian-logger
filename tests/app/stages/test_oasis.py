@@ -7,6 +7,7 @@ from unittest import mock
 
 from travian_bot.app import stage_base as SB
 from travian_bot.app.stages import _util as U
+from travian_bot.common import geo
 from travian_bot.app.stages import oasis as OA
 from travian_bot.actions.oasis_exec import OasisExecError
 from travian_bot.common.models import HideContext, VillageSnapshot
@@ -78,7 +79,7 @@ class PureTest(unittest.TestCase):
         self.assertEqual([(o.x, o.y) for o in free], [(3, 0), (-4, 2), (10, 0)])      # 距離 3、4.47、10
         self.assertEqual([o.kind for o in free], ["wood25_crop25", "iron50", "wood25"])
         self.assertTrue(all(o.safe is None for o in free))
-        self.assertEqual(blocked, (78401, 80001))                                       # (5|5) 被佔領、(1|1) 有動物
+        self.assertEqual(blocked, tuple(sorted((geo.map_id(5, 5, 200), geo.map_id(1, 1, 200)))))   # (5|5) 被佔領、(1|1) 有動物
 
     def test_stage_metadata(self):
         s = OA.STAGE
