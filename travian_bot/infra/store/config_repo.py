@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/infra/store/config_repo.py（if-05）
-版本：v0.1（A4b-1）
+版本：v0.1.1（A6b：追加 set_keys，既有行為不變）
 用途：Config 分頁（key／value／note 三欄）的讀取、補齊缺少的鍵、緊急停用。
       人工編輯的分頁：只補缺的列、只改 enabled 那一列，絕不整頁覆寫。
 依賴：if-04（gsheets）、if-06（village_repo；村級 disable）、cm-08（config_schema）、cm-10（serialize）。
@@ -27,6 +27,9 @@ CONFIG_HEADER = ("key", "value", "note")
 NOTE_MAX = 200
 
 SCOPES = ("account", "village")
+
+# set_keys 只允許寫這些鍵（C8 村莊鎖）；其他鍵一律拒絕，避免變成通用的 Config 寫入口
+SETTABLE_KEYS = ("main_did", "main_did_set_utc")
 
 
 def _col(n: int) -> str:
@@ -144,4 +147,38 @@ def disable(sh: Any, scope: str, did: Optional[int], reason: str) -> bool:
     if not values:
         gsheets.batch_write(ws, [list(CONFIG_HEADER)], start="A1")
     gsheets.batch_write(ws, [["enabled", "FALSE", note]])
+    return True
+
+
+def set_keys(sh: Any, values: Dict[str, str]) -> bool:
+    """寫入 SETTABLE_KEYS 內的鍵（C8 村莊鎖：第一次記錄 main_did／main_did_set_utc）。
+
+    已有的列只改 B 欄（value）；沒有的列補在最後（含說明）。不動其他列。鍵不在白名單、值不是字串
+    丟 ValueError；寫入失敗直接丟出（村莊鎖寫不進去不該靜默）。回傳是否真的寫入（values 為空回 False）。
+    """
+    if not values:
+        return False
+    for k, v in values.items():
+        if k not in SETTABLE_KEYS:
+            raise ValueError("set_keys 只能寫 " + "、".join(SETTABLE_KEYS))
+        if not isinstance(v, str) or not v.strip():
+            raise ValueError("set_keys 的值需為非空字串")
+    ws, _ = gsheets.ensure_worksheet(sh, CONFIG_TAB, rows=100, cols=len(CONFIG_HEADER))
+    values_now = ws.get_all_values()
+    if not values_now:
+        gsheets.batch_write(ws, [list(CONFIG_HEADER)], start="A1")
+        values_now = [list(CONFIG_HEADER)]
+    rows_at = {}
+    for i, row in enumerate(values_now, start=1):
+        if row:
+            rows_at[str(row[0]).strip().lower()] = i
+    for key in SETTABLE_KEYS:
+        if key not in values:
+            continue
+        cell = serialize.to_cell(values[key], "str")
+        if key in rows_at:
+            gsheets.batch_write(ws, [[cell]], start=f"B{rows_at[key]}")
+        else:
+            note = serialize.to_cell(config_schema.NOTES.get(key, ""), "str")
+            gsheets.batch_write(ws, [[key, cell, note]])
     return True
