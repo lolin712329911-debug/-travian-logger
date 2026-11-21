@@ -1,16 +1,17 @@
-name: Travian import check (branch only)
+name: Travian auto build
 
+# 檔名、main 分支、workflow_dispatch 不可改：Apps Script triggerTravian 以 workflow_dispatch 打這支（A-7）。
 on:
-  workflow_dispatch: {}   # 在 Actions 頁面選「測試分支」後按 Run workflow
+  workflow_dispatch: {}
 
 concurrency:
-  group: travian-import-check
+  group: travian-run
   cancel-in-progress: false
 
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
 
@@ -18,31 +19,32 @@ jobs:
         with:
           python-version: "3.11"
 
-      # 第三方套件：parsers 用 beautifulsoup4（A2a-1 起）。不裝專案本身（D-10 禁止 pip install -e），
-      # 也不整份裝 requirements.txt（playwright、gspread 這裡用不到）。
-      - name: 安裝第三方套件（parsers 用 bs4）
-        run: python -m pip install beautifulsoup4
-
-      # D-10 驗證：只執行 import，無 PYTHONPATH、無 pip install -e
-      # 自動掃描 travian_bot 底下所有模組，新增模組不必再改這裡
-      - name: import travian_bot（D-10，全部模組）
+      - name: 安裝套件
         run: |
-          python - <<'PYEOF'
-          import importlib, pkgutil
-          import travian_bot
-          names = sorted(m.name for m in pkgutil.walk_packages(travian_bot.__path__, "travian_bot."))
-          for n in names:
-              importlib.import_module(n)
-          print("import OK", travian_bot.__file__)
-          print(len(names), "modules:", ", ".join(n.rsplit(".", 1)[-1] for n in names))
-          PYEOF
+          python -m pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
 
-      - name: python -m unittest（單元測試，無網路、無 Secrets）
-        run: python -m unittest discover -s tests -t . -v
+      # session 快取（A-8：key 前綴 travian-session-、檔名 travian_session.json）。
+      # restore 與 save 分開：bot 失敗（結束碼 1）時仍要存回最新登入狀態。
+      - name: 還原 session 快取
+        uses: actions/cache/restore@v4
+        with:
+          path: travian_session.json
+          key: travian-session-${{ github.run_id }}
+          restore-keys: travian-session-
 
-      # 每個 WP 驗收必跑；A2a-2b 加進來（之後每完成一個 WP 就在 --expect-wp 末尾追加）
-      - name: check_arch（依賴方向、單一出口）
-        run: python tools/check_arch.py --expect-wp A1a-1,A1a-2,A1b,A2a-1,A2a-2a,A2a-2b,A2b,A3a,A4a,A4b-1,A4b-2,A6a1,A5a,A3b,A6a2,A3c,A5b,A6a2b --strict
+      - name: 執行 bot
+        env:
+          # GA 通過前維持 "1"（寫入類 mode 一律降 dry）；GA 後才改 "0"
+          DRY_RUN: "1"
+          TRAVIAN_SEED_COOKIE_S2: ${{ secrets.TRAVIAN_SEED_COOKIE_S2 }}
+          GOOGLE_SHEET_ID_S2: ${{ secrets.GOOGLE_SHEET_ID_S2 }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: python -m travian_bot.app.main
 
-      - name: check_contracts（契約與範例）
-        run: python tools/check_contracts.py
+      - name: 存 session 快取
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: travian_session.json
+          key: travian-session-${{ github.run_id }}
