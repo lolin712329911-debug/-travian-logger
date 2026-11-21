@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/domain/build_planner.py（dm-01）
-版本：v0.1（A3a）
+版本：v0.1.1（GA-fix1／D-39：plan() 成本讀不到不回 done；storage_fix 訊息「穀倉」）｜v0.1（A3a）
 用途：建城決策（純函式，不碰網路、不讀 Sheet、不用全域變數）。回傳 BuildDecision（cm-02）。
       plan()                  舊流程（沒有 build_order）：資源田＋（呼叫端給的）倉庫／糧倉的 ROI 規則
       plan_with_order()       依 build_order 嚴格照順序建城（自動補前置條件、倉容不足自動先升倉庫／糧倉）
@@ -26,6 +26,8 @@ travian_bot/domain/build_planner.py（dm-01）
   6. 回傳值：("wait_res", 秒, f)→BuildDecision("wait_resources", target, wait_s)；("build", f)→("build", target)；
      ("blocked", 說明)→"plan_stuck"；("no_slot", gid)→"no_free_slot"；其餘同名對應（見 _to_decision）。
   7. 舊碼會在條件的 gid／level 是 None 時當掉；新版回 plan_stuck（不猜）。
+  9. （D-39，行為變更）舊流程候選全空時，若有資源田低於目標但成本讀不到，回 plan_stuck，不回 done（舊碼回 done，
+     會把「讀不到資料」報成「已完成」）。
   8. 資源田 ROI 表用 game_rules.RESOURCE_FIELD_PRODUCTION_1X（△ 未用 S9 樣本核對；舊碼線上一直在用同一張表）。
 """
 from dataclasses import dataclass
@@ -146,6 +148,11 @@ def plan(dorf1: Dorf1, settings: BuildSettings, is_capital: bool, *, extra: Sequ
     cands = [f for f in fields if f.cost and not f.under_construction
              and (f.gid in BUILDING_GIDS or f.level < eff_target)]
     if not cands:
+        # D-39：有資源田低於目標、卻因讀不到成本而被排除，不是「已完成」。回 plan_stuck 讓人處理（與 plan_with_order 同訊息）
+        unreadable = [f for f in dorf1.fields if f.cost is None and not f.under_construction
+                      and f.aid not in touched and f.level < eff_target]
+        if unreadable:
+            return _to_decision(("blocked", "資源田的升級成本讀不到（頁面 title 被前端 JS 清空？）"))
         return _to_decision(("done",))
     if affordable_only:
         cands = [f for f in cands if all(c <= s for c, s in zip(f.cost, dorf1.stock))]
@@ -193,7 +200,7 @@ def _order_core(order, dorf1: Dorf1, facts: BuildFacts, settings: BuildSettings,
 
     def storage_fix(f):
         over_res = any(c > m for c, m in zip(f.cost[:3], cap[:3]))
-        gid, name = (10, "倉庫") if over_res else (11, "糧倉")
+        gid, name = (10, "倉庫") if over_res else (11, "穀倉")
         if gid in fixing:
             return ("blocked", f"{name}自己的升級成本就超過容量，無法自動補救")
         lvl = max((s.level for s in slots() if s.gid == gid), default=0)
