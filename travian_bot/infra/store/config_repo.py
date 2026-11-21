@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/infra/store/config_repo.py（if-05）
-版本：v0.1.1（A6b：追加 set_keys，既有行為不變）
+版本：v0.1.2（A6b：set_keys 改為相鄰兩列單次寫入＋失敗還原；v0.1.1 追加 set_keys，既有行為不變）
 用途：Config 分頁（key／value／note 三欄）的讀取、補齊缺少的鍵、緊急停用。
       人工編輯的分頁：只補缺的列、只改 enabled 那一列，絕不整頁覆寫。
 依賴：if-04（gsheets）、if-06（village_repo；村級 disable）、cm-08（config_schema）、cm-10（serialize）。
@@ -155,6 +155,11 @@ def set_keys(sh: Any, values: Dict[str, str]) -> bool:
 
     已有的列只改 B 欄（value）；沒有的列補在最後（含說明）。不動其他列。鍵不在白名單、值不是字串
     丟 ValueError；寫入失敗直接丟出（村莊鎖寫不進去不該靜默）。回傳是否真的寫入（values 為空回 False）。
+
+    兩個鍵必須同時有或同時空（config_schema 會把只寫一半視為 error），所以盡量單次寫入：
+      ①兩個鍵都已有列且相鄰（ensure_config_rows 依 ORDER 補列，正常情況如此）→ B 欄一次寫兩格
+      ②兩個鍵都沒有列 → 一次補兩列
+      ③其他（只寫一個鍵、兩列不相鄰、一有一無）→ 逐一寫；後面失敗時把已改的既有列還原再丟出
     """
     if not values:
         return False
@@ -168,17 +173,41 @@ def set_keys(sh: Any, values: Dict[str, str]) -> bool:
     if not values_now:
         gsheets.batch_write(ws, [list(CONFIG_HEADER)], start="A1")
         values_now = [list(CONFIG_HEADER)]
-    rows_at = {}
+    rows_at: Dict[str, int] = {}
+    old_value: Dict[str, str] = {}
     for i, row in enumerate(values_now, start=1):
         if row:
-            rows_at[str(row[0]).strip().lower()] = i
-    for key in SETTABLE_KEYS:
-        if key not in values:
-            continue
-        cell = serialize.to_cell(values[key], "str")
-        if key in rows_at:
-            gsheets.batch_write(ws, [[cell]], start=f"B{rows_at[key]}")
-        else:
-            note = serialize.to_cell(config_schema.NOTES.get(key, ""), "str")
-            gsheets.batch_write(ws, [[key, cell, note]])
+            k = str(row[0]).strip().lower()
+            rows_at[k] = i
+            old_value[k] = str(row[1]) if len(row) > 1 and row[1] is not None else ""
+    keys = [k for k in SETTABLE_KEYS if k in values]
+    cells = {k: serialize.to_cell(values[k], "str") for k in keys}
+
+    def _note(k: str) -> str:
+        return serialize.to_cell(config_schema.NOTES.get(k, ""), "str")
+
+    if len(keys) == 2:
+        a, b = keys
+        if a in rows_at and b in rows_at and rows_at[b] == rows_at[a] + 1:
+            gsheets.batch_write(ws, [[cells[a]], [cells[b]]], start=f"B{rows_at[a]}")
+            return True
+        if a not in rows_at and b not in rows_at:
+            gsheets.batch_write(ws, [[a, cells[a], _note(a)], [b, cells[b], _note(b)]])
+            return True
+
+    done: List[str] = []
+    try:
+        for key in keys:
+            if key in rows_at:
+                gsheets.batch_write(ws, [[cells[key]]], start=f"B{rows_at[key]}")
+                done.append(key)
+            else:
+                gsheets.batch_write(ws, [[key, cells[key], _note(key)]])
+    except Exception:
+        for key in done:                      # 還原已改的既有列（best-effort；補上去的新列無法精準還原）
+            try:
+                gsheets.batch_write(ws, [[old_value.get(key, "")]], start=f"B{rows_at[key]}")
+            except Exception:  # noqa: BLE001
+                pass
+        raise
     return True
