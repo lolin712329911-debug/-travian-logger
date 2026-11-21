@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/stages/item_transfer.py（ap-11）
-版本：v0.1（A6a2）
+版本：v0.1.1（A6a2＋診斷 log；只加 log 與 Actions detail 的道具庫存量，判斷邏輯不變）
 用途：英雄道具庫 → 村莊轉資源 stage：next_target 付不起時，domain.item_transfer 決定轉哪些，
       actions.item_transfer_exec 送出並驗證，寫一列 Actions（動作「轉移」）。僅英雄所在村。
 依賴：ap-03、ap-06、dm-05、ac-03、if-07、cm-02。
@@ -22,6 +22,7 @@ travian_bot/app/stages/item_transfer.py（ap-11）
   7. 舊版每個非 transfer 結果都寫一列；新版 not_needed 不寫（否則每輪一列），其餘寫 skipped。
 """
 import dataclasses
+import logging
 
 from ...actions.item_transfer_exec import execute_item_transfer, read_transfer_state
 from ...common.models import StageResult, VillageContext, VillageSnapshot
@@ -37,16 +38,27 @@ from . import _util as U
 
 __all__ = ["STAGE", "precondition", "run"]
 
+log = logging.getLogger("item_transfer")
+
 
 def precondition(rc: RunContext, vc, snap) -> bool:
     if vc is None or snap is None:
+        log.info("item_transfer 略過：vc／snap 為 None")
         return False
     t = snap.next_target
-    if t is None or t.ready_in_s <= 0:
+    if t is None:
+        log.info("item_transfer 略過：沒有 next_target")
+        return False
+    if t.ready_in_s <= 0:
+        log.info("item_transfer 略過：目標已付得起（ready_in_s=%s）", t.ready_in_s)
         return False
     if snap.queue_slots_used >= vc.build_settings.queue_slots:
+        log.info("item_transfer 略過：佇列已滿（%s/%s）", snap.queue_slots_used, vc.build_settings.queue_slots)
         return False
-    return U.hero_here(rc, vc)
+    here = U.hero_here(rc, vc)
+    if not here:
+        log.info("item_transfer 略過：hero_here=False（英雄不在本村或讀不到）")
+    return here
 
 
 def run(rc: RunContext, vc: VillageContext, snap: VillageSnapshot, mode: Mode) -> StageResult:
@@ -60,6 +72,8 @@ def run(rc: RunContext, vc: VillageContext, snap: VillageSnapshot, mode: Mode) -
     eta = parse_dorf1(rc.get_page("dorf1.php")).attack_eta_s if snap.incoming_attacks else None
 
     pre = decide_item_transfer(need, None, queue_busy, eta, settings)
+    log.info("item_transfer 預判：kind=%s｜incoming_attacks=%s｜attack_eta_s=%s｜門檻=%s分｜mode=%s",
+             pre.kind, snap.incoming_attacks, eta, settings.eta_min, mode)
     if pre.kind == "not_needed":
         return StageResult(status="skipped", note=pre.reason)
 
@@ -73,7 +87,9 @@ def run(rc: RunContext, vc: VillageContext, snap: VillageSnapshot, mode: Mode) -
 
     dec = decide_item_transfer(need, state, queue_busy, eta, settings)
     gaps = [max(0, need[i] - state.stock[i]) for i in range(4)]
-    desc = f"{head}｜{dec.kind}：{dec.reason}｜缺口={gaps}｜來襲ETA={eta}"
+    inv = [(getattr(it, "amount", None) if it is not None else None) for it in state.inventory]
+    log.info("item_transfer 決策：kind=%s｜缺口=%s｜道具庫=%s｜村莊現量=%s", dec.kind, gaps, inv, list(state.stock))
+    desc = f"{head}｜{dec.kind}：{dec.reason}｜缺口={gaps}｜道具庫={inv}｜來襲ETA={eta}"
     if not dec.act:
         return StageResult(status="ok", actions=[U.make_row(rc, vc.did, U.ACTION_ITEM_TRANSFER, mode, "skipped", desc, t)])
 
