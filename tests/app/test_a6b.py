@@ -55,7 +55,7 @@ class ApplyUpdates(unittest.TestCase):
 class Cycle(unittest.TestCase):
     def test_entry_assert_fail_skips_whole_village(self):
         rc = _rc()
-        with mock.patch.object(vcy, "village_switch") as sw, mock.patch.object(vcy, "observe") as ob:
+        with mock.patch.object(vcy, "village_switch", unsafe=True) as sw, mock.patch.object(vcy, "observe") as ob:
             sw.assert_active.return_value = False
             run = vcy.run_village_cycle(rc, _vc())
         self.assertIsNotNone(run.skipped_reason)
@@ -65,7 +65,7 @@ class Cycle(unittest.TestCase):
 
     def test_lock_skip(self):
         rc = _rc({"main_did": 1})
-        with mock.patch.object(vcy, "village_switch") as sw, mock.patch.object(vcy, "village_lock") as lk, \
+        with mock.patch.object(vcy, "village_switch", unsafe=True) as sw, mock.patch.object(vcy, "village_lock") as lk, \
                 mock.patch.object(vcy, "observe") as ob, mock.patch.object(vcy, "_lock_from_cfg"):
             sw.assert_active.return_value = True
             lk.decide_lock.return_value = NS(kind="skip", reason="main_did 不符", record=False)
@@ -75,7 +75,7 @@ class Cycle(unittest.TestCase):
 
     def test_lock_record_calls_writer_before_observe(self):
         rc, calls = _rc(), []
-        with mock.patch.object(vcy, "village_switch") as sw, mock.patch.object(vcy, "village_lock") as lk, \
+        with mock.patch.object(vcy, "village_switch", unsafe=True) as sw, mock.patch.object(vcy, "village_lock") as lk, \
                 mock.patch.object(vcy, "observe") as ob, mock.patch.object(vcy, "registry") as rg, \
                 mock.patch.object(vcy, "_lock_from_cfg", return_value=NS(main_did=None)):
             sw.assert_active.return_value = True
@@ -92,7 +92,7 @@ class Cycle(unittest.TestCase):
         rc = _rc()
         st = [NS(name="a", mode_key=None), NS(name="b", mode_key=None), NS(name="c", mode_key="hide")]
         ran = []
-        with mock.patch.object(vcy, "village_switch") as sw, mock.patch.object(vcy, "village_lock") as lk, \
+        with mock.patch.object(vcy, "village_switch", unsafe=True) as sw, mock.patch.object(vcy, "village_lock") as lk, \
                 mock.patch.object(vcy, "observe") as ob, mock.patch.object(vcy, "registry") as rg, \
                 mock.patch.object(vcy, "stage_mode", return_value=Mode.LIVE), \
                 mock.patch.object(vcy, "_lock_from_cfg", return_value=NS(main_did=7)), \
@@ -116,7 +116,7 @@ class Cycle(unittest.TestCase):
         def fake_run(s, rc_, vc_, snap):
             seen.append(snap.stock)
             return NS(status="ok", snapshot_updates={"stock": (9, 9, 9, 9)} if s.name == "a" else {})
-        with mock.patch.object(vcy, "village_switch") as sw, mock.patch.object(vcy, "village_lock") as lk, \
+        with mock.patch.object(vcy, "village_switch", unsafe=True) as sw, mock.patch.object(vcy, "village_lock") as lk, \
                 mock.patch.object(vcy, "observe") as ob, mock.patch.object(vcy, "registry") as rg, \
                 mock.patch.object(vcy, "stage_mode", return_value=Mode.DRY), \
                 mock.patch.object(vcy, "_lock_from_cfg", return_value=NS(main_did=7)), \
