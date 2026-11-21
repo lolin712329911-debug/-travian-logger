@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/actions/build_exec.py（ac-02）
-版本：v0.1（A5a）
+版本：v0.1.1（GA-fix3：新版升級按鈕沒有網址，改點綠色按鈕；送出前的 dorf1 基準改在讀建築頁之前）｜v0.1（A5a）
 用途：送出一次建築升級／興建並驗證：submit_upgrade(gw, did, target, mode) → ExecResult。
 依賴：if-02（Gateway）、ps-01（parse_dorf1）、ps-03（建築頁解析）、cm-02（BuildTarget、ExecResult）、cm-04（Mode）、cm-11（ParseError，v0.1 補）。
 部署狀態：未部署（GA 前不 live）。
@@ -11,7 +11,8 @@ travian_bot/actions/build_exec.py（ac-02）
   off  → skipped，不發任何請求。
   其餘 → 讀 build.php?id=<aid> → 取升級網址與頁面成本 → 核對（網址、成本）→
   dry  → 回 dry（不送出）。
-  live → 讀 dorf1 當基準 → gw.submit(url)（不重試）→ 重讀 dorf1：佇列變長，或庫存合計
+  live → 先讀 dorf1 當基準（v0.1.1：必須在讀建築頁「之前」，因為點擊要在建築頁上）→ 讀建築頁 → 核對 →
+         送出（舊式網址 gw.submit；新版按鈕 gw.click，不重試）→ 重讀 dorf1：佇列變長，或庫存合計
          減少超過成本合計的一半 → ok（verified=True）；否則 failed（verified=False，不重試）。
 
 安全規則（v0.68，§11.7-B）：
@@ -44,6 +45,10 @@ __all__ = ["submit_upgrade"]
 
 # 只認這一種（與 parsers/buildings 同格式，但這裡要抓 id、gid 來核對；完整相符才算）
 _UPGRADE_URL_RE = re.compile(r"/dorf[12]\.php\?id=(\d+)&gid=(\d+)&action=build&checksum=[0-9a-fA-F]+")
+# v0.1.1：新版升級按鈕沒有網址（parsers 回 click:build:<aid>:<gid>），送出方式是點「正常工期」區的綠色按鈕。
+# 紫色加速（.purple）、disabled、金幣大師建築師一律不碰；aid、gid 在送出前核對（來自頁面 script 的 POST 內容）。
+_CLICK_TOKEN_RE = re.compile(r"click:build:(\d+):(\d+)")
+_CLICK_SELECTOR = "div.upgradeBuilding div.upgradeButtonsContainer div.section1 button.green.build:not(.disabled)"
 _DORF1 = "dorf1.php"
 
 
@@ -58,7 +63,7 @@ def _label(t: BuildTarget) -> str:
 
 
 def _url_ok(url: str, t: BuildTarget) -> bool:
-    m = _UPGRADE_URL_RE.fullmatch(url or "")
+    m = _UPGRADE_URL_RE.fullmatch(url or "") or _CLICK_TOKEN_RE.fullmatch(url or "")
     return bool(m) and int(m.group(1)) == t.aid and int(m.group(2)) == t.gid
 
 
@@ -92,6 +97,14 @@ def submit_upgrade(gw: Gateway, did: int, target: BuildTarget, mode: Mode) -> Ex
     def res(result: str, detail: str, verified: Optional[bool] = None) -> ExecResult:
         return ExecResult(result, detail, gw.request_count() - n0, verified)
 
+    # 0) live：先讀 dorf1 當基準（之後要停在建築頁上點按鈕，所以不能放在讀建築頁之後）
+    before = None
+    if m == "live":
+        try:
+            before = parse_dorf1(gw.get(_DORF1, did=did))
+        except (GatewayError, ParseError) as e:
+            return res("failed", f"{what}：送出前讀 dorf1 失敗，未送出：{e}")
+
     # 1) 讀建築頁、取網址與成本（唯讀）
     try:
         html = gw.get(f"build.php?id={target.aid}", did=did)
@@ -112,13 +125,12 @@ def submit_upgrade(gw: Gateway, did: int, target: BuildTarget, mode: Mode) -> Ex
     if m == "dry":
         return res("dry", f"{what}：會送出（乾跑，沒有真的送出）")
 
-    # 3) live：基準 → 送出（不重試）→ 重讀驗證
+    # 3) live：送出（不重試）→ 重讀驗證
     try:
-        before = parse_dorf1(gw.get(_DORF1, did=did))
-    except (GatewayError, ParseError) as e:
-        return res("failed", f"{what}：送出前讀 dorf1 失敗，未送出：{e}")
-    try:
-        gw.submit(url)
+        if _CLICK_TOKEN_RE.fullmatch(url):
+            gw.click(_CLICK_SELECTOR)          # 目前頁面就是剛讀的建築頁
+        else:
+            gw.submit(url)
     except GatewayError as e:
         return res("failed", f"{what}：送出時出錯（可能已送達，不重送）：{e}")
     try:
