@@ -36,7 +36,7 @@ jobs:
       - name: 執行 bot
         env:
           # GA 通過前維持 "1"（寫入類 mode 一律降 dry）；GA 後才改 "0"
-          DRY_RUN: "1"
+          DRY_RUN: "0"
           TRAVIAN_SEED_COOKIE_S2: ${{ secrets.TRAVIAN_SEED_COOKIE_S2 }}
           GOOGLE_SHEET_ID_S2: ${{ secrets.GOOGLE_SHEET_ID_S2 }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
