@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/domain/build_planner.py（dm-01）
-版本：v0.1.1（GA-fix1／D-39：plan() 成本讀不到不回 done；storage_fix 訊息「穀倉」）｜v0.1（A3a）
+版本：v0.1.2（GA-fix5：build_order 的建築步驟（非資源田）改成「同 gid 的每一格都要到目標等級」，依序升：先升等級最高的那格，到目標後再升下一格；只有一格時與舊行為相同）｜v0.1.1（GA-fix1／D-39：plan() 成本讀不到不回 done；storage_fix 訊息「穀倉」）｜v0.1（A3a）
 用途：建城決策（純函式，不碰網路、不讀 Sheet、不用全域變數）。回傳 BuildDecision（cm-02）。
       plan()                  舊流程（沒有 build_order）：資源田＋（呼叫端給的）倉庫／糧倉的 ROI 規則
       plan_with_order()       依 build_order 嚴格照順序建城（自動補前置條件、倉容不足自動先升倉庫／糧倉）
@@ -248,11 +248,22 @@ def _order_core(order, dorf1: Dorf1, facts: BuildFacts, settings: BuildSettings,
             return fields_action((gid,), level, need_all)
         mine = [s for s in slots() if s.gid == gid]
         if mine:
-            best = max(mine, key=lambda s: s.level)
-            if best.level >= level:
-                return None
-            if best.under_construction or best.aid in touched:
-                return q_wait()
+            if need_all:
+                # build_order 的步驟：同 gid 的每一格都要到 level，依序升——先升還沒到目標、等級最高的那格
+                # （同級取 aid 小的），到目標後才換下一格；那格在施工／本輪已送出就等佇列（不跳去升別格）。
+                # 只有一格時與舊行為相同。
+                todo = [s for s in mine if s.level < level]
+                if not todo:
+                    return None
+                best = max(todo, key=lambda s: (s.level, -s.aid))
+                if best.under_construction or best.aid in touched:
+                    return q_wait()
+            else:
+                best = max(mine, key=lambda s: s.level)
+                if best.level >= level:
+                    return None
+                if best.under_construction or best.aid in touched:
+                    return q_wait()
             if best.aid not in facts.upgrade_costs:
                 raise _Need(FactsNeed("upgrade_cost", best.aid))
             uc = facts.upgrade_costs[best.aid]

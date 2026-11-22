@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/domain/plan_validate.py（dm-12）
-版本：v0.1（A3a）
+版本：v0.1.1（GA-fix5：_achieved 對建築步驟改看「同 gid 最低那一格」，與 build_planner 一致）｜v0.1（A3a）
 用途：build_order 的驗證（C12 PlanVerdict；純函式）。LLM／人寫的順序一律先過這裡，不過就 hold、不照做（v0.10 決定）。
 依賴：cm-01（models）、cm-02（decisions）、cm-03（constants）、cm-09（parsed）、cm-12（game_rules）。
 部署狀態：未部署（GA 前不 live）。
@@ -105,7 +105,8 @@ def _achieved(step: RawStep, dorf1: Dorf1, facts: BuildFacts, is_capital: bool) 
         return all(f.level >= lv for f in dorf1.fields if f.gid in gids)
     if facts.dorf2 is None:
         return None
-    return max((s.level for s in facts.dorf2.slots if s.gid == k), default=0) >= lv
+    lvls = [s.level for s in facts.dorf2.slots if s.gid == k]
+    return bool(lvls) and min(lvls) >= lv        # 同 gid 每一格都要到（沒有任何一格＝還沒達成）
 
 
 def _empty_aid(facts: BuildFacts) -> Optional[int]:
