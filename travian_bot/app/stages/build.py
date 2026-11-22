@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/stages/build.py（ap-10）
-版本：v0.1.2a（修：snapshot_updates 不再放 next_target=None）｜v0.1.2（GA-fix3：升級成功後，用重讀的 dorf1 立刻補寫 Fields；不增加請求）｜v0.1.1（GA-fix1：dorf1 抓取與升級後重讀都傳 rc.dorf1_raw_if）｜v0.1（A6a2）
+版本：v0.1.3（GA-fix5：_remaining 對建築步驟改看同 gid 最低那一格）｜v0.1.2a（修：snapshot_updates 不再放 next_target=None）｜v0.1.2（GA-fix3：升級成功後，用重讀的 dorf1 立刻補寫 Fields；不增加請求）｜v0.1.1（GA-fix1：dorf1 抓取與升級後重讀都傳 rc.dorf1_raw_if）｜v0.1（A6a2）
 用途：建城 stage：讀 build_order → 決策 → actions.build_exec 升級 → 寫 Actions；每輪寫 plan_* 四個 state 鍵。
 依賴：ap-03、ap-06、dm-01、dm-12、ac-02、if-12、if-07、if-08、cm-02、cm-03（ps-01～03 用來抓 dorf1／dorf2／建築頁，v0.67 的依賴列要補）。
 部署狀態：未部署（GA 前不 live）。未實測。
@@ -132,7 +132,11 @@ def _remaining(order, d1, dorf2, is_capital: bool) -> int:
             want = min(lv, cap) if (key == "res" and cap is not None) else lv
             done = all(f.level >= want for f in d1.fields if f.gid in gids)
         else:
-            done = dorf2 is not None and max((s.level for s in dorf2.slots if s.gid == key), default=0) >= lv
+            lvls = [s.level for s in dorf2.slots if s.gid == key] if dorf2 is not None else []
+            if dorf2 is None:
+                done = False
+            else:
+                done = bool(lvls) and min(lvls) >= lv
         n += 0 if done else 1
     return n
 
