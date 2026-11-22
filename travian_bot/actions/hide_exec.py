@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/actions/hide_exec.py（ac-06）
-版本：v0.1（A5b）
+版本：v0.1.1（A5b；近期佔領檢查改為可選，預設關閉）
 用途：send_troops(gw, did, decision, mode, *, map_half, …) → ExecResult：照 domain 的 HideDecision 派兵躲避（搶奪空綠洲）。
       兩步驟＋確認頁核對＋送出後重讀概況確認。另有純函式 confirm_matches、confirm_ok、recent_occupy（舊 hide_troops 的核對邏輯）。
 依賴：if-02（Gateway）、ps-06（parse_overview、parse_send_confirm）、cm-02（HideDecision、ExecResult）、cm-04（Mode）、
@@ -25,6 +25,9 @@ travian_bot/actions/hide_exec.py（ac-06）
      為瀏覽器點擊耗時；HTTP 沒有這段，保留預設 45 當保守餘量，可調）。
   5. 近期佔領判斷（舊 oasis_check.recent_occupy_warning）放在這裡（A3c 留給 ap-16／ac-07；ac-07 只回事實）：
      TileSafety.occupy_events 含「今天／昨天／分鐘／小時」字樣 → 該候選不派。✗ 只有 zh-TW 樣本（S15a 實有「昨天, 15:39」）。
+     **v0.1.1**：此檢查改為參數 check_recent_occupy，預設 False（只看即時驗證 safe＝未佔領且動物為 0）；
+     原因：舊規則等於「近 48 小時內有任何佔領事件就不派」，實測（2026-11-22）把候選全擋、躲兵一直 skipped。要恢復舊行為傳 True。
+     被擋時的 detail 會附命中的事件原文（前 30 字），方便診斷。
   6. 不重試：確認頁之前的任何失敗只回報該候選並換下一個（沒有送出）；第三步 POST 之後一律以重讀概況為準，重讀失敗標「結果不明」。
 安全：英雄永遠不帶；checksum 是 token，只存在於記憶體中的 POST 本文，不進 detail／例外訊息。
 """
@@ -160,8 +163,10 @@ def _short(parts: List[str], limit: int = 280) -> str:
 # ---------------------------------------------------------------- 主流程
 def send_troops(gw: Gateway, did: int, decision: HideDecision, mode: Mode, *, map_half: int,
                 verify: Callable[[Gateway, HideCandidate], TileSafety],
-                max_confirm: int = 4, max_checks: int = 12, margin: int = 30, send_delay_s: int = 45) -> ExecResult:
+                max_confirm: int = 4, max_checks: int = 12, margin: int = 30, send_delay_s: int = 45,
+                check_recent_occupy: bool = False) -> ExecResult:
     """依 decision 派兵。off→skipped；dry 走到確認頁核對後不送出；live 核對通過才送出，並重讀概況確認。
+    check_recent_occupy：True＝沿用舊規則（occupy_events 有相對時間字樣就不派）；預設 False，只看即時驗證 safe。
     max_confirm：最多開幾次確認頁（第一步 POST）；max_checks：最多即時驗證幾個綠洲（便宜，不吃確認頁額度）。
     verify(gw, 候選)→TileSafety：綠洲即時驗證，由 stage 傳入（例：functools.partial(oasis_exec.verify_oasis, map_half=…) 包成兩參數）。
     驗證、第一步、重讀概況的 GatewayError／ParseError／RuntimeError（含 OasisExecError）／ValueError 都轉成回報，不重試。"""
@@ -204,8 +209,9 @@ def send_troops(gw: Gateway, did: int, decision: HideDecision, mode: Mode, *, ma
         if not info.safe:
             tried.append(f"{tag} 即時驗證不通過（有動物／被佔領／動物未知）")
             continue
-        if recent_occupy(info.occupy_events):
-            tried.append(f"{tag} 附近剛有佔領事件")
+        if check_recent_occupy and recent_occupy(info.occupy_events):
+            hit = next((e for e in info.occupy_events if any(k in e for k in RECENT_MARKERS)), "")
+            tried.append(f"{tag} 附近剛有佔領事件：{hit[:30]}")
             continue
         # ② 第一步：POST 派兵表單 → 確認頁（還沒送出；離開確認頁＝不出兵 ✓）
         confirms += 1
