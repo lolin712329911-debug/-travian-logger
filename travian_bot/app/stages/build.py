@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/stages/build.py（ap-10）
-版本：v0.1.3（GA-fix5：_remaining 對建築步驟改看同 gid 最低那一格）｜v0.1.2a（修：snapshot_updates 不再放 next_target=None）｜v0.1.2（GA-fix3：升級成功後，用重讀的 dorf1 立刻補寫 Fields；不增加請求）｜v0.1.1（GA-fix1：dorf1 抓取與升級後重讀都傳 rc.dorf1_raw_if）｜v0.1（A6a2）
+版本：v0.1.4（GA-fix6：沒升級、只在等資源時也回報 next_target，讓 focus 有缺口可算）｜v0.1.3（GA-fix5：_remaining 對建築步驟改看同 gid 最低那一格）｜v0.1.2a（修：snapshot_updates 不再放 next_target=None）｜v0.1.2（GA-fix3：升級成功後，用重讀的 dorf1 立刻補寫 Fields；不增加請求）｜v0.1.1（GA-fix1：dorf1 抓取與升級後重讀都傳 rc.dorf1_raw_if）｜v0.1（A6a2）
 用途：建城 stage：讀 build_order → 決策 → actions.build_exec 升級 → 寫 Actions；每輪寫 plan_* 四個 state 鍵。
 依賴：ap-03、ap-06、dm-01、dm-12、ac-02、if-12、if-07、if-08、cm-02、cm-03（ps-01～03 用來抓 dorf1／dorf2／建築頁，v0.67 的依賴列要補）。
 部署狀態：未部署（GA 前不 live）。未實測。
@@ -250,6 +250,10 @@ def run(rc: RunContext, vc: VillageContext, snap: VillageSnapshot, mode: Mode) -
         updates = {"stock": tuple(d1.stock), "queue_slots_used": len(d1.queue), "queue_free_in_s": _min_queue(d1)}
         if nxt is not None:      # snapshot_updates.next_target 不接受 None（schema：required）：沒有目標就不放這個鍵
             updates["next_target"] = nxt
+    elif last is not None and last.kind == "wait_resources" and last.target is not None:
+        # 本輪沒升級、只是在等資源：也回報「下一個付不起的目標」，focus（產量加成）才有缺口可算。
+        # 注意 focus 的 precondition 要求 next_target 有值且本輪沒有 built；升級成功那條路徑一定有 built，所以只有這裡能讓它動。
+        updates["next_target"] = dataclasses.replace(last.target, ready_in_s=last.wait_s or 0)
 
     if any_live_ok:
         _record_fields_after_build(rc, vc, d1)
