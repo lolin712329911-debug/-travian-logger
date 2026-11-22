@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/actions/hide_exec.py（ac-06）
-版本：v0.1.1（A5b；近期佔領檢查改為可選，預設關閉）
+版本：v0.1.2（A5b；近期佔領檢查改為可選，預設關閉；第一步失敗時附診斷）
 用途：send_troops(gw, did, decision, mode, *, map_half, …) → ExecResult：照 domain 的 HideDecision 派兵躲避（搶奪空綠洲）。
       兩步驟＋確認頁核對＋送出後重讀概況確認。另有純函式 confirm_matches、confirm_ok、recent_occupy（舊 hide_troops 的核對邏輯）。
 依賴：if-02（Gateway）、ps-06（parse_overview、parse_send_confirm）、cm-02（HideDecision、ExecResult）、cm-04（Mode）、
@@ -215,6 +215,7 @@ def send_troops(gw: Gateway, did: int, decision: HideDecision, mode: Mode, *, ma
             continue
         # ② 第一步：POST 派兵表單 → 確認頁（還沒送出；離開確認頁＝不出兵 ✓）
         confirms += 1
+        r1 = None
         try:
             r1 = gw.request("POST", SEND_PATH, headers=_FORM_HEADERS, data=_step1_body(units, (cand.x, cand.y)))
             if not r1.ok:
@@ -222,7 +223,13 @@ def send_troops(gw: Gateway, did: int, decision: HideDecision, mode: Mode, *, ma
                 continue
             conf = parse_send_confirm(r1.text)
         except (RuntimeError, ParseError) as e:
-            tried.append(f"{tag} 第一步失敗：{type(e).__name__}")
+            # 診斷（不含 token）：例外訊息前 60 字＋回應長度＋是否有確認頁表單／確認鈕
+            diag = ""
+            if r1 is not None:
+                t = getattr(r1, "text", "") or ""
+                diag = (f"｜len={len(t)} form={'troopSendForm' in t} btn={'confirmSendTroops' in t}"
+                        f" err={'error' in t.lower()}")
+            tried.append(f"{tag} 第一步失敗：{type(e).__name__}：{str(e)[:60]}{diag}")
             continue
         same, why = confirm_matches(conf, units, (cand.x, cand.y), did)
         if not same:
