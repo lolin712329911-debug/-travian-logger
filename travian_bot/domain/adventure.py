@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/domain/adventure.py（dm-06）
-版本：v0.1（A3b）
+版本：v0.2（修正 difficulty_bonus 死結；skip_on_incoming 預設改 False）｜v0.1（A3b）
 用途：decide_adventure(hero, adventures, settings, incoming) → AdventureDecision。
       英雄冒險：該不該出發、選哪一個（adv_id＝Adventure.number；ac-05 click_adventure 吃 Adventure 物件，
       stage 用編號從同一份清單取出）。純函式。
@@ -17,6 +17,13 @@ travian_bot/domain/adventure.py（dm-06）
   3. 體力、來襲數由參數／HeroState 給（HeroState.health_pct）。
   4. 沒有 icon（表格沒渲染）＝不能選，整體 skip。
   5. 狀態碼 50／9／100 在本檔寫死（舊 travian_hero 同；cm-03 的 HERO_STATUS 鍵名未讀 ✗，A6a2 可改引用）。
+
+v0.2 修改：
+  A. difficulty_bonus（遊戲回報「下一次普通冒險會被升成困難」）：v0.1 為真就無條件 skip，完全不看 settings.allowed，
+     英雄不出門旗標就不會變，造成死結。改成算完 allowed 之後才判斷：只有 hard 不被允許（設定未開，或體力 ≤ hard_min_health）
+     時才 skip；hard 被允許就照常選。
+  B. skip_on_incoming 預設 True → False（有來襲也照常出發）。注意：stage 的 _settings 另有自己的預設
+     （cfg.get("hero_skip_on_incoming", True)），要讓它生效須改 stage 的預設或設定檔 hero_skip_on_incoming。
 """
 from dataclasses import dataclass
 from typing import FrozenSet, Optional, Sequence
@@ -36,7 +43,7 @@ class AdventureSettings:
     min_health: int = 45                              # Config hero_min_health：體力 ≤ 此值不出發
     hard_min_health: int = 60                         # Config hero_hard_min_health：體力 ≤ 此值不選 hard
     allowed: FrozenSet[str] = frozenset({"normal"})   # Config hero_allowed（normal、hard）
-    skip_on_incoming: bool = True                     # Config hero_skip_on_incoming
+    skip_on_incoming: bool = False                    # Config hero_skip_on_incoming（v0.2：預設改 False）
 
 
 def _skip(reason: str) -> AdventureDecision:
@@ -67,8 +74,6 @@ def decide_adventure(
         return _skip("讀不到體力")
     if health <= settings.min_health:
         return _skip(f"體力 {health}% ≤ {settings.min_health}")
-    if hero.difficulty_bonus:
-        return _skip("下一次普通冒險會提高為困難（difficulty bonus）")
 
     if settings.skip_on_incoming:
         if incoming is None:
@@ -84,6 +89,13 @@ def decide_adventure(
     allowed = set(settings.allowed)
     if health <= settings.hard_min_health:
         allowed.discard("hard")
+
+    # v0.2：difficulty_bonus 改在 allowed 算好之後判斷。下一次普通冒險會被升成困難，
+    # 只有 hard 不被允許（設定未開或體力不夠）才 skip。
+    if hero.difficulty_bonus and "hard" not in allowed:
+        return _skip("下一次普通冒險會提高為困難（difficulty bonus），但 hard 未允許或體力 "
+                     f"{health}% ≤ {settings.hard_min_health}")
+
     candidates = [(0 if a.icon == "hard" else 1, a.duration_s, a.number)
                   for a in adventures if a.icon in allowed and a.clickable is True]
     if not candidates:
