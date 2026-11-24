@@ -42,7 +42,7 @@ def _settings(cfg) -> AdventureSettings:
     return AdventureSettings(min_health=int(cfg.get("hero_min_health", 45)),
                              hard_min_health=int(cfg.get("hero_hard_min_health", 60)),
                              allowed=frozenset(cfg.get("hero_allowed") or ("normal",)),
-                             skip_on_incoming=bool(cfg.get("hero_skip_on_incoming", True)))
+                             skip_on_incoming=bool(cfg.get("hero_skip_on_incoming", False)))
 
 
 def run(rc: RunContext, vc, snap, mode: Mode) -> StageResult:
