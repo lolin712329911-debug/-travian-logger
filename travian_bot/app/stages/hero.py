@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/stages/hero.py（ap-17）
-版本：v0.1（A6a2）
+版本：v0.2（hero_allowed 字串拆分修正）｜v0.1（A6a2）
 用途：英雄冒險 stage（帳號級）：讀英雄 → domain.adventure 決策 → actions.hero_exec 點冒險 → 寫 Actions（動作「冒險」）。
 依賴：ap-03、ap-06、dm-06、ac-05、if-07、cm-02。
 部署狀態：未部署（GA 前不 live）。未實測。
@@ -38,10 +38,21 @@ def precondition(rc: RunContext, vc, snap) -> bool:
     return True
 
 
+def _parse_allowed(raw) -> frozenset:
+    """hero_allowed 可能是 list/tuple/set，也可能是設定表來的逗號字串（"normal,hard"）。
+    字串直接丟 frozenset 會被拆成單一字元，所以先用逗號切開、去空白、轉小寫。"""
+    if not raw:
+        return frozenset({"normal"})
+    if isinstance(raw, str):
+        raw = raw.split(",")
+    items = [str(x).strip().lower() for x in raw if str(x).strip()]
+    return frozenset(items) or frozenset({"normal"})
+
+
 def _settings(cfg) -> AdventureSettings:
     return AdventureSettings(min_health=int(cfg.get("hero_min_health", 45)),
                              hard_min_health=int(cfg.get("hero_hard_min_health", 60)),
-                             allowed=frozenset(cfg.get("hero_allowed") or ("normal",)),
+                             allowed=_parse_allowed(cfg.get("hero_allowed")),
                              skip_on_incoming=bool(cfg.get("hero_skip_on_incoming", False)))
 
 
