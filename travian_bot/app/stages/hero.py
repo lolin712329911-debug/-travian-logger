@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/stages/hero.py（ap-17）
-版本：v0.2（hero_allowed 字串拆分修正）｜v0.1（A6a2）
+版本：v0.3（click_adventure 傳 allow_hard）｜v0.2（hero_allowed 字串拆分修正）｜v0.1（A6a2）
 用途：英雄冒險 stage（帳號級）：讀英雄 → domain.adventure 決策 → actions.hero_exec 點冒險 → 寫 Actions（動作「冒險」）。
 依賴：ap-03、ap-06、dm-06、ac-05、if-07、cm-02。
 部署狀態：未部署（GA 前不 live）。未實測。
@@ -97,7 +97,9 @@ def run(rc: RunContext, vc, snap, mode: Mode) -> StageResult:
         return StageResult(status="ok", actions=[U.make_row(rc, did, U.ACTION_HERO, mode, "skipped", dec.reason)])
 
     adv = next(a for a in advs if a.number == dec.adv_id)
-    res = click_adventure(gw, adv, mode)
+    health = hero.health_pct
+    allow_hard = ("hard" in settings.allowed) and health is not None and health > settings.hard_min_health
+    res = click_adventure(gw, adv, mode, allow_hard=allow_hard)
     what = f"{dec.reason}（體力 {hero.health_pct}%，來襲 {incoming}）"
     if res.result == "ok":
         rc.io.notify(f"英雄已出發：{what}")
