@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/actions/hero_exec.py（ac-05）
-版本：v0.1（A5a）
+版本：v0.2（difficulty bonus 防護改為依 allow_hard 決定）｜v0.1（A5a）
 用途：read_hero(gw) → HeroState；click_adventure(gw, adventure, mode) → ExecResult（點擊前核對、點擊後重讀確認）。
 依賴：if-02（Gateway，含 v0.2 的 click）、ps-05（parse_hero_status、parse_adventures）、cm-02、cm-04、cm-09（HeroState、Adventure）、cm-11（ParseError）（後兩者為 v0.1 補）。
 部署狀態：未部署（GA 前不 live）。
@@ -18,6 +18,10 @@ travian_bot/actions/hero_exec.py（ac-05）
   2. 舊碼直接用 page.locator；改用 Gateway.click（v0.2）。選擇器 `…tr:nth-child(N) td.button button`，N＝該冒險在清單的位置。
   3. 比對決策時的 Adventure：編號、地點、距離、秒數、難度、icon（兩邊都有值才比）。
   4. 舊碼失敗不丟例外，只回 (False, 說明)；本層回 ExecResult，例外一律接住。
+v0.2 修改：
+  difficulty bonus 為真＝下一次普通冒險會被遊戲升成困難。v0.1 一律不點，和 domain 層 v0.1 一樣會形成死結。
+  改成呼叫端傳 allow_hard（hard 在允許清單且體力夠）：allow_hard 為 True 時，bonus 為真也照點（被升成困難是可接受的）；
+  allow_hard 為 False（預設，維持原本安全行為）時，bonus 為真仍不點。
 """
 from typing import Optional
 
@@ -52,7 +56,7 @@ def read_hero(gw: Gateway) -> HeroState:
     return parse_hero_status(gw.get(ADVENTURES_PATH, raw=True))
 
 
-def click_adventure(gw: Gateway, adventure: Adventure, mode: Mode) -> ExecResult:
+def click_adventure(gw: Gateway, adventure: Adventure, mode: Mode, allow_hard: bool = False) -> ExecResult:
     m = _mode_value(mode)
     if m == "off":
         return ExecResult("skipped", "mode=off，不動作", 0, None)
@@ -72,8 +76,8 @@ def click_adventure(gw: Gateway, adventure: Adventure, mode: Mode) -> ExecResult
         return res("failed", f"{what}：點擊前重讀失敗，不點：{e}")
     if hero.at_home is not True or hero.adventure_no is not None or hero.arrival_in_s is not None:
         return res("skipped", f"{what}：英雄已不在家或讀不到在家狀態，不點")
-    if hero.difficulty_bonus:
-        return res("skipped", f"{what}：difficulty bonus 為真，不點")
+    if hero.difficulty_bonus and not allow_hard:
+        return res("skipped", f"{what}：difficulty bonus 為真，且不允許困難冒險，不點")
     idx = next((i for i, a in enumerate(advs) if a.number == adventure.number), None)
     if idx is None:
         return res("skipped", f"{what}：清單裡已沒有這個冒險（清單變了），不點")
