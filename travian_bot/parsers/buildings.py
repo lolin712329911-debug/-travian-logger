@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/parsers/buildings.py（ps-03）
-版本：v0.1.1（GA-fix3：find_upgrade_url 認新版「按鈕＋JS POST」的升級按鈕，回傳 click:build:<aid>:<gid>）｜v0.1（A2a-2b）
+版本：v0.1.2（GA-fix7：parse_build_options 也認新版空地「興建建築物」按鈕，回 click:build:<空地aid>:<gid>）｜v0.1.1（GA-fix3：find_upgrade_url 認新版「按鈕＋JS POST」的升級按鈕，回傳 click:build:<aid>:<gid>）｜v0.1（A2a-2b）
 用途：建築頁解析（HTML 進、結構出；不碰網路、不碰 Sheet、無全域可變狀態）：
   parse_building_cost(html)  → UpgradeCost     既有建築頁（build.php?id=<aid>）的升級成本／工期／缺資源資訊
   parse_build_options(html)  → tuple[BuildOption, ...]  空地建造頁（build.php?id=<空地>，body #build.gid0）
@@ -203,7 +203,7 @@ def parse_build_options(html: str) -> Tuple[BuildOption, ...]:
         scope = w.select_one("div.upgradeBuilding") or w
         name = _text(w.select_one("div.build_desc h2"))
         name = re.sub(r"^\d+\s*[.．]\s*", "", name) or None      # 「12. 山洞」的序號前綴只是顯示（✗ 只見於 S10 一處）
-        url = _green_url(scope)
+        url = _green_url(scope, soup)            # v0.1.2：新版空地頁的按鈕與升級按鈕同結構（click:build:<aid>:<gid>）
         short, disabled, afford = _blocked(scope)
         out.append(BuildOption(
             gid=int(m.group(1)), name=name, cost=_cost(scope), build_time_s=_build_time(scope),
