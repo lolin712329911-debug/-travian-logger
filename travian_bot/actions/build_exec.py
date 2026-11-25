@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/actions/build_exec.py（ac-02）
-版本：v0.1.1（GA-fix3：新版升級按鈕沒有網址，改點綠色按鈕；送出前的 dorf1 基準改在讀建築頁之前）｜v0.1（A5a）
+版本：v0.1.2（GA-fix7：空地新蓋——依分頁抓建造頁、點按鈕的選擇器限定在該建築區塊）｜v0.1.1（GA-fix3：新版升級按鈕沒有網址，改點綠色按鈕；送出前的 dorf1 基準改在讀建築頁之前）｜v0.1（A5a）
 用途：送出一次建築升級／興建並驗證：submit_upgrade(gw, did, target, mode) → ExecResult。
 依賴：if-02（Gateway）、ps-01（parse_dorf1）、ps-03（建築頁解析）、cm-02（BuildTarget、ExecResult）、cm-04（Mode）、cm-11（ParseError，v0.1 補）。
 部署狀態：未部署（GA 前不 live）。
@@ -49,6 +49,18 @@ _UPGRADE_URL_RE = re.compile(r"/dorf[12]\.php\?id=(\d+)&gid=(\d+)&action=build&c
 # 紫色加速（.purple）、disabled、金幣大師建築師一律不碰；aid、gid 在送出前核對（來自頁面 script 的 POST 內容）。
 _CLICK_TOKEN_RE = re.compile(r"click:build:(\d+):(\d+)")
 _CLICK_SELECTOR = "div.upgradeBuilding div.upgradeButtonsContainer div.section1 button.green.build:not(.disabled)"
+# v0.1.2（GA-fix7）：空地建造頁（gid0）一頁有多個 div.upgradeBuilding，按鈕 class 是 `green new`（不是 `green build`），
+# 所以選擇器要限定在 #contract_building<gid> 內。aid、gid 仍由 _url_ok 核對過才會走到這裡。
+_CLICK_SELECTOR_SLOT = "#contract_building{gid} div.upgradeButtonsContainer div.section1 button.green:not(.disabled)"
+# 空地頁有三個分頁（1 基礎、2 軍事、3 資源）；一頁只列該分頁的建築。下表取自三張空地頁樣本（✓ 11-24，埃及人）；
+# 沒列到的 gid 先用預設頁，找不到再逐頁試。純提示用，不影響安全核對。
+_CATEGORY_HINT = {
+    17: 1, 18: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 38: 1, 39: 1, 45: 1,
+    13: 2, 14: 2, 20: 2, 21: 2, 22: 2, 46: 2,
+    5: 3, 6: 3, 7: 3, 8: 3, 9: 3,
+}
+_CATEGORY_PATH = "build.php?id={aid}&category={cat}"     # ✗ 與 observe.fetch_build_options 用的網址是否一致待核對
+_NOT_LISTED = "空地頁沒有 gid"
 _DORF1 = "dorf1.php"
 
 
@@ -67,10 +79,11 @@ def _url_ok(url: str, t: BuildTarget) -> bool:
     return bool(m) and int(m.group(1)) == t.aid and int(m.group(2)) == t.gid
 
 
-def _page_facts(html: str, t: BuildTarget) -> Tuple[Optional[str], Optional[Tuple[int, ...]], str]:
-    """(網址, 頁面成本, 備註)。網址 None＝沒有可按的綠色按鈕。解析失敗丟 ParseError。
+def _page_facts(html: str, t: BuildTarget) -> Tuple[Optional[str], Optional[Tuple[int, ...]], str, bool]:
+    """(網址, 頁面成本, 備註, 是否空地頁)。網址 None＝沒有可按的綠色按鈕。解析失敗丟 ParseError。
     有建造清單（`contract_building<gid>`）＝空地頁：只取 gid 相符的一筆（頁面可能只剩一個選項，
-    所以不能靠「有多個 upgradeBuilding」判斷）；否則是既有建築頁。"""
+    所以不能靠「有多個 upgradeBuilding」判斷）；否則是既有建築頁。
+    空地頁上沒有這個 gid 時，備註以 _NOT_LISTED 開頭（呼叫端可改抓別的分頁再試）。"""
     try:
         options = parse_build_options(html)
     except ParseError:
@@ -78,12 +91,19 @@ def _page_facts(html: str, t: BuildTarget) -> Tuple[Optional[str], Optional[Tupl
     if options:
         for o in options:
             if o.gid == t.gid:
-                return (o.url if o.buildable else None), (tuple(o.cost) if o.cost else None), ""
-        return None, None, f"空地頁沒有 gid {t.gid} 的建造選項"
+                return (o.url if o.buildable else None), (tuple(o.cost) if o.cost else None), "", True
+        return None, None, f"{_NOT_LISTED} {t.gid} 的建造選項", True
     url = find_upgrade_url(html)
     if url is None:
-        return None, None, ""
-    return url, tuple(parse_building_cost(html).cost), ""
+        return None, None, "", False
+    return url, tuple(parse_building_cost(html).cost), "", False
+
+
+def _category_order(gid: int) -> Tuple[int, ...]:
+    """先試提示的分頁，再試其餘（1、2、3）。"""
+    first = _CATEGORY_HINT.get(gid)
+    rest = tuple(c for c in (1, 2, 3) if c != first)
+    return ((first,) + rest) if first else rest
 
 
 def submit_upgrade(gw: Gateway, did: int, target: BuildTarget, mode: Mode) -> ExecResult:
@@ -107,8 +127,22 @@ def submit_upgrade(gw: Gateway, did: int, target: BuildTarget, mode: Mode) -> Ex
 
     # 1) 讀建築頁、取網址與成本（唯讀）
     try:
-        html = gw.get(f"build.php?id={target.aid}", did=did)
-        url, page_cost, note = _page_facts(html, target)
+        path = f"build.php?id={target.aid}"
+        hint = _CATEGORY_HINT.get(target.gid)
+        if target.to_level == 1 and hint:        # 新蓋：直接抓該建築所在的分頁，少一次請求
+            path = _CATEGORY_PATH.format(aid=target.aid, cat=hint)
+        html = gw.get(path, did=did)
+        url, page_cost, note, empty = _page_facts(html, target)
+        if empty and note.startswith(_NOT_LISTED):          # 這一頁沒列 → 其餘分頁逐頁試（最後一次抓的頁就是要點的頁）
+            for cat in _category_order(target.gid):
+                p = _CATEGORY_PATH.format(aid=target.aid, cat=cat)
+                if p == path:
+                    continue
+                path = p
+                html = gw.get(path, did=did)
+                url, page_cost, note, empty = _page_facts(html, target)
+                if not (empty and note.startswith(_NOT_LISTED)):
+                    break
     except (GatewayError, ParseError) as e:
         return res("failed", f"{what}：讀建築頁失敗，未送出：{e}")
     if url is None:
@@ -128,7 +162,7 @@ def submit_upgrade(gw: Gateway, did: int, target: BuildTarget, mode: Mode) -> Ex
     # 3) live：送出（不重試）→ 重讀驗證
     try:
         if _CLICK_TOKEN_RE.fullmatch(url):
-            gw.click(_CLICK_SELECTOR)          # 目前頁面就是剛讀的建築頁
+            gw.click(_CLICK_SELECTOR_SLOT.format(gid=target.gid) if empty else _CLICK_SELECTOR)   # 目前頁面就是剛讀的頁
         else:
             gw.submit(url)
     except GatewayError as e:
