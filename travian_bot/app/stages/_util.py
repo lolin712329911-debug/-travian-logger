@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/stages/_util.py（A6a2 共用小工具；卡片沒列，交接區塊要補記）
-版本：v0.1.1（A6a2b：加 ACTION_HIDE／ACTION_OASIS、set_hide_context／hide_context_of）｜v0.1（A6a2）
+版本：v0.1.2（GA-fix8：build_options 改用 observe.fetch_build_options，抓空地的三個分頁；原本只抓預設分頁，研究院等軍事／資源建築不在清單裡）｜v0.1.1（A6a2b：加 ACTION_HIDE／ACTION_OASIS、set_hide_context／hide_context_of）｜v0.1（A6a2）
 用途：A6a2 各 stage 共用的幾個函式：英雄所在村判斷、同一輪 stage 之間的旗標（rc.stage_notes）、Actions 列、
       need_facts 補資料迴圈（build_planner／plan_validate 缺頁面時由 stage 抓完再呼叫）。
 部署狀態：未部署（GA 前不 live）。未實測（本機沒有整個 repo）。
@@ -14,8 +14,9 @@ from ...common.decisions import BuildDecision, BuildFacts, BuildTarget, FactsNee
 from ...common.models import ActionRow, HideContext, VillageContext, clip_text
 from ...common.modes import Mode
 from ...common.schema import ParseError
-from ...parsers.buildings import parse_build_options, parse_building_cost
+from ...parsers.buildings import parse_building_cost
 from ...parsers.village import parse_dorf2
+from ..observe import fetch_build_options
 from ..run_context import RunContext
 
 # Actions.action 名稱（沿用舊 runner；≤40 字）
@@ -80,7 +81,7 @@ def decision_step(fn: Callable[[BuildFacts], BuildDecision]) -> Callable[[BuildF
 
 def run_with_facts(rc: RunContext, step: Callable[[BuildFacts], Tuple[Any, Optional[FactsNeed]]]) -> Tuple[Any, BuildFacts]:
     """反覆呼叫 step(facts) → (結果, need)；need 不是 None 就抓頁面補進 facts 再呼叫（每次都從頭算，安全）。
-    抓取規則（decisions.BuildFacts 的說明）：dorf2 讀失敗往上丟；建築頁讀不到成本＝None；空地清單讀失敗＝空 tuple。
+    抓取規則（decisions.BuildFacts 的說明）：dorf2 讀失敗往上丟；建築頁讀不到成本＝None；空地清單（三個分頁合併）任一頁讀失敗＝空 tuple。
     抓頁走 rc.get_page（本輪同一路徑只抓一次）。超過 MAX_FACT_FETCHES 次仍缺資料丟 RuntimeError。"""
     dorf2 = None
     costs, options = {}, {}
@@ -98,7 +99,9 @@ def run_with_facts(rc: RunContext, step: Callable[[BuildFacts], Tuple[Any, Optio
                 costs[need.aid] = None
         elif need.kind == "build_options":
             try:
-                options[need.aid] = parse_build_options(rc.get_page(f"build.php?id={need.aid}"))
+                # v0.1.2：空地頁一個分頁只列一類建築（1 基礎、2 軍事、3 資源），要三頁合併才完整。
+                # 同一輪內路徑相同，observe 寫 Buildable 時抓過的頁會被 rc.get_page 的快取重用。
+                options[need.aid] = fetch_build_options(rc, need.aid)
             except ParseError:
                 options[need.aid] = ()
         else:
