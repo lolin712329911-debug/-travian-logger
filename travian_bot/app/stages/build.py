@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/stages/build.py（ap-10）
-版本：v0.1.4（GA-fix6：沒升級、只在等資源時也回報 next_target，讓 focus 有缺口可算）｜v0.1.3（GA-fix5：_remaining 對建築步驟改看同 gid 最低那一格）｜v0.1.2a（修：snapshot_updates 不再放 next_target=None）｜v0.1.2（GA-fix3：升級成功後，用重讀的 dorf1 立刻補寫 Fields；不增加請求）｜v0.1.1（GA-fix1：dorf1 抓取與升級後重讀都傳 rc.dorf1_raw_if）｜v0.1（A6a2）
+版本：v0.2（功能1：plan_with_order 傳 parallel_cells＝True（A：同 gid 最高級那格在施工時改升下一格）；主目標在等佇列、佇列還有空位時呼叫 look_ahead 往後找付得起的步驟（B），用滿兩條佇列）｜v0.1.4（GA-fix6：沒升級、只在等資源時也回報 next_target，讓 focus 有缺口可算）｜v0.1.3（GA-fix5：_remaining 對建築步驟改看同 gid 最低那一格）｜v0.1.2a（修：snapshot_updates 不再放 next_target=None）｜v0.1.2（GA-fix3：升級成功後，用重讀的 dorf1 立刻補寫 Fields；不增加請求）｜v0.1.1（GA-fix1：dorf1 抓取與升級後重讀都傳 rc.dorf1_raw_if）｜v0.1（A6a2）
 用途：建城 stage：讀 build_order → 決策 → actions.build_exec 升級 → 寫 Actions；每輪寫 plan_* 四個 state 鍵。
 依賴：ap-03、ap-06、dm-01、dm-12、ac-02、if-12、if-07、if-08、cm-02、cm-03（ps-01～03 用來抓 dorf1／dorf2／建築頁，v0.67 的依賴列要補）。
 部署狀態：未部署（GA 前不 live）。未實測。
@@ -28,6 +28,10 @@ plan_* state 鍵（用 upsert_state 寫：只取代這四個帳號級鍵，不�
   status 變成 exhausted／idle 時 notify 一次（用 state 前值去重；讀不到前值就當成變了）。
   8. 舊流程（沒有 build_order）且轉移功能開著、有來襲、付不起時，改做 plan(affordable_only=True) 的項目（舊 runner 同）。
   9. plan_stuck（含升倉庫／糧倉找不到、成本超過倉容）寫「計畫卡住」列並 notify，用該動作最近一列去重（6 小時）。
+ 10. （v0.2）用滿兩條佇列：A＝plan_with_order 傳 parallel_cells＝True；B＝決策是 wait_queue 而佇列還有空位（len(佇列)<queue_slots）時，
+     呼叫 domain.build_planner.look_ahead（最多往後看 LOOK_AHEAD_MAX_SCAN 個未達成步驟），找到「現在就付得起」的就先做，
+     Actions detail 前綴「往後看」。往後看缺資料補抓失敗（RuntimeError／ParseError／GatewayError）只 rc.warn，當作沒有。
+     B 放寬了嚴格照順序：後面的步驟可能先於主目標。只在有 build_order 時作用；舊流程（沒有 build_order）不變。
 未解（交接區塊）：GROWTH_TIERS 第 2 層（D-29）；PLAN_LOW_WATER_H 6 小時為 △。
 """
 import dataclasses
@@ -40,8 +44,9 @@ from ...common.decisions import BuildDecision, BuildTarget
 from ...common.models import StageResult, VillageContext, VillageSnapshot
 from ...common.modes import Mode, parse_mode
 from ...common.schema import ParseError
-from ...domain.build_planner import UpgradeCandidate, plan, plan_with_order
+from ...domain.build_planner import UpgradeCandidate, look_ahead, plan, plan_with_order
 from ...domain.plan_validate import MAX_BUILDING_LEVEL, parse_build_order, usable_order, validate_order, validation_need
+from ...infra.gateway import GatewayError
 from ...infra.store import plan_repo
 from ...parsers.buildings import parse_building_cost
 from ...parsers.village import parse_dorf1, parse_dorf2
@@ -64,6 +69,7 @@ ACTION_PLAN_HOLD = "計畫被拒"
 ACTION_PLAN_STUCK = "計畫卡住"
 STUCK_NOTIFY_EVERY_H = 6.0       # plan_stuck 時每隔多久才再 notify
 STATE_KEYS = ("plan_status", "plan_remaining_steps", "plan_eta_h", "plan_needs_refill")
+LOOK_AHEAD_MAX_SCAN = 4        # （v0.2，B）主目標等佇列時，最多往後看幾個未達成的步驟（同 fill_in_candidates 的 max_scan）
 _GRAIN_GID, _WH_GID = 11, 10
 
 
@@ -74,6 +80,24 @@ def precondition(rc: RunContext, vc, snap) -> bool:
 # ---------------------------------------------------------------- 小工具
 def _min_queue(d1) -> int:
     return min((q.remaining_s for q in d1.queue), default=0)
+
+
+def _queue_len(d1, queue_secs) -> int:
+    """目前佇列長度；dry 模擬時以 queue_secs 為準。"""
+    return len(queue_secs) if queue_secs is not None else len(d1.queue)
+
+
+def _look_ahead(rc: RunContext, order, d1, bs, is_capital: bool, touched, queue_secs) -> Optional[BuildDecision]:
+    """（v0.2，B）主目標在等佇列、佇列還有空位：往後找現在就付得起的步驟。找到回 build 決策，否則 None。
+    缺頁面資料用 run_with_facts 補；補抓超過上限或讀頁失敗只 rc.warn、當作沒有（不影響主流程）。"""
+    try:
+        d, _ = U.run_with_facts(rc, U.decision_step(
+            lambda f: look_ahead(order, d1, f, bs, is_capital, touched=touched, queue_secs=queue_secs,
+                                 max_scan=LOOK_AHEAD_MAX_SCAN, parallel_cells=True)))
+    except (RuntimeError, ParseError, GatewayError) as exc:
+        rc.warn(f"stage build：往後看失敗（{type(exc).__name__}），本輪不往後看")
+        return None
+    return d if d.kind == "build" and d.target is not None else None
 
 
 def _caps(d1) -> Tuple[int, int, int, int]:
@@ -191,8 +215,13 @@ def run(rc: RunContext, vc: VillageContext, snap: VillageSnapshot, mode: Mode) -
             return _storage_decision(rc, d1, d) if d.kind == "storage_too_small" else d, \
                 "無 build_order，走舊流程", ("idle" if d.kind == "done" else "none")
         d, facts = U.run_with_facts(rc, U.decision_step(
-            lambda f: plan_with_order(order, d1, f, bs, vc.is_capital, touched=touched, queue_secs=queue_secs)))
+            lambda f: plan_with_order(order, d1, f, bs, vc.is_capital, touched=touched, queue_secs=queue_secs,
+                                      parallel_cells=True)))
         facts_box["facts"] = facts
+        if d.kind == "wait_queue" and _queue_len(d1, queue_secs) < bs.queue_slots:
+            la = _look_ahead(rc, order, d1, bs, vc.is_capital, touched, queue_secs)
+            if la is not None:
+                return la, "往後看（主目標在等佇列，先做後面付得起的步驟）", "active"
         if d.kind != "done":
             return (_storage_decision(rc, d1, d) if d.kind == "storage_too_small" else d), "", "active"
         g = legacy(touched, queue_secs)
