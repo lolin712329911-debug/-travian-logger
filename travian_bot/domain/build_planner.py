@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/domain/build_planner.py（dm-01）
-版本：v0.1.2（GA-fix5：build_order 的建築步驟（非資源田）改成「同 gid 的每一格都要到目標等級」，依序升：先升等級最高的那格，到目標後再升下一格；只有一格時與舊行為相同）｜v0.1.1（GA-fix1／D-39：plan() 成本讀不到不回 done；storage_fix 訊息「穀倉」）｜v0.1（A3a）
+版本：v0.2（功能1：plan_with_order／_order_core 加 parallel_cells（A：同 gid 最高級那格在施工時改升下一格）、新增 look_ahead（B：主目標等佇列時往後找現在就付得起的步驟））｜v0.1.2（GA-fix5：build_order 的建築步驟（非資源田）改成「同 gid 的每一格都要到目標等級」，依序升：先升等級最高的那格，到目標後再升下一格；只有一格時與舊行為相同）｜v0.1.1（GA-fix1／D-39：plan() 成本讀不到不回 done；storage_fix 訊息「穀倉」）｜v0.1（A3a）
 用途：建城決策（純函式，不碰網路、不讀 Sheet、不用全域變數）。回傳 BuildDecision（cm-02）。
       plan()                  舊流程（沒有 build_order）：資源田＋（呼叫端給的）倉庫／糧倉的 ROI 規則
       plan_with_order()       依 build_order 嚴格照順序建城（自動補前置條件、倉容不足自動先升倉庫／糧倉）
       fill_in_candidates()    主目標等資源時，列出後面「現在就付得起」的候選（給 fill_in.pick_fill_in）
       next_target()           佇列忙時假設佇列空，算「下一個目標」（給 guard.gaps_from_decision 算缺口）
+      look_ahead()            （v0.2）主目標在等佇列、佇列還有空位時，往後找「現在就付得起」的步驟（給 build stage 用滿兩條佇列）
 依賴：cm-01（models）、cm-02（decisions）、cm-03（constants）、cm-09（parsed）、cm-12（game_rules）。
 部署狀態：未部署（GA 前不 live）。
 
@@ -39,7 +40,7 @@ from ..common.game_rules import RESOURCE_FIELD_PRODUCTION_1X, resource_field_cap
 from ..common.models import BuildSettings
 from ..common.parsed import Dorf1, Dorf2
 
-__all__ = ["UpgradeCandidate", "plan", "plan_with_order", "fill_in_candidates", "next_target"]
+__all__ = ["UpgradeCandidate", "plan", "plan_with_order", "fill_in_candidates", "next_target", "look_ahead"]
 
 _EMPTY_WAIT_S = 600          # 舊碼：佇列判定忙、但讀不到剩餘秒數時的預設等待
 
@@ -168,8 +169,11 @@ def plan(dorf1: Dorf1, settings: BuildSettings, is_capital: bool, *, extra: Sequ
 
 # ---------------------------------------------------------------- plan_with_order
 def _order_core(order, dorf1: Dorf1, facts: BuildFacts, settings: BuildSettings, is_capital: bool,
-                touched, queue: List[int], start: int, trace):
-    """舊 plan_with_order 的本體；回傳舊式 tuple；缺資料丟 _Need。"""
+                touched, queue: List[int], start: int, trace, parallel_cells: bool = False):
+    """舊 plan_with_order 的本體；回傳舊式 tuple；缺資料丟 _Need。
+    parallel_cells（v0.2）：True＝建築步驟（同 gid 多格）最高級那格在施工時，改升同 gid 下一格（還沒到目標的）；
+    False（預設）＝維持 GA-fix5 行為：那格在施工就等佇列。只有 build stage 與 item_transfer 的預判傳 True，
+    fill_in_candidates／next_target（guard）維持 False。"""
     stock, prod, cap = dorf1.stock, dorf1.prod, _cap(dorf1)
     fields0 = _from_dorf1(dorf1, touched)
     if len(queue) >= settings.queue_slots:
@@ -255,9 +259,16 @@ def _order_core(order, dorf1: Dorf1, facts: BuildFacts, settings: BuildSettings,
                 todo = [s for s in mine if s.level < level]
                 if not todo:
                     return None
-                best = max(todo, key=lambda s: (s.level, -s.aid))
-                if best.under_construction or best.aid in touched:
-                    return q_wait()
+                if parallel_cells:
+                    # v0.2（A）：只在「沒在施工、本輪也沒送出」的格子裡挑；全部都忙才等佇列
+                    ready = [s for s in todo if not (s.under_construction or s.aid in touched)]
+                    if not ready:
+                        return q_wait()
+                    best = max(ready, key=lambda s: (s.level, -s.aid))
+                else:
+                    best = max(todo, key=lambda s: (s.level, -s.aid))
+                    if best.under_construction or best.aid in touched:
+                        return q_wait()
             else:
                 best = max(mine, key=lambda s: s.level)
                 if best.level >= level:
@@ -323,13 +334,14 @@ def _need_decision(n: FactsNeed) -> BuildDecision:
 
 def plan_with_order(order: Sequence[Tuple[Any, int]], dorf1: Dorf1, facts: BuildFacts, settings: BuildSettings,
                     is_capital: bool, *, touched=(), queue_secs: Optional[Sequence[int]] = None,
-                    start: int = 0) -> BuildDecision:
+                    start: int = 0, parallel_cells: bool = False) -> BuildDecision:
     """依 build_order（[('res', 2), (15, 3), …]，已通過 plan_validate）決定下一步。
     缺頁面資料回 kind='need_facts'（need 說明要哪一頁）；其餘規則與舊 plan_with_order 相同。
-    start：從 order[start:] 開始找第一個還沒達成的目標（前面當作已達成）。"""
+    start：從 order[start:] 開始找第一個還沒達成的目標（前面當作已達成）。
+    parallel_cells：見 _order_core（v0.2）。"""
     try:
         r = _order_core(order, dorf1, facts, settings, is_capital, set(touched), _queue_of(dorf1, queue_secs),
-                        start, None)
+                        start, None, parallel_cells)
     except _Need as n:
         return _need_decision(n.need)
     return _to_decision(r)
@@ -369,3 +381,34 @@ def next_target(order: Sequence[Tuple[Any, int]], dorf1: Dorf1, facts: BuildFact
     其他 kind 表示算不出缺口）。舊 runner._next_target 回傳 action tuple；卡片原寫回傳 BuildTarget／None，
     改回傳 BuildDecision 是因為 need_facts 要能傳回呼叫端。"""
     return plan_with_order(order, dorf1, facts, settings, is_capital, touched=touched, queue_secs=())
+
+
+def look_ahead(order: Sequence[Tuple[Any, int]], dorf1: Dorf1, facts: BuildFacts, settings: BuildSettings,
+               is_capital: bool, *, touched=(), queue_secs: Optional[Sequence[int]] = None,
+               max_scan: int = 4, parallel_cells: bool = False) -> BuildDecision:
+    """（v0.2，B）主目標（第一個還沒達成的步驟）在等佇列（例如它的那格正在施工）、而佇列還有空位時，
+    依 build_order 順序往後最多看 max_scan 個未達成的步驟，回傳第一個「現在就付得起」的步驟。
+    回傳 kind＝'build'（target 有值）才是找到；kind＝'need_facts' 表示缺頁面資料（stage 補完再呼叫）；
+    其他 kind（wait_queue 以外的主目標、佇列已滿、後面都付不起…）一律當作沒有，呼叫端不使用。
+    純規則；結果只取決於輸入。放寬了「嚴格照順序」：後面的步驟會先做（呼叫端決定要不要用）。"""
+    touched, queue = set(touched), _queue_of(dorf1, queue_secs)
+    if len(queue) >= settings.queue_slots:
+        return BuildDecision("wait_queue", None, "施工佇列已滿，不往後看")
+    try:
+        trace: List[int] = []
+        main = _order_core(order, dorf1, facts, settings, is_capital, touched, queue, 0, trace, parallel_cells)
+        if main[0] != "wait_queue" or not trace:
+            return _to_decision(main)
+        j, scanned = trace[-1] + 1, 0
+        while j < len(order) and scanned < max_scan:
+            t: List[int] = []
+            r = _order_core(order, dorf1, facts, settings, is_capital, touched, queue, j, t, parallel_cells)
+            if r[0] == "done" or not t:
+                break
+            scanned += 1
+            if r[0] == "build":
+                return _to_decision(r)
+            j = t[-1] + 1
+    except _Need as n:
+        return _need_decision(n.need)
+    return BuildDecision("no_affordable", None, "後面沒有現在就付得起的步驟")
