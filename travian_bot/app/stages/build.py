@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/stages/build.py（ap-10）
-版本：v0.2（功能1：plan_with_order 傳 parallel_cells＝True（A：同 gid 最高級那格在施工時改升下一格）；主目標在等佇列、佇列還有空位時呼叫 look_ahead 往後找付得起的步驟（B），用滿兩條佇列）｜v0.1.4（GA-fix6：沒升級、只在等資源時也回報 next_target，讓 focus 有缺口可算）｜v0.1.3（GA-fix5：_remaining 對建築步驟改看同 gid 最低那一格）｜v0.1.2a（修：snapshot_updates 不再放 next_target=None）｜v0.1.2（GA-fix3：升級成功後，用重讀的 dorf1 立刻補寫 Fields；不增加請求）｜v0.1.1（GA-fix1：dorf1 抓取與升級後重讀都傳 rc.dorf1_raw_if）｜v0.1（A6a2）
+版本：v0.3（建完再轉一次：升級成功後，下一個目標又在等資源、佇列還有空位時，同一輪再從英雄道具庫轉一次資源並繼續升級）｜v0.2（功能1：plan_with_order 傳 parallel_cells＝True（A：同 gid 最高級那格在施工時改升下一格）；主目標在等佇列、佇列還有空位時呼叫 look_ahead 往後找付得起的步驟（B），用滿兩條佇列）｜v0.1.4（GA-fix6：沒升級、只在等資源時也回報 next_target，讓 focus 有缺口可算）｜v0.1.3（GA-fix5：_remaining 對建築步驟改看同 gid 最低那一格）｜v0.1.2a（修：snapshot_updates 不再放 next_target=None）｜v0.1.2（GA-fix3：升級成功後，用重讀的 dorf1 立刻補寫 Fields；不增加請求）｜v0.1.1（GA-fix1：dorf1 抓取與升級後重讀都傳 rc.dorf1_raw_if）｜v0.1（A6a2）
 用途：建城 stage：讀 build_order → 決策 → actions.build_exec 升級 → 寫 Actions；每輪寫 plan_* 四個 state 鍵。
 依賴：ap-03、ap-06、dm-01、dm-12、ac-02、if-12、if-07、if-08、cm-02、cm-03（ps-01～03 用來抓 dorf1／dorf2／建築頁，v0.67 的依賴列要補）。
 部署狀態：未部署（GA 前不 live）。未實測。
@@ -28,6 +28,9 @@ plan_* state 鍵（用 upsert_state 寫：只取代這四個帳號級鍵，不�
   status 變成 exhausted／idle 時 notify 一次（用 state 前值去重；讀不到前值就當成變了）。
   8. 舊流程（沒有 build_order）且轉移功能開著、有來襲、付不起時，改做 plan(affordable_only=True) 的項目（舊 runner 同）。
   9. plan_stuck（含升倉庫／糧倉找不到、成本超過倉容）寫「計畫卡住」列並 notify，用該動作最近一列去重（6 小時）。
+ 11. （v0.3）建完再轉一次：本輪已有升級成功（any_live_ok）、決策是 wait_resources（還要等）、同一目標本輪還沒轉過時，
+     呼叫 item_transfer.transfer_for_target（模式取 item_transfer 的 mode，英雄須在本村；轉移 Actions 列併入本 stage 的 actions）；
+     轉成功（live）就重讀 dorf1 再決策、繼續升級；dry、不轉、失敗都照舊寫「建城等待」並結束。轉移出錯只 rc.warn，不影響建城。
  10. （v0.2）用滿兩條佇列：A＝plan_with_order 傳 parallel_cells＝True；B＝決策是 wait_queue 而佇列還有空位（len(佇列)<queue_slots）時，
      呼叫 domain.build_planner.look_ahead（最多往後看 LOOK_AHEAD_MAX_SCAN 個未達成步驟），找到「現在就付得起」的就先做，
      Actions detail 前綴「往後看」。往後看缺資料補抓失敗（RuntimeError／ParseError／GatewayError）只 rc.warn，當作沒有。
@@ -52,8 +55,9 @@ from ...parsers.buildings import parse_building_cost
 from ...parsers.village import parse_dorf1, parse_dorf2
 from ..formatting import ACTION_BUILD, ACTION_BUILD_WAIT, describe
 from ..run_context import RunContext
-from ..stage_base import Stage
+from ..stage_base import Stage, stage_mode
 from . import _util as U
+from . import item_transfer as IT
 
 __all__ = ["STAGE", "GROWTH_TIERS", "PLAN_LOW_WATER_H", "precondition", "run"]
 
@@ -98,6 +102,19 @@ def _look_ahead(rc: RunContext, order, d1, bs, is_capital: bool, touched, queue_
         rc.warn(f"stage build：往後看失敗（{type(exc).__name__}），本輪不往後看")
         return None
     return d if d.kind == "build" and d.target is not None else None
+
+
+def _transfer_again(rc: RunContext, vc: VillageContext, cur, t) -> Optional[StageResult]:
+    """（v0.3）建完再轉一次：對下一個目標 t（等資源）呼叫 item_transfer.transfer_for_target。
+    item_transfer 的 mode 是 off、英雄不在本村、或轉移途中出錯＝回 None（只 rc.warn，不影響建城）。"""
+    mode = stage_mode(IT.STAGE, vc, rc.dry_flag, rc=rc)
+    if mode is Mode.OFF or not U.hero_here(rc, vc):
+        return None
+    try:
+        return IT.transfer_for_target(rc, vc, cur, mode, t)
+    except (GatewayError, ParseError) as exc:
+        rc.warn(f"stage build：建完再轉一次失敗（{type(exc).__name__}），不影響建城")
+        return None
 
 
 def _caps(d1) -> Tuple[int, int, int, int]:
@@ -233,6 +250,7 @@ def run(rc: RunContext, vc: VillageContext, snap: VillageSnapshot, mode: Mode) -
     queue_secs: Optional[List[int]] = None
     builds, any_live_ok, any_failed, last, last_note = 0, False, False, None, ""
     status, prefix = "none", ""
+    transfer_tried: set = set()        # （v0.3）本輪已為哪些目標 aid 轉過一次（同一目標不重轉，避免迴圈）
     while True:
         dec, prefix, status = decide(touched, queue_secs)
         last = dec
@@ -243,6 +261,17 @@ def run(rc: RunContext, vc: VillageContext, snap: VillageSnapshot, mode: Mode) -
         label, tgt, desc = describe(dec, cur, bs.queue_slots)
         pre = (prefix + "｜") if prefix else ""
         if dec.kind != "build" or tgt is None:
+            if (any_live_ok and dec.kind == "wait_resources" and dec.target is not None and (dec.wait_s or 0) > 0
+                    and dec.target.aid not in transfer_tried):
+                # v0.3：建完再轉一次。轉成功（live）就重讀 dorf1、再決策；其餘（dry、不轉、失敗）照舊寫「建城等待」並結束
+                transfer_tried.add(dec.target.aid)
+                tr = _transfer_again(rc, vc, cur, dataclasses.replace(dec.target, ready_in_s=dec.wait_s))
+                if tr is not None:
+                    rows.extend(tr.actions)
+                    if tr.snapshot_updates:
+                        d1 = parse_dorf1(rc.get_page("dorf1.php", raw_if=rc.dorf1_raw_if, refresh=True))
+                        queue_secs = None
+                        continue
             if dec.kind == "plan_stuck":                   # 需要人處理：獨立動作名稱，用它的最近一列去重 notify
                 age = rc.io.last_action_age_hours(rc.sh, ACTION_PLAN_STUCK, did, "skipped")
                 if age is None or age >= STUCK_NOTIFY_EVERY_H:

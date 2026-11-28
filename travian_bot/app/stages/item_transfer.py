@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/stages/item_transfer.py（ap-11）
-版本：v0.3（功能2：有 build_order 也預判目標（照 fill_in.py 的驗證＋plan_with_order 流程）；不管來襲，付不起且道具庫夠就轉；轉成功後一併清掉 build.php?id= 的頁面快取；預判失敗寫一列原因）｜v0.2（建城前自己預判目標，不再依賴 snapshot.next_target）｜v0.1.2（A6a2＋診斷輸出（print，不依賴 logging 設定）；只加 log 與 Actions detail 的道具庫存量，判斷邏輯不變）
+版本：v0.4（把「已有目標之後的轉移」拆成 transfer_for_target，build stage 建完一棟後可再轉一次；行為不變）｜v0.3（功能2：有 build_order 也預判目標（照 fill_in.py 的驗證＋plan_with_order 流程）；不管來襲，付不起且道具庫夠就轉；轉成功後一併清掉 build.php?id= 的頁面快取；預判失敗寫一列原因）｜v0.2（建城前自己預判目標，不再依賴 snapshot.next_target）｜v0.1.2（A6a2＋診斷輸出（print，不依賴 logging 設定）；只加 log 與 Actions detail 的道具庫存量，判斷邏輯不變）
 用途：英雄道具庫 → 村莊轉資源 stage：next_target 付不起時，domain.item_transfer 決定轉哪些，
       actions.item_transfer_exec 送出並驗證，寫一列 Actions（動作「轉移」）。僅英雄所在村。
 依賴：ap-03、ap-06、dm-05、ac-03、if-07、cm-02。
@@ -50,7 +50,7 @@ from ..run_context import RunContext
 from ..stage_base import Stage
 from . import _util as U
 
-__all__ = ["STAGE", "precondition", "run"]
+__all__ = ["STAGE", "precondition", "run", "transfer_for_target"]
 
 _log = logging.getLogger("item_transfer")
 _ERR_PREFIX = "預判失敗"          # _resolve_target 的說明以此開頭＝預判本身出錯，run() 會寫一列原因
@@ -126,8 +126,6 @@ def _resolve_target(rc: RunContext, vc: VillageContext, snap: VillageSnapshot):
 
 
 def run(rc: RunContext, vc: VillageContext, snap: VillageSnapshot, mode: Mode) -> StageResult:
-    gw = rc.gateway
-    cfg = rc.cfg
     t, why = _resolve_target(rc, vc, snap)
     log.info("item_transfer 目標：%s｜%s", (f"{t.name} →L{t.to_level} cost={t.cost}" if t is not None else None), why)
     if t is None:
@@ -135,6 +133,15 @@ def run(rc: RunContext, vc: VillageContext, snap: VillageSnapshot, mode: Mode) -
             row = U.make_row(rc, vc.did, U.ACTION_ITEM_TRANSFER, mode, "skipped", why)
             return StageResult(status="ok", actions=[row], note=why[:200])
         return StageResult(status="skipped", note=why)
+    return transfer_for_target(rc, vc, snap, mode, t)
+
+
+def transfer_for_target(rc: RunContext, vc: VillageContext, snap: VillageSnapshot, mode: Mode, t) -> StageResult:
+    """（v0.4）目標 t（BuildTarget，ready_in_s>0＝還要等資源）已知之後：讀道具庫狀態 → 決策 → 轉移 → 寫一列 Actions「轉移」。
+    run() 在建城前呼叫一次；build stage 在「升級成功、下一個目標又在等資源」時再呼叫一次（建完再轉一次）。
+    snap 只用 stock、queue_slots_used、incoming_attacks（說明文字）；成功時 snapshot_updates 有 stock（呼叫端可用來判斷成功）。"""
+    gw = rc.gateway
+    cfg = rc.cfg
     # v0.3：不管來襲（only_on_incoming＝False）；缺口上限與道具庫門檻由 Config hero_transfer_max_gap／hero_transfer_min 決定
     settings = TransferSettings(min_inventory=int(cfg.get("hero_transfer_min", 20000)),
                                 max_gap=int(cfg.get("hero_transfer_max_gap", 1000)),
