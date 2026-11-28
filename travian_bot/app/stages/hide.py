@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 travian_bot/app/stages/hide.py（ap-15）
-版本：v0.1（A6a2b）
+版本：v0.2（沒有集結點就不讀概況、不派兵：回 ok＋寫一列 Actions「躲兵」result＝skipped、說明「沒集結點」，不再每輪 failed／紅叉）｜v0.1（A6a2b）
 用途：躲兵 stage：有來襲時讀集結點概況 → domain.hide_plan 算候選 → domain.hide_decide 決策 → actions.hide_exec 派兵躲避
       （搶奪空綠洲）→ 寫一列 Actions（動作「躲兵」）。逐村；綠洲清單與家座標取自該村的 HideContext。
 依賴：ap-02、ap-03、ap-20、dm-07、dm-08、ac-06、ac-07、ps-06、if-02、cm-01、cm-02、cm-04、cm-09、cm-11
@@ -21,6 +21,8 @@ travian_bot/app/stages/hide.py（ap-15）
   6. **不搬**：debug_html 存檔（app 層沒有檔案 IO）；沒有候選時固定探測 tile-details（v2.77 驗 page.request.post 的診斷，已由 Gateway.request 取代）；
      側欄 incoming_symbols 與 dorf1 的交叉核對（改用 snap.incoming_attacks 與概況的張數，兩者不同只記在說明欄）。
   7. 英雄永遠不帶（sendable_units 已排除，send_troops 再核對）。
+  8. （v0.2）沒有集結點（dorf2 沒有任何 gid 16 的建築，例如被打掉）：不讀概況、不派兵，寫一列「躲兵」skipped＋說明；
+     dorf2 取自 rc.get_page（observe 已抓過，不多一個請求）；讀不到 dorf2 就照舊流程去讀概況。
 Config：hide_min_attack（預設 20，嚴格大於）、hide_wait_max_s（預設 180；0＝不等）。send_troops 的 max_confirm／max_checks／margin／send_delay_s
   不開 Config 鍵，用函式預設（4／12／30／45）。
 """
@@ -38,12 +40,14 @@ from ...domain.hide_decide import (HideCfg, ReturnWindow, attack_total, decide, 
 from ...domain.hide_plan import plan, unit_attacks, unit_speeds
 from ...infra.gateway import GatewayError
 from ...parsers.rally import parse_overview
+from ...parsers.village import parse_dorf2
 from ..run_context import RunContext
 from ..stage_base import Stage
 from . import _util as U
 
 __all__ = ["STAGE", "RETURN_BUFFER_S", "precondition", "run"]
 
+RALLY_POINT_GID = 16         # 集結點（固定在 39 號位；v0.2 以「村裡有沒有 gid 16」判斷）
 RETURN_BUFFER_S = 3          # 歸來時間之後再等幾秒才重讀（讓兵確實進村；舊 hide_troops.RETURN_BUFFER_S）
 _WAIT_CODES = ("no_units", "weak")
 
@@ -57,6 +61,15 @@ def precondition(rc: RunContext, vc: Optional[VillageContext], snap: Optional[Vi
 
 def _int(v, default: int) -> int:
     return v if isinstance(v, int) and not isinstance(v, bool) and v >= 0 else default
+
+
+def _has_rally_point(rc: RunContext) -> Optional[bool]:
+    """（v0.2）村裡有沒有集結點。dorf2 讀不到或解析失敗回 None（呼叫端照舊流程去讀概況）。"""
+    try:
+        d2 = parse_dorf2(rc.get_page("dorf2.php"))
+    except (GatewayError, ParseError):
+        return None
+    return any(sl.gid == RALLY_POINT_GID for sl in d2.slots)
 
 
 def _read(rc: RunContext) -> Tuple[RallyOverview, float]:
@@ -87,6 +100,11 @@ def run(rc: RunContext, vc: VillageContext, snap: VillageSnapshot, mode: Mode) -
                   min_attack=_int(rc.cfg.get("hide_min_attack"), 20))
     wait_max = _int(rc.cfg.get("hide_wait_max_s"), 180)
     map_half = rc.profile.map_half
+
+    if _has_rally_point(rc) is False:                    # v0.2：沒有集結點（被打掉或還沒蓋）→ 不讀概況，只寫一列原因
+        row = U.make_row(rc, vc.did, U.ACTION_HIDE, mode, "skipped",
+                         f"沒集結點（村裡沒有集結點，無法躲兵；請重建 39 號位）｜來襲 dorf1={snap.incoming_attacks}")
+        return StageResult(status="ok", actions=[row], note="沒集結點")
 
     try:
         ov, t_load = _read(rc)
